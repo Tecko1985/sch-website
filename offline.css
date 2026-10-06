@@ -11,3 +11,7 @@
 @media(prefers-reduced-motion:reduce){.sch-logotrack{animation:none}.sch-logoband{overflow-x:auto}.sch-logoset[aria-hidden]{display:none}}
 @media(max-width:600px){.sch-logoset>*{width:120px;height:84px}}
 .sch-footericons img[src*="whatsapp"]{filter:invert(1)}
+.sch-logoband.pausiert .sch-logotrack{animation-play-state:paused}
+.sch-logopause{display:block;margin:-14px auto 22px;font:700 13px Arial,sans-serif;color:#1b2d4f;background:transparent;border:0;text-decoration:underline;cursor:pointer;padding:8px 10px}
+.sch-logopause:focus-visible{outline:3px solid #82a8e9;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.sch-logopause{display:none}}
