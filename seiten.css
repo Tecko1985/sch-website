@@ -110,3 +110,10 @@ body{margin:0;background:#fff}
 .sp-person b{font:700 21px/1.15 'SCH Barlow',Impact,sans-serif;color:#1b2d4f}
 .sp-person div span{font:14px/1.45 Arial,sans-serif;color:#33415c;overflow-wrap:anywhere}
 .sp-person .sp-initialen{color:#fff}
+/* FuPa erst nach Klick */
+.sp-fupa{border:1px dashed #9fb0c8;background:#f5f8fc;border-radius:6px;padding:22px 24px;margin:16px 0 30px}
+.sp-fupa p{font-size:15px!important;margin:0 0 14px!important}
+.sp-fupa p b{display:block;font:700 13px Arial,sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#1b2d4f;margin-bottom:6px}
+.sp-fupa button{font:700 15px Arial,sans-serif;background:#1b2d4f;color:#fff;border:0;border-radius:3px;padding:13px 22px;cursor:pointer}
+.sp-fupa button:focus-visible{outline:3px solid #82a8e9;outline-offset:3px}
+.sp-fupa-geladen{margin:16px 0 30px;min-height:60px;overflow-x:auto}
