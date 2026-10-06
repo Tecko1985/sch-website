@@ -1,0 +1,15 @@
+SCH – STARTSEITE UND SPIELBERICHT OFFLINE
+
+1. Die ZIP-Datei vollständig entpacken.
+2. Im Ordner SCH-Website-Offline die Datei index.html doppelt anklicken.
+3. Über „Spielbericht“ in der oberen Offline-Leiste die Erfurt-Seite öffnen. Alternativ spielbericht-erfurt.html doppelt anklicken.
+
+Der ganze Ordner muss zusammenbleiben. Die HTML-Dateien nicht einzeln verschieben: Bilder, Schriften, Styles und Bedienung liegen in den mitgelieferten Unterordnern.
+
+Enthalten sind die Startseite und die zuletzt überarbeitete Spielbericht-Vorschau mit sieben Reitern (Spielinfo, Spielbericht, Stimmen, Galerie, Liveticker, Statistiken, Aufstellung). Bilder und Schriften sind lokal gespeichert. Menü, Spielkarten-Reiter und die vergrößerbare Galerie funktionieren ohne Internet.
+
+Offline-Kopie erstellt am 06.10.2026. Die jeweiligen Inhalte behalten den Datenstand der Vorschau. Es werden beim Öffnen keine neuen Beiträge, Ergebnisse, Facebook-/Instagram-Beiträge oder FuPa-Meldungen geladen. Der Spielverlauf ist ein gespeicherter Datenstand. Externe Links (weitere Vereinsartikel, Fanshop, FuPa, Social Media, Login) benötigen Internet. Die Startseite und der Erfurt-Bericht sind direkt miteinander verlinkt.
+
+Die Offline-Kopie läuft in einem normalen aktuellen Browser, etwa Safari, Firefox, Edge oder Chrome, ohne Server. Ein Doppelklick startet sie auch auf einem anderen Computer, wenn der vollständige entpackte Ordner dort liegt.
+
+Dies ist eine eigenständige Offline-Ausgabe zur Ansicht und Weitergabe. Das bereits vorhandene WordPress-Plugin bleibt unverändert.

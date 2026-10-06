@@ -1,0 +1,21 @@
+
+@font-face{font-family:'SCH Barlow';src:url('assets/barlow.woff') format('woff');font-weight:700;font-display:swap}
+:is(#top,body) .sch-home .sch-wordmark h1{font-family:'SCH Barlow','Arial Narrow',sans-serif;font-size:clamp(36px,4.5vw,68px);font-weight:700;line-height:1.05;letter-spacing:0;max-width:950px;text-transform:none}
+:is(#top,body) .sch-home .sch-wordmark{right:5%;bottom:165px}
+:is(#top,body) .sch-moreimage img{object-fit:cover;object-position:50% 50%;width:100%;height:100%}
+:is(#top,body) .sch-home .sch-rail>a,:is(#top,body) .sch-home .sch-rail>button{font-size:12px}
+:is(#top,body) .sch-footer{background:#1b2d4f;color:#fff;padding:55px 0 0;font:400 16px/1.65 Arial,sans-serif;clear:both}
+:is(#top,body) .sch-footergrid{width:min(1310px,calc(100% - 80px));margin:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:42px}
+:is(#top,body) .sch-footer h3{font-size:20px;color:inherit;margin:0 0 20px}
+:is(#top,body) .sch-footer p{margin:0 0 20px;color:inherit}
+:is(#top,body) .sch-footer a{color:#fff;text-decoration:none}
+:is(#top,body) .sch-footer table{width:100%;border:0;border-collapse:collapse;background:transparent;margin:0}
+:is(#top,body) .sch-footer :is(td,tr,th){border:0!important;background:transparent;color:#fff;text-align:left;vertical-align:top;padding:8px 8px 8px 0;font-size:15px}
+:is(#top,body) .sch-footer td:first-child{width:50%;font-weight:700}
+:is(#top,body) .sch-footericons{display:flex;gap:20px;align-items:center}
+:is(#top,body) .sch-footericons :is(img,svg){width:40px;height:40px;display:block}
+:is(#top,body) .sch-footericons .sch-wa-placeholder{color:#fff;display:flex;align-items:center;gap:8px;font-size:14px}
+:is(#top,body) .sch-socket{background:#14233e;margin-top:45px;padding:20px max(40px,calc((100vw - 1310px)/2));font-size:14px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.sch-tickets-dialog{border:0;border-radius:8px;padding:32px;width:min(480px,calc(100vw - 32px));color:#1b2d4f;font:16px/1.6 Arial,sans-serif}
+.sch-tickets-dialog::backdrop{background:#0b1a38aa}.sch-tickets-dialog h2{font-size:28px}.sch-tickets-dialog button{background:#1b2d4f;color:#fff;border:0;border-radius:4px;padding:10px 20px;cursor:pointer}.sch-tickets-dialog a{color:#1b2d4f}
+@media(max-width:767px){:is(#top,body) .sch-home .sch-wordmark h1{font-size:clamp(29px,6vw,42px)}:is(#top,body) .sch-home .sch-wordmark{left:88px;right:20px;bottom:158px}:is(#top,body) .sch-footergrid{grid-template-columns:1fr;width:calc(100% - 36px);gap:28px}:is(#top,body) .sch-socket{padding:20px 18px}:is(#top,body) .sch-home .sch-rail>a,:is(#top,body) .sch-home .sch-rail>button{font-size:10px}}
