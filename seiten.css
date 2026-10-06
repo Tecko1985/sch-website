@@ -60,3 +60,35 @@ body{margin:0;background:#fff}
 .sp-nav>a span{font:700 20px/1 'SCH Barlow',Impact,sans-serif;letter-spacing:.5px;color:#fff}
 @media(max-width:767px){.sp-nav>a span{display:none}}
 .sp-held>div{left:auto;right:auto;top:auto;bottom:auto}.sp-held h1,.sp-inhalt h2{overflow-wrap:anywhere;hyphens:auto}
+/* Termine */
+.tm-filter{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 8px}
+.tm-filter button{font:700 14px Arial,sans-serif;color:#1b2d4f;background:#eaf0f7;border:0;border-radius:999px;padding:11px 20px;cursor:pointer}
+.tm-filter button[aria-pressed=true]{background:#1b2d4f;color:#fff}
+.tm-filter button:focus-visible{outline:3px solid #82a8e9;outline-offset:3px}
+.tm-tag{margin-top:34px}
+.tm-tag[hidden],.tm-spiel[hidden]{display:none}
+.tm-tag h2{margin:0 0 12px;font-size:28px}
+.tm-tag h2 span{color:#5f6a7b}
+.tm-liste{list-style:none;margin:0!important;padding:0!important;border-top:1px solid #dce1e9}
+.tm-spiel{display:grid;grid-template-columns:64px 170px 1fr auto;gap:8px 20px;align-items:center;padding:16px 0;border-bottom:1px solid #dce1e9;margin:0}
+.tm-spiel.heim{background:linear-gradient(90deg,#eaf0f7,transparent 60%)}
+.tm-zeit{font:700 22px/1 'SCH Barlow',Impact,sans-serif;padding-left:10px}
+.tm-team{display:flex;flex-direction:column;gap:2px}
+.tm-team b{font:700 18px/1.1 'SCH Barlow',Impact,sans-serif;text-transform:uppercase}
+.tm-team small,.tm-platz{font:13px/1.4 Arial,sans-serif;color:#5f6a7b}
+.tm-paar{display:flex;flex-direction:column;gap:4px;min-width:0}
+.tm-gegner{display:flex;flex-wrap:wrap;gap:4px 10px;font:700 16px/1.35 Arial,sans-serif}
+.tm-gegner i{font-style:normal;color:#5f6a7b}
+.tm-info{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.tm-info a{font:700 13px Arial,sans-serif;white-space:nowrap}
+.tm-marke{font:700 11px Arial,sans-serif;font-style:normal;letter-spacing:.6px;text-transform:uppercase;background:#1b2d4f;color:#fff;border-radius:3px;padding:4px 8px}
+.tm-marke.aus{background:#eaf0f7;color:#1b2d4f}
+.tm-marke.ab{background:#b3261e}
+.tm-spiel.abgesetzt .tm-gegner{text-decoration:line-through;color:#5f6a7b}
+.tm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:767px){
+.tm-spiel{grid-template-columns:54px 1fr;gap:6px 12px}
+.tm-paar,.tm-info{grid-column:2}
+.tm-info{flex-direction:row;align-items:center;justify-content:space-between}
+.tm-zeit{grid-row:span 2;align-self:start;padding-left:6px}
+}
