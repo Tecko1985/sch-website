@@ -1,12 +1,15 @@
-# Holt die neuesten Instagram-Beitraege und baut sie als Karten in index.html ein.
+# Holt die neuesten Instagram-Beitraege und schreibt sie nach instagram-daten.js
+# (window.SCH_INSTAGRAM); instagram.js baut daraus die Karten im Social-Block der Startseite.
 # Laeuft in der GitHub Action .github/workflows/instagram.yml. Die Bilder landen im Repo,
 # Besucher laden also nichts von Instagram oder Meta.
+# index.html fasst der Bot NICHT an (Bugjagd 07.10.2026, T5-11: sonst Merge-Konflikte mit
+# jeder Handaenderung, die Startseite ist eine einzige lange Zeile).
 #
 # Umgebung:
 #   IG_TOKEN    Zugangsschluessel (Instagram API with Instagram Login), nur als GitHub-Secret
 #   IG_ERNEUERN 1 = Schluessel um 60 Tage verlaengern, neuer Schluessel nach $RUNNER_TEMP/ig_token
 #   IG_PROBE    Pfad zu einer JSON-Datei statt der echten Abfrage (lokaler Test)
-import html, io, json, os, re, sys, urllib.parse, urllib.request
+import io, json, os, re, sys, urllib.parse, urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from PIL import Image
@@ -35,16 +38,16 @@ def kurz(text, laenge=150):
 
 
 def karte(b, datei):
+    # Nur Daten; das HTML baut instagram.js per DOM (textContent, kein innerHTML).
     zeit = datetime.strptime(b['timestamp'], '%Y-%m-%dT%H:%M:%S%z').astimezone(ZoneInfo('Europe/Berlin'))
-    datum = zeit.strftime('%d.%m.%Y')
-    art = {'VIDEO': 'Video', 'CAROUSEL_ALBUM': 'Bilderserie'}.get(b.get('media_type'), 'Bild')
-    text = kurz(b.get('caption'))
-    return ('<a class="sch-socialcard sch-igpost" href="' + html.escape(b['permalink']) + '">'
-            '<div class="sch-socialvisual"><img src="assets/instagram/' + datei + '" alt="' + art + ' zum Instagram-Beitrag vom ' + datum + '" loading="lazy">'
-            '<div class="sch-socialcaption"><span>INSTAGRAM · <time datetime="' + zeit.isoformat() + '">' + datum + '</time></span>'
-            + ('<p class="sch-igtext">' + html.escape(text) + '</p>' if text else '') +
-            '<span class="sch-socialcta">Auf Instagram ansehen</span></div></div>'
-            '<div class="sch-socialfooter"><img src="assets/logo.png" alt=""><span>sc1911heiligenstadt</span><b aria-label="Instagram">◎</b></div></a>')
+    return {
+        'href': b['permalink'],
+        'bild': datei,
+        'art': {'VIDEO': 'Video', 'CAROUSEL_ALBUM': 'Bilderserie'}.get(b.get('media_type'), 'Bild'),
+        'datum': zeit.strftime('%d.%m.%Y'),
+        'iso': zeit.isoformat(),
+        'text': kurz(b.get('caption')),
+    }
 
 
 def main():
@@ -83,12 +86,12 @@ def main():
     for alt in os.listdir(ORDNER):
         if alt not in behalten: os.remove(os.path.join(ORDNER, alt))
 
-    seite = os.path.join(STAMM, 'index.html')
-    s = open(seite, encoding='utf-8').read()
-    neu = re.sub(r'<!--instagram-->.*?<!--/instagram-->', lambda m: '<!--instagram-->' + ''.join(karten) + '<!--/instagram-->', s, count=1, flags=re.S)
-    if neu == s and '<!--instagram-->' not in s:
-        sys.exit('Marke <!--instagram--> fehlt in index.html')
-    open(seite, 'w', encoding='utf-8', newline='').write(neu)
+    # ensure_ascii: auch U+2028/U+2029 aus einer Caption landen als \u-Folge in der JS-Datei
+    # (alte Safari werten sie sonst als Zeilenende mitten im String).
+    daten = json.dumps(karten, ensure_ascii=True, indent=1)
+    text = ('// Wird von der GitHub Action (.github/instagram.py) geschrieben -- nicht von Hand aendern.\n'
+            'window.SCH_INSTAGRAM = ' + daten + ';\n')
+    open(os.path.join(STAMM, 'instagram-daten.js'), 'wb').write(text.encode('utf-8'))
     print(len(karten), 'Beitraege eingebaut.')
 
 

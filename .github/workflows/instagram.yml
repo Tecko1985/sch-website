@@ -1,4 +1,4 @@
-# Holt alle 3 Stunden die neuesten Instagram-Beitraege in die Startseite.
+# Holt alle 3 Stunden die neuesten Instagram-Beitraege nach instagram-daten.js (Startseite laedt sie per instagram.js).
 # Montags frueh wird zusaetzlich der Zugangsschluessel um 60 Tage verlaengert.
 # Secrets: IG_TOKEN (Instagram), SECRETS_PAT (darf Secrets dieses Repos schreiben, fuer die Verlaengerung)
 name: Instagram holen
@@ -51,10 +51,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git add -A index.html assets
+          git add -A instagram-daten.js assets
           if git diff --cached --quiet; then echo "Keine neuen Beitraege."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Instagram: neueste Beitraege"
+          # Der Bot schreibt nur instagram-daten.js und assets/instagram -- ein Rebase auf
+          # einen zwischendurch gepushten Hand-Commit geht also ohne Konflikt.
+          git pull --rebase
           git push
           gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds" > /dev/null || true
