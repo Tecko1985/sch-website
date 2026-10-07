@@ -1,7 +1,9 @@
 # Holt die neuesten Instagram-Beitraege und schreibt sie nach instagram-daten.js
 # (window.SCH_INSTAGRAM); instagram.js baut daraus die Karten im Social-Block der Startseite.
-# Laeuft in der GitHub Action .github/workflows/instagram.yml. Die Bilder landen im Repo,
-# Besucher laden also nichts von Instagram oder Meta.
+# Laeuft in der GitHub Action .github/workflows/seite.yml. Bilder und instagram-daten.js
+# landen NUR im Pages-Artefakt (IG_ZIEL = Kopie der Seite), nie im Repo: ein auf Instagram
+# geloeschter Beitrag bliebe sonst fuer immer im oeffentlichen Git-Verlauf (Abnahme 07.10.2026,
+# AB3-2). Besucher laden trotzdem nichts von Instagram oder Meta, die Bilder liegen auf Pages.
 # index.html fasst der Bot NICHT an (Bugjagd 07.10.2026, T5-11: sonst Merge-Konflikte mit
 # jeder Handaenderung, die Startseite ist eine einzige lange Zeile).
 #
@@ -9,13 +11,16 @@
 #   IG_TOKEN    Zugangsschluessel (Instagram API with Instagram Login), nur als GitHub-Secret
 #   IG_ERNEUERN 1 = Schluessel um 60 Tage verlaengern, neuer Schluessel nach $RUNNER_TEMP/ig_token
 #   IG_PROBE    Pfad zu einer JSON-Datei statt der echten Abfrage (lokaler Test)
+#   IG_ZIEL     Pflicht: Ordner, in den instagram-daten.js und assets/instagram/ geschrieben werden
+#               (im Workflow _site, nie der Repo-Ordner)
 import io, json, os, re, sys, urllib.parse, urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from PIL import Image
 
 STAMM = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORDNER = os.path.join(STAMM, 'assets', 'instagram')
+ZIEL = os.environ.get('IG_ZIEL', '').strip()
+ORDNER = os.path.join(ZIEL, 'assets', 'instagram')
 ANZAHL = 6
 API = 'https://graph.instagram.com'
 KONTO = 'https://www.instagram.com/sc1911heiligenstadt/'
@@ -29,6 +34,13 @@ def hole(url):
 def abfrage(pfad, token, **werte):
     werte['access_token'] = token
     return json.loads(hole(f'{API}/{pfad}?{urllib.parse.urlencode(werte)}'))
+
+
+def ausgabe(wert):
+    # Ergebnis fuer den Workflow (steps.<id>.outputs.ig): neu | leer; ohne Schluessel bleibt es leer.
+    datei = os.environ.get('GITHUB_OUTPUT')
+    if datei:
+        with open(datei, 'a') as f: f.write('ig=' + wert + '\n')
 
 
 def kurz(text, laenge=150):
@@ -56,6 +68,8 @@ def main():
     if not token and not probe:
         print('Kein IG_TOKEN gesetzt, nichts zu tun.')
         return
+    if not ZIEL or os.path.abspath(ZIEL) == STAMM:
+        sys.exit('IG_ZIEL fehlt oder ist der Repo-Ordner -- Instagram-Daten gehoeren nur ins Pages-Artefakt.')
     if token: print('::add-mask::' + token)
 
     if token and os.environ.get('IG_ERNEUERN') == '1':
@@ -92,10 +106,12 @@ def main():
             bild.save(ziel, 'WEBP', quality=80)
         behalten.add(datei)
         karten.append(karte(b, datei))
-    # Leere/lueckenhafte Antwort ({"data": []} oder nur Beitraege ohne Bild): NICHTS aendern.
-    # Sonst wuerden alle Bilder geloescht und der Workflow committete eine Startseite ohne Karten.
+    # Leere/lueckenhafte Antwort ({"data": []} oder nur Beitraege ohne Bild): NICHTS schreiben,
+    # der Platzhalter aus dem Repo (keine Karten) bleibt im Artefakt. ig=leer sagt dem Workflow:
+    # ein geplanter Lauf veroeffentlicht dann nicht, die Seite bleibt, wie sie ist (T5-12).
     if not karten:
         print('Keine verwertbaren Beitraege in der Antwort -- Karten und Bilder bleiben, wie sie sind.')
+        ausgabe('leer')
         return
     for alt in os.listdir(ORDNER):
         if alt not in behalten: os.remove(os.path.join(ORDNER, alt))
@@ -103,10 +119,11 @@ def main():
     # ensure_ascii: auch U+2028/U+2029 aus einer Caption landen als \u-Folge in der JS-Datei
     # (alte Safari werten sie sonst als Zeilenende mitten im String).
     daten = json.dumps(karten, ensure_ascii=True, indent=1)
-    text = ('// Wird von der GitHub Action (.github/instagram.py) geschrieben -- nicht von Hand aendern.\n'
+    text = ('// Wird von der GitHub Action (.github/instagram.py) beim Pages-Bau geschrieben, liegt nicht im Repo.\n'
             'window.SCH_INSTAGRAM = ' + daten + ';\n')
-    open(os.path.join(STAMM, 'instagram-daten.js'), 'wb').write(text.encode('utf-8'))
+    open(os.path.join(ZIEL, 'instagram-daten.js'), 'wb').write(text.encode('utf-8'))
     print(len(karten), 'Beitraege eingebaut.')
+    ausgabe('neu')
 
 
 main()

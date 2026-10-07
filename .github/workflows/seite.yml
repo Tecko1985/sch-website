@@ -1,0 +1,138 @@
+# Baut die Seite fuer GitHub Pages und veroeffentlicht sie als Artefakt (Abnahme 07.10.2026, AB3-2).
+# Instagram-Bilder und instagram-daten.js kommen NUR ins Artefakt, nie ins Repo: sonst bliebe ein auf
+# Instagram geloeschter Beitrag (auch Kinderfotos) fuer immer im oeffentlichen Git-Verlauf.
+# Im Repo liegt instagram-daten.js nur als leerer Platzhalter (keine Karten, auch per file://).
+#
+# Laeuft bei jedem Push auf main, alle 3 Stunden und per Hand. Ein geplanter Lauf veroeffentlicht nur,
+# wenn sich die Instagram-Daten gegenueber live geaendert haben (sonst bleibt die Seite, wie sie ist).
+# Montags frueh wird zusaetzlich der Instagram-Schluessel um 60 Tage verlaengert.
+# Secrets: IG_TOKEN (Instagram), SECRETS_PAT (darf Secrets dieses Repos schreiben, fuer die Verlaengerung)
+# Pages-Quelle muss "GitHub Actions" sein (build_type workflow); steht sie auf einem Branch,
+# baut der Lauf nur und veroeffentlicht nichts.
+name: Seite bauen
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 */3 * * *'
+    - cron: '41 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      erneuern:
+        description: 'Instagram-Schluessel jetzt verlaengern'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      veroeffentlichen: ${{ steps.entscheiden.outputs.veroeffentlichen }}
+      instagram: ${{ steps.instagram.outcome }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Seite zusammenstellen
+        # Genau die Dateien aus main, wie bisher beim Bau aus dem Branch -- ohne .github.
+        run: |
+          mkdir _site
+          git ls-files -z | grep -zv '^\.github/' | xargs -0 cp --parents -t _site
+          echo "$(find _site -type f | wc -l) Dateien"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pillow tzdata
+
+      - name: Instagram-Beitraege holen
+        id: instagram
+        continue-on-error: true
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_ERNEUERN: ${{ (github.event.schedule == '41 3 * * 1' || inputs.erneuern) && '1' || '0' }}
+          IG_ZIEL: _site
+        run: python .github/instagram.py
+
+      - name: Bei Fehler ohne Instagram-Karten
+        if: steps.instagram.outcome == 'failure'
+        run: |
+          rm -rf _site/assets/instagram
+          cp instagram-daten.js _site/instagram-daten.js
+
+      - name: Neuen Schluessel speichern
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_PAT }}
+        run: |
+          if [ -f "$RUNNER_TEMP/ig_token" ]; then
+            if [ -z "$GH_TOKEN" ]; then echo "::warning::SECRETS_PAT fehlt, Schluessel nicht gespeichert"; rm -f "$RUNNER_TEMP/ig_token"; exit 0; fi
+            gh secret set IG_TOKEN --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/ig_token"
+            rm -f "$RUNNER_TEMP/ig_token"
+          fi
+
+      - name: Veroeffentlichen?
+        id: entscheiden
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EREIGNIS: ${{ github.event_name }}
+          IG_ERGEBNIS: ${{ steps.instagram.outcome }}
+          IG: ${{ steps.instagram.outputs.ig }}
+        run: |
+          quelle=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type || echo unbekannt)
+          adresse=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .html_url || echo "")
+          ja=0
+          if [ "$quelle" != "workflow" ]; then
+            echo "::notice::Pages-Quelle ist '$quelle', nicht GitHub Actions -- nur gebaut, nichts veroeffentlicht."
+          elif [ "$EREIGNIS" != "schedule" ]; then
+            ja=1
+          elif [ "$IG_ERGEBNIS" != "success" ] || [ "$IG" != "neu" ]; then
+            echo "Geplanter Lauf ohne neue Instagram-Daten -- die Seite bleibt, wie sie ist."
+          elif curl -fsS "${adresse%/}/instagram-daten.js" -o "$RUNNER_TEMP/live.js" && cmp -s "$RUNNER_TEMP/live.js" _site/instagram-daten.js; then
+            echo "Instagram-Beitraege unveraendert -- nichts zu veroeffentlichen."
+          else
+            ja=1
+          fi
+          echo "veroeffentlichen=$ja" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.entscheiden.outputs.veroeffentlichen == '1'
+        with:
+          path: _site
+
+  veroeffentlichen:
+    needs: bauen
+    if: needs.bauen.outputs.veroeffentlichen == '1'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  # Instagram-Fehler halten die Seite nicht auf, der Lauf wird aber rot (Mail von GitHub):
+  # meist ist der Schluessel abgelaufen oder SECRETS_PAT fehlt -- dann ist Handarbeit noetig.
+  instagram-fehler:
+    needs: [bauen, veroeffentlichen]
+    if: always() && needs.bauen.outputs.instagram == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Instagram-Abruf fehlgeschlagen (Schluessel abgelaufen?). Die Seite laeuft ohne neue Instagram-Karten weiter."
+          exit 1
