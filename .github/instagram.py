@@ -64,17 +64,26 @@ def main():
         open(os.path.join(os.environ.get('RUNNER_TEMP', STAMM), 'ig_token'), 'w').write(neu['access_token'])
         print('Schluessel verlaengert, gueltig noch', neu.get('expires_in', 0) // 86400, 'Tage.')
 
+    # Mehr holen als gebraucht: Beitraege ohne Bild-Adresse (Meta laesst media_url z. B. bei
+    # lizenzierter Musik weg) werden uebersprungen, die naechsten fuellen auf (T5-12).
     if probe:
-        beitraege = json.load(open(probe, encoding='utf-8'))['data']
+        antwort = json.load(open(probe, encoding='utf-8'))
     else:
-        beitraege = abfrage('me/media', token, fields='id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit=ANZAHL)['data']
-    beitraege = beitraege[:ANZAHL]
+        antwort = abfrage('me/media', token, fields='id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit=ANZAHL * 3)
+    beitraege = antwort.get('data') if isinstance(antwort, dict) else None
+    if not isinstance(beitraege, list):
+        sys.exit('Unerwartete Antwort von Instagram (kein data) -- nichts geaendert.')
 
     os.makedirs(ORDNER, exist_ok=True)
     karten, behalten = [], set()
     for b in beitraege:
-        quelle = b.get('thumbnail_url') if b.get('media_type') == 'VIDEO' else b.get('media_url')
-        if not quelle or not b.get('permalink'): continue
+        if len(karten) >= ANZAHL: break
+        if not isinstance(b, dict): continue
+        if b.get('media_type') == 'VIDEO':
+            quelle = b.get('thumbnail_url') or b.get('media_url')
+        else:
+            quelle = b.get('media_url') or b.get('thumbnail_url')
+        if not quelle or not b.get('permalink') or not b.get('id') or not b.get('timestamp'): continue
         datei = re.sub(r'[^0-9A-Za-z_]', '', str(b['id'])) + '.webp'
         ziel = os.path.join(ORDNER, datei)
         if not os.path.exists(ziel):
@@ -83,6 +92,11 @@ def main():
             bild.save(ziel, 'WEBP', quality=80)
         behalten.add(datei)
         karten.append(karte(b, datei))
+    # Leere/lueckenhafte Antwort ({"data": []} oder nur Beitraege ohne Bild): NICHTS aendern.
+    # Sonst wuerden alle Bilder geloescht und der Workflow committete eine Startseite ohne Karten.
+    if not karten:
+        print('Keine verwertbaren Beitraege in der Antwort -- Karten und Bilder bleiben, wie sie sind.')
+        return
     for alt in os.listdir(ORDNER):
         if alt not in behalten: os.remove(os.path.join(ORDNER, alt))
 
