@@ -1,0 +1,5 @@
+/* Instagram-Karten im Block "Social Media beim SCH" (gefuellt von .github/instagram.py) */
+.sch-igpost .sch-socialvisual>img{opacity:1}
+.sch-igpost .sch-socialcaption{background:linear-gradient(transparent 35%,#1b2d4ff2 78%)}
+.sch-igtext{font-size:15px;line-height:1.45;color:#fff;margin:12px 0 16px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.sch-igpost:hover .sch-socialcta,.sch-igpost:focus-visible .sch-socialcta{text-decoration:none}
