@@ -107,8 +107,9 @@ jobs:
           fi
           echo "veroeffentlichen=$ja" >> "$GITHUB_OUTPUT"
 
+      # Bei Push/per Hand immer hochladen (Beleg, dass das Artefakt baut), geplant nur zum Veroeffentlichen.
       - uses: actions/upload-pages-artifact@v5
-        if: steps.entscheiden.outputs.veroeffentlichen == '1'
+        if: steps.entscheiden.outputs.veroeffentlichen == '1' || github.event_name != 'schedule'
         with:
           path: _site
 
