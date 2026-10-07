@@ -5,7 +5,8 @@
 #
 # Laeuft bei jedem Push auf main, alle 3 Stunden und per Hand. Ein geplanter Lauf veroeffentlicht nur,
 # wenn sich die Instagram-Daten gegenueber live geaendert haben (sonst bleibt die Seite, wie sie ist).
-# Montags frueh wird zusaetzlich der Instagram-Schluessel um 60 Tage verlaengert.
+# Montags frueh wird zusaetzlich der Instagram-Schluessel um 60 Tage verlaengert und der Zeitplan
+# selbst aktiv gehalten (Job wach-halten, ohne Commit).
 # Secrets: IG_TOKEN (Instagram), SECRETS_PAT (darf Secrets dieses Repos schreiben, fuer die Verlaengerung)
 # Pages-Quelle muss "GitHub Actions" sein (build_type workflow); steht sie auf einem Branch,
 # baut der Lauf nur und veroeffentlicht nichts.
@@ -126,6 +127,21 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # Abnahme 07.10.2026 (AB3-6): GitHub schaltet Zeitplaene in oeffentlichen Repos nach 60 Tagen
+  # ohne Repo-Aktivitaet ab -- und seit AB3-2 committet der Bot nichts mehr. Der Aufruf der
+  # REST-Schnittstelle "Workflow aktivieren" setzt diesen 60-Tage-Zaehler zurueck, auch wenn der
+  # Workflow noch aktiv ist (so machen es rust-lang und keepalive-workflow im API-Modus).
+  # Woechentlich (Montagslauf) und per Hand reicht; ohne Commit, nur mit actions: write.
+  wach-halten:
+    if: github.event.schedule == '41 3 * * 1' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/seite.yml/enable" && echo "Zeitplan aktiv gehalten."
 
   # Instagram-Fehler halten die Seite nicht auf, der Lauf wird aber rot (Mail von GitHub):
   # meist ist der Schluessel abgelaufen oder SECRETS_PAT fehlt -- dann ist Handarbeit noetig.
