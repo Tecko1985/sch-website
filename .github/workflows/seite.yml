@@ -47,7 +47,7 @@ jobs:
       veroeffentlichen: ${{ steps.entscheiden.outputs.veroeffentlichen }}
       instagram: ${{ steps.instagram.outcome }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
 
@@ -58,10 +58,13 @@ jobs:
           git ls-files -z | grep -zv '^\.github/' | xargs -0 cp --parents -t _site
           echo "$(find _site -type f | wc -l) Dateien"
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
-      - run: pip install --quiet pillow tzdata
+      # Feste Versionen (Abnahme 08.10.2026 AB3-7): Dieser Job hat spaeter IG_TOKEN/SECRETS_PAT in der
+      # Umgebung, ein neu veroeffentlichtes Paket soll hier nicht ungeprueft mitlaufen. Bei Bedarf von Hand
+      # anheben (nur Versionen, die mindestens zwei Wochen alt sind).
+      - run: pip install --quiet pillow==12.3.0 tzdata==2026.4
 
       - name: Instagram-Beitraege holen
         id: instagram
@@ -114,7 +117,7 @@ jobs:
           echo "veroeffentlichen=$ja" >> "$GITHUB_OUTPUT"
 
       # Bei Push/per Hand immer hochladen (Beleg, dass das Artefakt baut), geplant nur zum Veroeffentlichen.
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: steps.entscheiden.outputs.veroeffentlichen == '1' || github.event_name != 'schedule'
         with:
           path: _site
@@ -131,7 +134,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   # Abnahme 07.10.2026 (AB3-6): GitHub schaltet Zeitplaene in oeffentlichen Repos nach 60 Tagen
   # ohne Repo-Aktivitaet ab -- und seit AB3-2 committet der Bot nichts mehr. Der Aufruf der
