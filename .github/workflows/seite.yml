@@ -144,7 +144,10 @@ jobs:
         run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/seite.yml/enable" && echo "Zeitplan aktiv gehalten."
 
   # Instagram-Fehler halten die Seite nicht auf, der Lauf wird aber rot (Mail von GitHub):
-  # meist ist der Schluessel abgelaufen oder SECRETS_PAT fehlt -- dann ist Handarbeit noetig.
+  # meist ist der Schluessel abgelaufen -- dann ist Handarbeit noetig.
+  # NICHT rot wird es, wenn IG_TOKEN fehlt (instagram.py: "nichts zu tun", Seite ohne Karten)
+  # oder wenn SECRETS_PAT fehlt (nur ::warning:: in "Neuen Schluessel speichern", der
+  # verlaengerte Schluessel geht verloren; rot erst, wenn der alte nach 60 Tagen ablaeuft).
   instagram-fehler:
     needs: [bauen, veroeffentlichen]
     if: always() && needs.bauen.outputs.instagram == 'failure'
