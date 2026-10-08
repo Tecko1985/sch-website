@@ -106,7 +106,7 @@ body{margin:0;background:#fff}
 .sp-person img,.sp-initialen{flex:0 0 76px;width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:top}
 .sp-initialen{display:flex;align-items:center;justify-content:center;background:#1b2d4f;color:#fff;font:700 26px/1 'SCH Barlow',Impact,sans-serif}
 .sp-person div{display:flex;flex-direction:column;gap:3px;min-width:0}
-.sp-person small{font:700 12px Arial,sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#5f6a7b}
+.sp-person small{font:700 12px Arial,sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#5f6a7b;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}
 .sp-person b{font:700 21px/1.15 'SCH Barlow',Impact,sans-serif;color:#1b2d4f}
 .sp-person div span{font:14px/1.45 Arial,sans-serif;color:#33415c;overflow-wrap:anywhere}
 .sp-person .sp-initialen{color:#fff}
