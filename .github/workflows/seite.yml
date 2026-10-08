@@ -28,9 +28,14 @@ on:
 permissions:
   contents: read
 
+# Immer nur ein Lauf zur Zeit (Pages-Deploys duerfen nicht parallel laufen). queue: max
+# (Bugjagd 08.10.2026b W3): sonst haelt GitHub je Gruppe nur EINEN wartenden Lauf, und ein
+# geplanter Lauf verdraengte einen wartenden Push-Lauf -- der Push ging dann nicht live
+# (der geplante veroeffentlicht nur bei neuen Instagram-Daten). Jetzt warten alle der Reihe nach.
 concurrency:
   group: pages
   cancel-in-progress: false
+  queue: max
 
 jobs:
   bauen:
