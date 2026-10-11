@@ -33,3 +33,12 @@
 .nl-code span{font-size:14px;color:#556078}
 .nl-code code{font-size:20px;font-weight:700;letter-spacing:1px;word-break:break-all;color:#1b2d4f}
 @media(max-width:800px){.nl-innen{grid-template-columns:1fr;gap:28px}.nl-band{padding:45px 16px}.nl-form{padding:18px}}
+.nl-form .ds-block{border:1px solid #dfe3e8;border-radius:8px;background:#fbfcfd;font-weight:400}
+.nl-form .ds-block>summary{cursor:pointer;padding:10px 12px;font-size:13.5px;font-weight:600;color:#1b2d4f;list-style:none}
+.nl-form .ds-block>summary::-webkit-details-marker{display:none}
+.nl-form .ds-block>summary::before{content:"\25B8\00A0"}
+.nl-form .ds-block[open]>summary::before{content:"\25BE\00A0"}
+.nl-form .ds-inhalt{padding:0 12px 12px;font-size:12.5px;line-height:1.55;color:#4b5568}
+.nl-form .ds-inhalt p{margin:0 0 8px}
+.nl-form .ds-inhalt strong{color:#142440}
+.nl-form .ds-inhalt a{text-decoration:underline}
