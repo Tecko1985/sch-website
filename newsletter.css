@@ -1,0 +1,35 @@
+/* Newsletter: Band auf der Startseite und Seite newsletter.html */
+.nl-band{background:var(--navy,#1b2d4f);color:#fff;padding:60px 5%}
+.nl-innen{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:start}
+.nl-band h2{font-size:clamp(30px,3.4vw,46px);color:#fff}
+.nl-band .eyebrow{color:#aac7ed}
+.nl-band p{color:#dce3ef;margin:18px 0 0}
+.nl-gutscheine{margin-top:22px;background:#ffffff14;border-left:4px solid #aac7ed;padding:16px 18px}
+.nl-gutscheine[hidden]{display:none}
+.nl-gutscheine b{display:block;font-size:15px;margin-bottom:6px}
+.nl-gutscheine ul{margin:0;padding-left:18px;font-size:15px;color:#dce3ef}
+.nl-form{display:grid;gap:12px;background:#fff;color:#142440;padding:24px}
+.nl-form label{display:grid;gap:5px;font-size:14px;font-weight:700}
+.nl-form input[type=email],.nl-form input[type=text]{font:inherit;font-weight:400;padding:12px;border:1px solid #c9d1dd;width:100%;min-width:0}
+.nl-form .nl-haken{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:13px;line-height:1.45}
+.nl-form .nl-haken input{margin-top:3px;flex:0 0 auto;width:18px;height:18px}
+.nl-form .nl-haken a{text-decoration:underline}
+.nl-form button{border:0;background:#1b2d4f;color:#fff;padding:14px 22px;font-weight:700;font-size:15px}
+.nl-form button:disabled{opacity:.6;cursor:wait}
+.nl-meldung{font-size:14px;margin:0;padding:10px 12px;background:#e8f1fb;color:#142440}
+.nl-meldung[hidden]{display:none}
+.nl-meldung.nl-fehler{background:#fdecea;color:#8a1c12}
+.nl-klein{font-size:13px;color:#647086}
+.nl-band .nl-klein{color:#b8c6dc}
+.nl-band .nl-form .nl-klein{color:#647086}
+.nl-form .nl-klein a{text-decoration:underline}
+.nl-seite{max-width:760px;margin:0 auto}
+.nl-seite .nl-form{border:1px solid #d7dde6;margin:18px 0 34px}
+.nl-ergebnis{background:#f1f3f6;border-left:4px solid #1b2d4f;padding:22px;margin:0 0 30px}
+.nl-ergebnis[hidden]{display:none}
+.nl-ergebnis h2{margin-top:0}
+.nl-codes h3{margin:22px 0 10px}
+.nl-code{display:grid;gap:3px;background:#fff;border:1px dashed #1b2d4f;padding:14px 16px;margin-bottom:10px}
+.nl-code span{font-size:14px;color:#556078}
+.nl-code code{font-size:20px;font-weight:700;letter-spacing:1px;word-break:break-all;color:#1b2d4f}
+@media(max-width:800px){.nl-innen{grid-template-columns:1fr;gap:28px}.nl-band{padding:45px 16px}.nl-form{padding:18px}}
