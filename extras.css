@@ -1,0 +1,114 @@
+/* Zusätze Startseite: Spieltags-Band, Ergebnisfarben, News-Aufmacher, Fotos, Bewegung */
+
+:root{--sch-win:#1d7a45;--sch-draw:#8a6500;--sch-loss:#b3362b}
+
+/* ---------- Spieltags-Band: nächstes Spiel + Mini-Tabelle ---------- */
+:is(#top,body) .sch-matchday{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;width:min(1400px,calc(100% - 96px));margin:24px auto 0;font-family:Arial,Helvetica,sans-serif;color:#1b2d4f}
+:is(#top,body) .sch-nextgame{position:relative;overflow:hidden;background:#1b2d4f;color:#fff;border-radius:6px;padding:30px 34px 32px;display:flex;flex-direction:column;justify-content:space-between;gap:26px}
+:is(#top,body) .sch-nextgame::after{content:"";position:absolute;right:-90px;top:-90px;width:300px;height:300px;border-radius:50%;border:46px solid #ffffff0d;pointer-events:none}
+:is(#top,body) .sch-nexthead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+:is(#top,body) .sch-nexthead .eyebrow{margin:0;color:#aac7ed}
+:is(#top,body) .sch-countdown{font-family:'SCH Barlow',Impact,'Arial Narrow',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px;text-transform:uppercase;background:#aac7ed;color:#142440;padding:5px 12px;border-radius:999px}
+:is(#top,body) .sch-countdown:empty{display:none}
+:is(#top,body) .sch-nextpair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+:is(#top,body) .sch-nextteam{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+:is(#top,body) .sch-nextteam img{width:auto;height:72px;background:#fff;border-radius:6px;padding:6px}
+:is(#top,body) .sch-nextteam .sch-teammark{width:72px;height:72px;font-size:16px;opacity:1;border:2px solid #aac7ed;color:#fff}
+:is(#top,body) .sch-nextteam b{font-family:'SCH Barlow',Impact,'Arial Narrow',sans-serif;font-size:clamp(19px,1.7vw,24px);line-height:1.15;font-weight:700}
+:is(#top,body) .sch-nextmid{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:14px;color:#dce3ef}
+:is(#top,body) .sch-nextvs{font-family:'SCH Barlow',Impact,'Arial Narrow',sans-serif;font-weight:700;font-size:44px;line-height:1;color:#fff;letter-spacing:1px}
+:is(#top,body) .sch-nextmid time{font-weight:700;color:#fff;font-size:15px;white-space:nowrap}
+:is(#top,body) .sch-nextactions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+:is(#top,body) .sch-nextactions .button{cursor:pointer;font-family:inherit;text-decoration:none;border-radius:2px}
+:is(#top,body) .button.outline-light{background:transparent;color:#fff;border-color:#ffffff99}
+:is(#top,body) .button.outline-light:hover{border-color:#fff;background:#ffffff14}
+:is(#top,body) .sch-nextactions .button:focus-visible{outline:3px solid #82a8e9;outline-offset:2px}
+
+:is(#top,body) .sch-minitable{background:#f1f4f8;border-radius:6px;padding:26px 28px 22px;display:flex;flex-direction:column}
+:is(#top,body) .sch-minihead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px}
+:is(#top,body) .sch-minihead h2{font-family:'SCH Barlow',Impact,'Arial Narrow',sans-serif;font-weight:700;font-size:26px;line-height:1.1;margin:0;text-transform:uppercase;color:#1b2d4f}
+:is(#top,body) .sch-minihead a{font-size:13px;font-weight:700;color:#1b2d4f;white-space:nowrap}
+:is(#top,body) .sch-minitable table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+:is(#top,body) .sch-minitable th,:is(#top,body) .sch-minitable td{padding:8px 8px;text-align:right;border-bottom:1px solid #dce1e9}
+:is(#top,body) .sch-minitable thead th{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#5f6a7b;border-bottom:2px solid #dce1e9}
+:is(#top,body) .sch-minitable abbr{text-decoration:none}
+:is(#top,body) .sch-minitable :is(th,td):first-child{text-align:left;width:2.6em;color:#5f6a7b}
+:is(#top,body) .sch-minitable :is(tbody th,thead th:nth-child(2)){text-align:left;font-weight:400;color:#1b2d4f}
+:is(#top,body) .sch-minitable tbody tr:last-child :is(th,td){border-bottom:0}
+:is(#top,body) .sch-minitable tr.sch-own :is(th,td){background:#1b2d4f;color:#fff;font-weight:700}
+:is(#top,body) .sch-minitable tr.sch-own :is(th,td):first-child{border-radius:4px 0 0 4px}
+:is(#top,body) .sch-minitable tr.sch-own :is(th,td):last-child{border-radius:0 4px 4px 0}
+:is(#top,body) .sch-minitable .sch-matchsource{margin-top:auto;padding-top:12px}
+
+/* ---------- Ergebnisfarben auf den Spielkarten ---------- */
+:is(#top,body) .sch-game{position:relative}
+:is(#top,body) .sch-game.sch-finished{border-top:5px solid transparent}
+:is(#top,body) .sch-game.sch-win{border-top-color:var(--sch-win)}
+:is(#top,body) .sch-game.sch-draw{border-top-color:var(--sch-draw)}
+:is(#top,body) .sch-game.sch-loss{border-top-color:var(--sch-loss)}
+:is(#top,body) .sch-outcome{position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:999px;line-height:1.4}
+:is(#top,body) .sch-win .sch-outcome{background:var(--sch-win)}
+:is(#top,body) .sch-draw .sch-outcome{background:var(--sch-draw)}
+:is(#top,body) .sch-loss .sch-outcome{background:var(--sch-loss)}
+
+/* ---------- News: neueste Meldung als Aufmacher ---------- */
+@media(min-width:800px){
+  :is(#top,body) .sch-moregrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  :is(#top,body) .sch-morecard:first-child{grid-column:span 2}
+  :is(#top,body) .sch-morecard:first-child .sch-moreimage{aspect-ratio:1686/634}
+  :is(#top,body) .sch-morecard:first-child .sch-morecopy{padding:28px 30px 30px}
+  :is(#top,body) .sch-morecard:first-child .sch-morecopy h3{font-size:clamp(28px,2.6vw,38px);line-height:1.08;margin:14px 0 18px}
+  :is(#top,body) .sch-morecard:first-child .sch-morecopy p{-webkit-line-clamp:6;line-clamp:6}
+}
+@media(min-width:481px) and (max-width:799px){
+  :is(#top,body) .sch-morecard:first-child{grid-column:span 2}
+  :is(#top,body) .sch-morecard:first-child .sch-moreimage{aspect-ratio:1686/634}
+  :is(#top,body) .sch-morecard:first-child .sch-morecopy h3{font-size:30px}
+  :is(#top,body) .sch-morecard:nth-child(8){display:none}
+}
+:is(#top,body) .sch-moreimage img{transition:transform .35s ease}
+:is(#top,body) .sch-morecard:hover .sch-moreimage img{transform:scale(1.04)}
+
+/* ---------- Fotos in „Kleine Kicker“ und „Mittendrin“ ---------- */
+:is(#top,body) .lowerphoto{margin:0 0 30px;border-radius:6px;overflow:hidden;height:clamp(190px,17vw,250px);background:#eaf0f7}
+:is(#top,body) .lowerphoto img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+:is(#top,body) #dabei .lowerphoto img{object-position:center 18%}
+:is(#top,body) #nachwuchs .lowerphoto img{object-position:center 30%}
+:is(#top,body) .lower>div:hover .lowerphoto img{transform:scale(1.03)}
+
+/* ---------- Dezente Bewegung ---------- */
+:is(#top,body) .sch-game{transition:box-shadow .2s,background .2s,transform .2s}
+:is(#top,body) .sch-game:hover{transform:translateY(-3px)}
+:is(#top,body) .sch-socialcard{transition:transform .2s,box-shadow .2s}
+:is(#top,body) .sch-socialcard:hover{transform:translateY(-4px);box-shadow:0 12px 28px #0b1a3826}
+:is(#top,body) .sch-socialvisual>img{transition:transform .5s ease}
+:is(#top,body) .sch-socialcard:hover .sch-socialvisual>img{transform:scale(1.04)}
+
+/* Einblenden beim Scrollen – nur wenn das Skript läuft und Bewegung erwünscht ist */
+.sch-reveal-on .sch-reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.sch-reveal-on .sch-reveal.is-visible{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){
+  :is(#top,body) :is(.sch-game,.sch-socialcard,.sch-moreimage img,.lowerphoto img,.sch-socialvisual>img){transition:none!important;transform:none!important}
+}
+
+/* ---------- Mobil ---------- */
+@media(max-width:999px){
+  :is(#top,body) .sch-matchday{grid-template-columns:1fr}
+}
+@media(max-width:799px){
+  :is(#top,body) .sch-matchday{width:calc(100% - 36px);margin-top:8px;gap:16px}
+  :is(#top,body) .sch-nextgame{padding:24px 18px 26px;gap:22px}
+  :is(#top,body) .sch-nextpair{gap:10px}
+  :is(#top,body) .sch-nextteam img{height:56px}
+  :is(#top,body) .sch-nextteam .sch-teammark{width:56px;height:56px;font-size:13px}
+  :is(#top,body) .sch-nextteam b{font-size:17px}
+  :is(#top,body) .sch-nextvs{font-size:32px}
+  :is(#top,body) .sch-nextmid{font-size:12px}
+  :is(#top,body) .sch-nextmid time{font-size:13px;white-space:normal}
+  :is(#top,body) .sch-minitable{padding:22px 16px 18px}
+  :is(#top,body) .sch-minitable th,:is(#top,body) .sch-minitable td{padding:8px 5px}
+  :is(#top,body) .lowerphoto{margin-bottom:24px;height:auto;aspect-ratio:16/9}
+}
+:is(#top,body) .sch-matchday.ohne-naechstes{grid-template-columns:1fr}
+@media print{.sch-reveal-on .sch-reveal{opacity:1!important;transform:none!important}}
