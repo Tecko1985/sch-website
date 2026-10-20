@@ -15,3 +15,10 @@
 .sch-logopause{display:block;margin:-14px auto 22px;font:700 13px Arial,sans-serif;color:#1b2d4f;background:transparent;border:0;text-decoration:underline;cursor:pointer;padding:8px 10px}
 .sch-logopause:focus-visible{outline:3px solid #82a8e9;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.sch-logopause{display:none}}
+
+/* Einheitliche Überschriften: Partner-Titel so groß wie die übrigen Sektionstitel */
+:is(#top,body) .partners h2{font-size:clamp(30px,3.4vw,48px);line-height:1.08;letter-spacing:-.5px}
+
+/* Vereinsfoto füllt die Fläche, ohne die Höhe des Blocks zu bestimmen (Hochformat-Fotos) */
+:is(#top,body) .clubphoto{position:relative;overflow:hidden}
+:is(#top,body) .clubphoto img{position:absolute;inset:0;object-position:center 40%}

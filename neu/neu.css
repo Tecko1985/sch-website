@@ -1,0 +1,234 @@
+/* 1. SC 1911 Heiligenstadt – Startseite (Entwurf 2026)
+   Vereinsfarben Navy, Hellblau, Weiß. Eine Schriftfamilie (Archivo),
+   die über die Breite arbeitet: breit und schwer für den Auftritt, normal für Text. */
+
+@font-face{font-family:"Archivo";src:url(fonts/archivo-latin-wdth-normal.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+
+:root{
+  --navy:#1b2d4f;
+  --tief:#121f39;
+  --hell:#aac7ed;
+  --mittel:#82a8e9;
+  --nebel:#eef2f8;
+  --weiss:#ffffff;
+  --linie:#d6dfeb;
+  --grau:#56627a;
+  --verloren:#e06a5c;
+  --rand:clamp(18px,4.5vw,64px);
+  --breit:125%;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:80px}
+body{margin:0;background:var(--weiss);color:var(--navy);font:400 17px/1.6 "Archivo",Arial,Helvetica,sans-serif}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.2em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--mittel);outline-offset:3px}
+h1,h2,h3,p,figure{margin:0}
+ul,ol{margin:0;padding:0;list-style:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;color:var(--navy);padding:10px 14px;z-index:30}
+.skip:focus{left:8px}
+
+/* Breite, schwere Auszeichnung */
+.name-klein,section h2,.ticket-paar,.ticket-zahl b,.t-stand,.schiene h3,.teamliste span,.wege b,.fuss h2,.fuss-jahr{font-stretch:var(--breit);font-weight:850;letter-spacing:-.01em}
+
+.knopf{display:inline-flex;align-items:center;min-height:50px;padding:0 24px;border-radius:999px;background:var(--navy);color:#fff;font-weight:650;text-decoration:none;white-space:nowrap}
+.knopf:hover{background:var(--tief)}
+.knopf-hell{background:var(--hell);color:var(--tief)}
+.knopf-hell:hover{background:#fff}
+
+/* ---------- Leiste ---------- */
+.leiste{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:28px;padding:10px var(--rand);background:var(--navy);color:#fff}
+.wappen img{width:auto;height:46px;background:#fff;border-radius:6px;padding:4px}
+.nav{display:flex;gap:clamp(16px,2vw,30px);margin-left:auto;font-weight:550}
+.nav a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
+.nav a:hover{border-bottom-color:var(--hell)}
+.leiste-cta{background:var(--hell);color:var(--tief);padding:10px 18px;border-radius:999px;font-weight:650;text-decoration:none;white-space:nowrap}
+.leiste-cta:hover{background:#fff}
+.menu{display:none}
+
+/* ---------- Bühne ---------- */
+.buehne{position:relative;background:var(--navy);color:#fff;padding:clamp(28px,4vw,56px) 0 0}
+.name{padding:0 var(--rand)}
+.name-klein{display:block;font-size:clamp(18px,2vw,28px);color:var(--hell);margin-bottom:clamp(6px,1vw,14px)}
+.name-gross{display:block;width:100%;height:auto;overflow:visible}
+.name-gross text{fill:#fff;font-family:"Archivo",Arial,sans-serif;font-stretch:125%;font-weight:900;font-size:150px}
+.buehne-bild{position:relative;margin-top:clamp(18px,2.4vw,36px);height:min(64vh,640px);background:var(--navy);overflow:hidden}
+.buehne-bild img{width:100%;height:100%;object-fit:cover;object-position:50% 42%;filter:grayscale(1) contrast(1.2) brightness(1.12);mix-blend-mode:screen}
+.buehne-bild::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--navy) 0,transparent 22%);pointer-events:none}
+
+/* Das Ticket fürs nächste Spiel */
+.ticket{position:absolute;right:var(--rand);bottom:clamp(-70px,-5vw,-40px);z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto;width:min(620px,calc(100% - 2*var(--rand)));background:#fff;color:var(--navy);border-radius:14px;box-shadow:0 24px 60px #0a142a40;
+  -webkit-mask:radial-gradient(circle 14px at calc(100% - 150px) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 14px at calc(100% - 150px) 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+          mask:radial-gradient(circle 14px at calc(100% - 150px) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 14px at calc(100% - 150px) 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
+.ticket-haupt{padding:26px 28px 26px 30px;display:flex;flex-direction:column;gap:8px}
+.ticket-art{font-size:15px;font-weight:600;color:var(--grau)}
+.ticket-paar{font-size:clamp(24px,2.4vw,32px);line-height:1.05}
+.ticket-gegen{font-stretch:100%;font-weight:400;font-style:italic;font-size:.6em;letter-spacing:0}
+.ticket-wann{font-weight:650;margin-top:6px}
+.ticket-ort{color:var(--grau);font-size:15px}
+.ticket-abriss{width:150px;border-left:2px dashed var(--linie);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 10px;background:var(--nebel)}
+.ticket-zahl{display:flex;flex-direction:column;align-items:center;line-height:1}
+.ticket-zahl b{font-size:64px;line-height:.9}
+.ticket-zahl span{font-weight:600;margin-top:4px}
+.ticket-abriss a{font-size:14px;font-weight:600}
+
+@media (prefers-reduced-motion:no-preference){
+  .ticket{animation:abreissen .8s .25s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes abreissen{from{opacity:0;transform:translateY(30px) rotate(-2deg)}to{opacity:1;transform:none}}
+}
+
+/* ---------- Spieltag ---------- */
+.spieltag{max-width:1440px;margin:0 auto;padding:clamp(110px,10vw,150px) var(--rand) clamp(64px,7vw,104px)}
+section h2{font-size:clamp(36px,4.4vw,64px);line-height:.95}
+.spieltag-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.spieltag-kopf p{color:var(--grau)}
+.tafel{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px}
+.tafel a{position:relative;display:grid;grid-template-rows:auto 1fr auto auto;gap:6px;height:100%;padding:18px 18px 16px;background:var(--navy);color:#fff;border-radius:12px;text-decoration:none;overflow:hidden}
+.tafel a::before{content:"";position:absolute;left:0;right:0;top:0;height:5px}
+.tafel .s a::before{background:var(--hell)}
+.tafel .n a::before{background:var(--verloren)}
+.tafel a:hover{background:var(--tief)}
+.t-team{font-size:14px;font-weight:700;color:var(--hell)}
+.t-paar{font-size:15px;line-height:1.3}
+.t-stand{font-size:44px;line-height:1;margin-top:10px;font-variant-numeric:tabular-nums}
+.t-stand i{font-style:normal;color:var(--mittel);padding:0 .06em}
+.t-info{font-size:13px;color:#b9c6dc}
+.tafel .s .t-info::after{content:", Sieg"}
+.tafel .n .t-info::after{content:", Niederlage"}
+
+.spieltag-unten{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,5vw,80px);margin-top:clamp(48px,5vw,72px)}
+.spieltag-unten h3{font-stretch:var(--breit);font-weight:800;font-size:22px;margin-bottom:14px}
+.termine li{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--linie)}
+.termine time{font-weight:700;font-variant-numeric:tabular-nums}
+.tabelle table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tabelle th,.tabelle td{padding:10px 10px;text-align:right;border-top:1px solid var(--linie)}
+.tabelle thead th{border-top:0;font-size:13px;font-weight:600;color:var(--grau)}
+.tabelle abbr{text-decoration:none}
+.tabelle :is(th,td):first-child{text-align:left;width:2.5em}
+.tabelle tbody th,.tabelle thead th:nth-child(2){text-align:left;font-weight:450}
+.tabelle td:last-child{font-weight:700}
+.tabelle tr.wir :is(th,td){background:var(--navy);color:#fff;font-weight:700;border-top-color:var(--navy)}
+.tabelle tr.wir :is(th,td):first-child{border-radius:8px 0 0 8px}
+.tabelle tr.wir :is(th,td):last-child{border-radius:0 8px 8px 0}
+.klein{font-size:14px;color:var(--grau);margin-top:12px}
+
+/* ---------- News: Schiene ---------- */
+.news{background:var(--nebel);padding:clamp(64px,7vw,104px) 0}
+.news-kopf{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:0 var(--rand);margin-bottom:30px;max-width:1440px;margin-inline:auto}
+.news-steuer{display:flex;align-items:center;gap:10px}
+.news-steuer a{font-weight:600;margin-right:10px;white-space:nowrap}
+.news-steuer button{width:48px;height:48px;border-radius:50%;border:2px solid var(--navy);background:transparent;color:var(--navy);display:grid;place-items:center;cursor:pointer}
+.news-steuer button:hover:not(:disabled){background:var(--navy);color:#fff}
+.news-steuer button:disabled{opacity:.3;cursor:default}
+.news-steuer svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.schiene{display:grid;grid-auto-flow:column;grid-auto-columns:clamp(260px,26vw,360px);gap:clamp(14px,1.6vw,24px);overflow-x:auto;scroll-snap-type:x mandatory;padding:4px var(--rand) 18px;scroll-padding-inline:var(--rand);scrollbar-width:thin;scrollbar-color:var(--mittel) transparent}
+.schiene li{scroll-snap-align:start}
+.schiene a{display:flex;flex-direction:column;gap:10px;height:100%;text-decoration:none}
+.schiene figure{aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:var(--navy);margin-bottom:8px}
+.schiene img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.1);mix-blend-mode:screen;transition:filter .35s,mix-blend-mode .35s,opacity .35s}
+.schiene a:hover img,.schiene a:focus-visible img{filter:none;mix-blend-mode:normal}
+.schiene time{font-size:14px;font-weight:600;color:var(--grau)}
+.schiene h3{font-size:24px;line-height:1.05}
+.schiene p{font-size:15px;color:var(--grau);line-height:1.5}
+.schiene a:hover h3{text-decoration:underline;text-decoration-thickness:2px}
+
+/* ---------- Teams ---------- */
+.teams{background:var(--navy);color:#fff;padding:clamp(64px,7vw,104px) var(--rand)}
+.teams>*{max-width:1440px;margin-inline:auto}
+.teams-kopf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:clamp(20px,4vw,56px);align-items:end;margin-bottom:clamp(30px,4vw,56px)}
+.teams-kopf p{color:#c9d5e8;max-width:46ch}
+.teams .knopf{background:var(--hell);color:var(--tief)}
+.teams .knopf:hover{background:#fff}
+.teamliste li{border-top:1px solid #ffffff2b}
+.teamliste li:last-child{border-bottom:1px solid #ffffff2b}
+.teamliste a{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:clamp(10px,1.2vw,18px) 0;text-decoration:none}
+.teamliste span{font-size:clamp(30px,5.4vw,78px);line-height:1;transition:color .2s}
+.teamliste small{font-size:15px;color:var(--hell);white-space:nowrap}
+.teamliste a:hover span{color:var(--hell)}
+.teamliste .reihe{display:flex;gap:clamp(24px,5vw,72px)}
+.teams-mehr{margin-top:28px;color:#c9d5e8}
+.teams-mehr a{color:#fff}
+
+/* ---------- Mitmachen ---------- */
+.mitmachen{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:clamp(28px,5vw,80px);align-items:center;max-width:1440px;margin:0 auto;padding:clamp(64px,7vw,104px) var(--rand)}
+.mitmachen-bild img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:50% 35%;border-radius:16px}
+.mitmachen-text{display:flex;flex-direction:column;gap:22px}
+.mitmachen-text>p{font-size:18px;max-width:50ch}
+.mitmachen h2{font-size:clamp(32px,3.4vw,52px);overflow-wrap:break-word}
+.wege{margin-top:6px}
+.wege a{display:grid;gap:2px;padding:16px 0;border-top:1px solid var(--linie);text-decoration:none}
+.wege li:last-child a{border-bottom:1px solid var(--linie)}
+.wege b{font-size:22px}
+.wege span{color:var(--grau)}
+.wege a:hover b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.15em}
+
+/* ---------- Partner ---------- */
+.partner{background:var(--nebel);padding:clamp(64px,7vw,104px) var(--rand)}
+.partner>*{max-width:1440px;margin-inline:auto}
+.partner h2{margin-bottom:30px}
+.logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.logos li{display:grid;place-items:center;aspect-ratio:3/2;background:#fff;border-radius:10px;padding:16px}
+.logos a{display:grid;place-items:center;width:100%;height:100%}
+.logos img{max-height:62px;width:auto;object-fit:contain}
+.logos li:has(a:hover){outline:2px solid var(--mittel)}
+
+/* ---------- Fuß ---------- */
+.fuss{position:relative;overflow:hidden;background:var(--tief);color:#c9d5e8;padding:0 var(--rand) 26px;font-size:15px}
+.fuss-post{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;max-width:1440px;margin:0 auto;padding:clamp(36px,4vw,56px) 0;border-bottom:1px solid #ffffff22}
+.fuss-post p{font-stretch:var(--breit);font-weight:800;font-size:clamp(20px,2vw,28px);color:#fff;max-width:30ch;line-height:1.15}
+.fuss-raster{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr 1.6fr .8fr;gap:clamp(24px,4vw,64px);max-width:1440px;margin:0 auto;padding-top:clamp(36px,4vw,56px)}
+.fuss h2{font-size:18px;color:#fff;margin-bottom:12px}
+.fuss p+p{margin-top:10px}
+.fuss a{color:#fff}
+.fuss dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 16px}
+.fuss dt{color:#8ea0bd}
+.fuss dd{margin:0;color:#fff}
+.fuss-jahr{font-size:clamp(120px,26vw,420px);line-height:.78;color:transparent;-webkit-text-stroke:1.5px #aac7ed40;text-align:right;margin:24px calc(-1*var(--rand)) -.06em 0;user-select:none}
+.fuss-recht{position:relative;display:flex;gap:22px;flex-wrap:wrap;max-width:1440px;margin:0 auto;padding-top:18px;border-top:1px solid #ffffff22}
+.fuss-recht span{margin-right:auto}
+
+/* ---------- Tablet ---------- */
+@media (max-width:1000px){
+  .nav{display:none;position:absolute;left:0;right:0;top:100%;flex-direction:column;gap:0;background:var(--navy);padding:6px var(--rand) 22px;border-top:1px solid #ffffff22}
+  .nav.offen{display:flex}
+  .nav a{padding:14px 0;border-bottom:1px solid #ffffff1f;font-size:18px}
+  .leiste-cta{margin-left:auto}
+  .menu{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:2px solid #ffffff80;border-radius:999px;background:transparent;color:#fff;font:600 16px "Archivo",Arial,sans-serif;cursor:pointer}
+  .menu[aria-expanded="true"]{background:#fff;color:var(--navy)}
+  .spieltag-unten{grid-template-columns:1fr}
+  .teams-kopf{grid-template-columns:1fr}
+  .teams-kopf .knopf{justify-self:start}
+  .mitmachen{grid-template-columns:1fr}
+  .fuss-raster{grid-template-columns:1fr 1fr}
+}
+
+/* ---------- Handy ---------- */
+@media (max-width:640px){
+  body{font-size:16px}
+  .leiste{gap:12px}
+  .leiste-cta{display:none}
+  .menu{margin-left:auto}
+  .wappen img{height:40px}
+  .buehne-bild{height:46vh;min-height:280px}
+  .ticket{position:relative;right:auto;bottom:auto;margin:-64px auto 0;grid-template-columns:1fr 104px;
+    -webkit-mask:radial-gradient(circle 12px at calc(100% - 104px) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 12px at calc(100% - 104px) 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+            mask:radial-gradient(circle 12px at calc(100% - 104px) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 12px at calc(100% - 104px) 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
+  .buehne{padding-bottom:28px}
+  .ticket-haupt{padding:20px 16px 20px 20px}
+  .ticket-abriss{width:104px}
+  .ticket-zahl b{font-size:48px}
+  .spieltag{padding-top:56px}
+  .tafel{grid-template-columns:repeat(2,1fr);gap:8px}
+  .tafel a{padding:16px 14px 14px}
+  .t-stand{font-size:36px}
+  .termine li{grid-template-columns:1fr;gap:0}
+  .news-steuer button{display:none}
+  .news-steuer a{margin-right:0}
+  .teamliste .reihe{gap:28px}
+  .logos{grid-template-columns:repeat(3,1fr);gap:8px}
+  .logos li{padding:8px}
+  .fuss-raster{grid-template-columns:1fr}
+}
