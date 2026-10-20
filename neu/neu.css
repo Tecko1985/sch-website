@@ -1,0 +1,236 @@
+/* 1. SC 1911 Heiligenstadt – Startseite (Entwurf 2026)
+   Farben aus Wappen und Trikot, Schrift wie eine Stadiontafel. */
+
+@font-face{font-family:"Big Shoulders";src:url(fonts/big-shoulders-display-latin-wght-normal.woff2) format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Archivo";src:url(fonts/archivo-latin-wdth-normal.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+
+:root{
+  --nacht:#13213f;      /* Wappen, Text, dunkle Flächen */
+  --trikot:#1f6bc8;     /* Heimtrikot, Aktionen */
+  --himmel:#dce8f7;     /* helle Flächen */
+  --kreide:#ffffff;
+  --linie:#cfd9e7;
+  --grau:#4f5b70;
+  --sieg:#1c7a44;
+  --niederlage:#b5372c;
+  --schrift-tafel:"Big Shoulders","Arial Narrow",Impact,sans-serif;
+  --schrift-text:"Archivo",Arial,Helvetica,sans-serif;
+  --rand:clamp(18px,5vw,72px);
+  --breite:1360px;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:90px}
+body{margin:0;background:var(--kreide);color:var(--nacht);font:400 17px/1.6 var(--schrift-text);font-stretch:100%}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.18em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--trikot);outline-offset:3px}
+h1,h2,h3{margin:0;font-weight:800;line-height:1.05}
+p{margin:0}
+ul,ol{margin:0;padding:0;list-style:none}
+
+.skip{position:absolute;left:-999px;top:8px;background:var(--nacht);color:#fff;padding:10px 14px;z-index:20}
+.skip:focus{left:8px}
+
+/* ---------- Knöpfe ---------- */
+.knopf{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border:2px solid currentColor;border-radius:3px;font-weight:650;font-size:16px;text-decoration:none;white-space:nowrap}
+.knopf:hover{background:color-mix(in srgb,currentColor 8%,transparent)}
+.knopf-voll{background:var(--trikot);border-color:var(--trikot);color:#fff}
+.knopf-voll:hover{background:#1858a6;border-color:#1858a6}
+.knopf-hell{background:#fff;border-color:#fff;color:var(--nacht)}
+.knopf-hell:hover{background:var(--himmel);border-color:var(--himmel)}
+
+/* ---------- Kopf ---------- */
+.kopf{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:12px var(--rand);background:#fff;border-bottom:1px solid var(--linie)}
+.marke{display:flex;align-items:center;gap:12px;text-decoration:none}
+.marke img{width:auto;height:52px}
+.marke span{font:800 21px/0.95 var(--schrift-tafel);letter-spacing:.2px}
+.hauptnav{display:flex;align-items:center;gap:clamp(14px,1.8vw,28px);font-size:16px;font-weight:550}
+.hauptnav a{text-decoration:none;padding:6px 0}
+.hauptnav a:not(.nav-cta):hover{text-decoration:underline}
+.nav-cta{background:var(--nacht);color:#fff;padding:10px 16px!important;border-radius:3px}
+.nav-cta:hover{background:var(--trikot)}
+.menuknopf{display:none}
+
+/* ---------- Plakat: nächstes Spiel ---------- */
+.plakat{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);background:var(--himmel);min-height:min(78vh,760px)}
+.plakat-text{display:flex;flex-direction:column;justify-content:center;gap:28px;padding:clamp(40px,6vw,96px) var(--rand)}
+.plakat-art{font-size:18px;font-weight:600}
+.plakat-countdown:not(:empty)::before{content:", "}
+.plakat-paarung{font-family:var(--schrift-tafel);font-weight:900;line-height:.84;letter-spacing:-.5px}
+.plakat-paarung>span{display:block}
+.plakat-wir{font-size:clamp(110px,15vw,236px)}
+.plakat-gegen{font:italic 500 clamp(22px,2.2vw,30px)/1.4 var(--schrift-text);letter-spacing:0;margin:6px 0 2px}
+.plakat-gast{font-size:clamp(54px,7.4vw,124px);overflow-wrap:anywhere;hyphens:manual}
+.plakat-wann{font-size:clamp(18px,1.6vw,22px);line-height:1.45}
+.plakat-wann time{font-weight:700}
+.plakat-aktionen{display:flex;flex-wrap:wrap;gap:12px}
+.plakat-bild{margin:0;position:relative;overflow:hidden}
+.plakat-bild img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+
+/* Der eine bewegte Moment: die Paarung baut sich beim Laden auf */
+@media (prefers-reduced-motion:no-preference){
+  .plakat-paarung>span{animation:hereinschieben .7s cubic-bezier(.2,.7,.2,1) both}
+  .plakat-gegen{animation-delay:.12s!important}
+  .plakat-gast{animation-delay:.22s!important}
+  @keyframes hereinschieben{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+}
+
+/* ---------- Abschnitte allgemein ---------- */
+.spieltag,.news,.teams,.partner{max-width:var(--breite);margin:0 auto;padding:clamp(56px,7vw,104px) var(--rand)}
+section h2{font:800 clamp(34px,3.6vw,52px)/1 var(--schrift-tafel);letter-spacing:-.2px}
+
+/* ---------- Spieltag: Ergebnisse, Termine, Tabelle ---------- */
+.spieltag{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(32px,5vw,80px);align-items:start}
+.ergebnisse{margin-top:26px;border-top:2px solid var(--nacht)}
+.ergebnisse a{display:grid;grid-template-columns:minmax(96px,1.1fr) minmax(0,3fr) 64px 92px;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--linie);text-decoration:none}
+.ergebnisse a:hover .e-paar{text-decoration:underline}
+.e-team{font-weight:700;line-height:1.2}
+.e-team small{display:block;font-weight:400;font-size:13px;color:var(--grau)}
+.e-paar i{font-style:normal;color:var(--grau);padding:0 .15em}
+.e-stand{font:800 30px/1 var(--schrift-tafel);text-align:right;font-variant-numeric:tabular-nums}
+.e-marke{font-size:13px;font-weight:650;padding-left:10px;border-left:4px solid}
+.s .e-marke{color:var(--sieg)}
+.n .e-marke{color:var(--niederlage)}
+
+.demnaechst-titel{margin-top:56px;font-size:clamp(28px,2.6vw,38px)!important}
+.demnaechst{margin-top:18px;border-top:2px solid var(--nacht)}
+.demnaechst li{display:grid;grid-template-columns:150px 1fr;column-gap:16px;padding:12px 0;border-bottom:1px solid var(--linie)}
+.demnaechst time{font-weight:700;font-variant-numeric:tabular-nums;grid-row:span 2}
+.demnaechst small{color:var(--grau);font-size:14px}
+
+.spieltag-tabelle{background:var(--nacht);color:#fff;padding:clamp(24px,3vw,40px);border-radius:4px;position:sticky;top:100px}
+.spieltag-tabelle h2{font-size:clamp(30px,2.8vw,40px)}
+.quelle{font-size:14px;color:#b9c7dc;margin-top:6px}
+.quelle a{color:#fff}
+.spieltag-tabelle table{width:100%;border-collapse:collapse;margin:22px 0 14px;font-variant-numeric:tabular-nums;font-size:16px}
+.spieltag-tabelle th,.spieltag-tabelle td{padding:10px 8px;text-align:right;border-bottom:1px solid #ffffff1f}
+.spieltag-tabelle thead th{font-size:13px;font-weight:600;color:#b9c7dc}
+.spieltag-tabelle abbr{text-decoration:none}
+.spieltag-tabelle :is(th,td):first-child{text-align:left;width:2.4em}
+.spieltag-tabelle tbody th,.spieltag-tabelle thead th:nth-child(2){text-align:left;font-weight:450}
+.spieltag-tabelle tbody td:last-child{font-weight:700}
+.spieltag-tabelle tr.wir :is(th,td){background:var(--trikot);font-weight:700;border-bottom-color:transparent}
+.spieltag-tabelle tr.luecke td{padding:3px 0;border-bottom:1px dashed #ffffff40}
+
+/* ---------- Neuigkeiten ---------- */
+.news{padding-top:clamp(16px,3vw,40px)}
+.news-kopf{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:30px}
+.news-kopf a{font-weight:600}
+.aufmacher a{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);background:var(--himmel);text-decoration:none}
+.aufmacher img{width:100%;height:100%;max-height:560px;object-fit:cover;object-position:50% 25%}
+.aufmacher-text{display:flex;flex-direction:column;justify-content:center;gap:18px;padding:clamp(28px,4.5vw,72px)}
+.aufmacher time,.newsliste time{font-size:14px;font-weight:600;color:var(--grau)}
+.aufmacher h3{font:800 clamp(36px,4.2vw,64px)/.95 var(--schrift-tafel)}
+.aufmacher p{max-width:58ch;font-size:18px}
+.weiter{font-weight:650;text-decoration:underline;text-underline-offset:.2em}
+.aufmacher a:hover .weiter{text-decoration-thickness:2px}
+.newsliste{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(20px,2.4vw,36px);margin-top:clamp(28px,3vw,44px)}
+.newsliste a{display:block;padding-top:16px;border-top:3px solid var(--nacht);text-decoration:none}
+.newsliste h3{font:800 25px/1.05 var(--schrift-tafel);margin:6px 0 10px}
+.newsliste p{font-size:15px;color:var(--grau);line-height:1.55}
+.newsliste a:hover h3{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.12em}
+
+/* ---------- Mannschaften ---------- */
+.teams{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(28px,4vw,64px);align-items:center;border-top:1px solid var(--linie)}
+.teams-bild{margin:0}
+.teams-bild img{width:100%;aspect-ratio:16/9;object-fit:cover;object-position:50% 30%}
+.teams-text{display:flex;flex-direction:column;gap:20px;align-items:flex-start}
+.teams-text p{max-width:46ch}
+.teams-listen{grid-column:1/-1;display:grid;grid-template-columns:1fr 2fr 1fr;gap:clamp(24px,4vw,64px);margin-top:12px}
+.teams-listen h3{font:800 24px/1 var(--schrift-tafel);padding-bottom:10px;border-bottom:2px solid var(--nacht);margin-bottom:6px}
+.teams-listen li a{display:block;padding:8px 0;border-bottom:1px solid var(--linie);text-decoration:none;font-weight:550}
+.teams-listen li a:hover{color:var(--trikot)}
+.teams-listen .spalten{display:grid;grid-template-columns:repeat(2,1fr);column-gap:28px}
+
+/* ---------- Verein und Mitmachen ---------- */
+.verein{background:var(--nacht);color:#fff;padding:clamp(56px,7vw,104px) var(--rand)}
+.verein>*{max-width:var(--breite);margin-left:auto;margin-right:auto}
+.verein-text{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(24px,4vw,64px);align-items:end;padding-bottom:clamp(36px,4vw,56px);border-bottom:1px solid #ffffff33}
+.verein-text h2{font-size:clamp(44px,6vw,92px);line-height:.9}
+.verein-text p{font-size:19px;max-width:56ch;color:#dbe4f2}
+.mitmachen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(24px,4vw,64px);padding-top:clamp(32px,4vw,48px)}
+.mitmachen h3{font:800 30px/1 var(--schrift-tafel);margin-bottom:12px}
+.mitmachen p{color:#c7d3e6;margin-bottom:16px;max-width:38ch}
+.mitmachen a{font-weight:650}
+
+/* ---------- Partner ---------- */
+.partner-kopf{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:30px}
+.partner-kopf p{color:var(--grau);max-width:46ch}
+.logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));border-top:1px solid var(--linie);border-left:1px solid var(--linie)}
+.logos li{display:grid;place-items:center;aspect-ratio:3/2;padding:18px;border-right:1px solid var(--linie);border-bottom:1px solid var(--linie)}
+.logos a{display:grid;place-items:center;width:100%;height:100%}
+.logos img{max-height:64px;width:auto;object-fit:contain}
+.logos a:hover{background:var(--himmel)}
+
+/* ---------- Newsletter ---------- */
+.post{background:var(--trikot);color:#fff;padding:clamp(44px,5vw,72px) var(--rand);display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:40px;row-gap:10px;align-items:center}
+.post h2{font-size:clamp(30px,3vw,44px);max-width:22ch}
+.post p{grid-column:1;color:#e3edfa}
+.post .knopf{grid-column:2;grid-row:1/span 2}
+
+/* ---------- Fuß ---------- */
+.fuss{background:#0d1830;color:#c7d3e6;padding:clamp(48px,6vw,80px) var(--rand) 28px;font-size:15px}
+.fuss-raster{max-width:var(--breite);margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr 1.4fr .8fr;gap:clamp(24px,4vw,56px)}
+.fuss h2{font:800 22px/1 var(--schrift-tafel);color:#fff;margin-bottom:14px}
+.fuss p+p{margin-top:12px}
+.fuss strong{color:#fff}
+.fuss a{color:#fff}
+.fuss-wappen{width:auto;height:64px;margin-bottom:16px;background:#fff;padding:6px;border-radius:3px}
+.fuss dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.fuss dt{color:#8fa1bd}
+.fuss dd{margin:0;color:#fff}
+.sozial li+li{margin-top:6px}
+.fuss-recht{max-width:var(--breite);margin:48px auto 0;padding-top:20px;border-top:1px solid #ffffff22;display:flex;gap:22px;flex-wrap:wrap}
+.fuss-recht span{margin-right:auto}
+
+/* ---------- Tablet ---------- */
+@media (max-width:1080px){
+  .hauptnav{gap:16px;font-size:15px}
+  .fuss-raster{grid-template-columns:1fr 1fr}
+}
+@media (max-width:960px){
+  .kopf{padding-block:10px}
+  .menuknopf{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:2px solid var(--nacht);border-radius:3px;background:#fff;color:var(--nacht);font:650 16px var(--schrift-text)}
+  .menuknopf[aria-expanded="true"]{background:var(--nacht);color:#fff}
+  .hauptnav{display:none;position:absolute;left:0;right:0;top:100%;flex-direction:column;align-items:stretch;gap:0;background:#fff;border-bottom:2px solid var(--nacht);padding:8px var(--rand) 20px}
+  .hauptnav.offen{display:flex}
+  .hauptnav a{padding:14px 0;border-bottom:1px solid var(--linie);font-size:18px}
+  .nav-cta{margin-top:14px;text-align:center;border-bottom:0!important}
+  .spieltag{grid-template-columns:1fr}
+  .spieltag-tabelle{position:static}
+  .teams-listen{grid-template-columns:1fr 1fr}
+  .teams-listen>div:nth-child(2){grid-column:1/-1;order:-1}
+  .verein-text{grid-template-columns:1fr}
+}
+
+/* ---------- Handy ---------- */
+@media (max-width:760px){
+  body{font-size:16px}
+  .marke img{height:44px}
+  .marke span{font-size:19px}
+  .plakat{grid-template-columns:1fr;min-height:0}
+  .plakat-bild{order:-1;aspect-ratio:4/3}
+  .plakat-text{padding-top:32px;padding-bottom:44px;gap:22px}
+  .plakat-wir{font-size:clamp(96px,30vw,150px)}
+  .plakat-gast{font-size:clamp(48px,14vw,80px)}
+  .ergebnisse a{grid-template-columns:1fr auto;grid-template-areas:"team stand" "paar marke";row-gap:4px;column-gap:12px}
+  .e-team{grid-area:team}
+  .e-paar{grid-area:paar}
+  .e-stand{grid-area:stand}
+  .e-marke{grid-area:marke;justify-self:end}
+  .e-team small{display:inline;margin-left:8px}
+  .demnaechst li{grid-template-columns:1fr}
+  .demnaechst time{grid-row:auto}
+  .aufmacher a{grid-template-columns:1fr}
+  .aufmacher img{aspect-ratio:4/3;max-height:none;height:auto}
+  .teams{grid-template-columns:1fr}
+  .teams-listen{grid-template-columns:1fr}
+  .mitmachen{grid-template-columns:1fr}
+  .logos{grid-template-columns:repeat(3,1fr)}
+  .logos li{padding:10px}
+  .post{grid-template-columns:1fr}
+  .post .knopf{grid-column:1;grid-row:auto;justify-self:start;margin-top:10px}
+  .fuss-raster{grid-template-columns:1fr}
+}
