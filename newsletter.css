@@ -42,3 +42,6 @@
 .nl-form .ds-inhalt p{margin:0 0 8px}
 .nl-form .ds-inhalt strong{color:#142440}
 .nl-form .ds-inhalt a{text-decoration:underline}
+
+/* Newsletter-Titel in der Hausschrift wie alle anderen Sektionstitel */
+:is(#top,body) .nl-band h2{font-family:'SCH Barlow',Impact,'Arial Narrow',sans-serif;font-weight:700;font-stretch:normal;line-height:1.05;letter-spacing:-.5px}
