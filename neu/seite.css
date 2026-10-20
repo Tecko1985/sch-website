@@ -1,0 +1,227 @@
+/* Unterseiten im neuen Design: Seitenkopf und alle Inhaltsbausteine */
+
+/* ---------- Seitenkopf ---------- */
+.seitenkopf{background:var(--navy);color:#fff;padding:clamp(40px,5vw,80px) var(--rand) clamp(36px,4vw,64px)}
+.seitenkopf-text{max-width:1440px;margin:0 auto}
+.seitenkopf-rubrik{color:var(--hell);font-weight:650;font-size:16px;margin-bottom:12px}
+.seitenkopf h1{font-stretch:125%;font-weight:900;font-size:clamp(38px,6.4vw,96px);line-height:.95;letter-spacing:-.015em;max-width:18ch;overflow-wrap:break-word;hyphens:auto}
+.seitenkopf-datum{margin-top:16px;color:#c9d5e8;font-weight:550}
+.seitenkopf.mit-bild{padding-bottom:0}
+.seitenkopf-bild{margin:clamp(28px,3vw,44px) calc(-1*var(--rand)) 0;height:clamp(220px,40vh,440px);background:var(--navy);overflow:hidden;position:relative}
+.seitenkopf-bild img{width:100%;height:100%;object-fit:cover;object-position:50% 35%;filter:grayscale(1) contrast(1.18) brightness(1.1);mix-blend-mode:screen}
+.seitenkopf-bild::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--navy) 0,transparent 30%);pointer-events:none}
+
+/* ---------- Inhalt ---------- */
+.inhalt{display:block;max-width:1440px;margin:0 auto;padding:clamp(40px,5vw,80px) var(--rand) clamp(64px,7vw,104px)}
+.inhalt>:is(p,ul,ol,h2,h3,h4,blockquote,details,form,.sp-tabelle,figure){max-width:72ch}
+.inhalt>*+*{margin-top:1.1em}
+.inhalt p{font-size:18px;line-height:1.65}
+.inhalt h2{font-stretch:125%;font-weight:850;font-size:clamp(26px,2.6vw,38px);line-height:1.05;letter-spacing:-.01em;margin-top:1.8em}
+.inhalt h3{font-stretch:112%;font-weight:800;font-size:22px;line-height:1.15;margin-top:1.6em}
+.inhalt>h2:first-child,.inhalt>h3:first-child{margin-top:0}
+.inhalt h3 strong{font-weight:inherit}
+.inhalt a{text-decoration-color:var(--mittel);text-decoration-thickness:2px}
+.inhalt a:hover{text-decoration-color:currentColor}
+.inhalt ul:not([class]),.inhalt ol:not([class]){padding-left:1.2em}
+.inhalt ul:not([class]) li,.inhalt ol:not([class]) li{margin:.35em 0}
+.inhalt ul:not([class]){list-style:square}
+.inhalt ol:not([class]){list-style:decimal}
+.inhalt blockquote{margin-left:0;padding-left:20px;border-left:4px solid var(--hell);font-size:20px}
+.inhalt img{border-radius:10px}
+.inhalt table{border-collapse:collapse;width:100%}
+.inhalt td,.inhalt th{padding:12px 14px;border-top:1px solid var(--linie);text-align:left;vertical-align:top}
+.inhalt tr:last-child td{border-bottom:1px solid var(--linie)}
+.sch-source-note{font-size:14px!important;color:var(--grau);margin-top:3em!important;padding-top:16px;border-top:1px solid var(--linie)}
+
+/* Kacheln (Verein, Fußball, Nachwuchs …) */
+.sp-kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:2em!important}
+.sp-kachel{display:flex;flex-direction:column;justify-content:space-between;gap:24px;min-height:150px;padding:22px 22px 20px;background:var(--navy);color:#fff;border-radius:12px;text-decoration:none!important}
+.sp-kachel b{font-stretch:125%;font-weight:850;font-size:24px;line-height:1.05}
+.sp-kachel span{color:#c9d5e8;font-size:15px}
+.sp-kachel:hover{background:var(--tief)}
+.sp-kachel:hover b{color:var(--hell)}
+
+/* Knöpfe */
+.sp-knoepfe{display:flex;flex-wrap:wrap;gap:10px;max-width:none!important}
+.sp-knopf{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border-radius:999px;background:var(--navy);color:#fff!important;font-weight:650;font-size:16px;text-decoration:none!important}
+.sp-knopf:hover{background:var(--tief)}
+.sp-knopf.hell{background:var(--nebel);color:var(--navy)!important}
+.sp-knopf.hell:hover{background:var(--hell)}
+
+/* Einzelbild */
+.sp-bild{max-width:960px!important}
+.sp-bild img{width:100%;height:auto}
+
+/* Kader */
+.sp-kader{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:1em!important}
+.sp-spieler{position:relative;display:grid;grid-template-rows:auto auto;background:var(--navy);color:#fff;border-radius:12px;overflow:hidden}
+.sp-spieler img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:50% 20%;border-radius:0;filter:grayscale(1) contrast(1.1);mix-blend-mode:screen;transition:filter .3s,mix-blend-mode .3s}
+.sp-spieler:hover img{filter:none;mix-blend-mode:normal}
+.sp-spieler b{position:absolute;top:10px;left:12px;font-stretch:125%;font-weight:900;font-size:34px;line-height:1;color:#fff;text-shadow:0 2px 12px #0008}
+.sp-spieler span{padding:12px 14px 14px;font-weight:650;line-height:1.25}
+
+/* Personen (Vorstand, Trainer) */
+.sp-vorstand{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-top:1.5em!important}
+.sp-person{display:flex;align-items:center;gap:16px;padding:16px;background:var(--nebel);border-radius:12px;margin:0}
+.inhalt>.sp-person{max-width:520px}
+.sp-person img,.sp-initialen{flex:0 0 72px;width:72px;height:72px;border-radius:50%;object-fit:cover}
+.sp-initialen{display:grid;place-items:center;background:var(--navy);color:var(--hell);font-stretch:125%;font-weight:850;font-size:22px}
+.sp-person div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sp-person small{color:var(--grau);font-size:14px}
+.sp-person b{font-stretch:112%;font-weight:800;font-size:18px;line-height:1.2}
+.sp-person span{font-size:14px;overflow-wrap:anywhere}
+
+/* Galerie */
+.sp-galerie{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:2em!important}
+.sp-galerie img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:zoom-in}
+.bildfenster{border:0;padding:0;background:transparent;max-width:min(1200px,94vw);max-height:92vh}
+.bildfenster::backdrop{background:#0b1529e6}
+.bildfenster img{max-width:100%;max-height:84vh;border-radius:8px;display:block;margin:0 auto}
+.bildfenster form{display:flex;justify-content:flex-end;margin-bottom:10px}
+.bildfenster button{min-height:44px;padding:0 20px;border-radius:999px;border:0;background:#fff;color:var(--navy);font:650 15px "Archivo",Arial,sans-serif;cursor:pointer}
+
+/* Beitragskarten (News) */
+.sp-karten{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:clamp(18px,2vw,28px)}
+.sp-karte{display:flex;flex-direction:column;gap:12px;text-decoration:none!important;color:inherit}
+.sp-kartenbild{display:block;aspect-ratio:16/10;overflow:hidden;border-radius:12px;background:var(--navy)}
+.sp-kartenbild img{width:100%;height:100%;object-fit:cover;border-radius:0;filter:grayscale(1) contrast(1.1);mix-blend-mode:screen;transition:filter .3s,mix-blend-mode .3s}
+.sp-karte:hover .sp-kartenbild img{filter:none;mix-blend-mode:normal}
+.sp-kartentext{display:flex;flex-direction:column;gap:6px}
+.sp-kartentext time{font-size:14px;font-weight:600;color:var(--grau)}
+.sp-kartentext b{font-stretch:125%;font-weight:850;font-size:22px;line-height:1.08}
+.sp-kartentext span{color:var(--grau);font-size:15px;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}
+.sp-kartentext em{font-style:normal;font-weight:650;text-decoration:underline;text-decoration-color:var(--mittel);text-decoration-thickness:2px;text-underline-offset:.2em}
+.sp-karte:hover b{text-decoration:underline;text-decoration-thickness:2px}
+
+/* Partnerlogos */
+.sp-logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:1.5em!important}
+.sp-logos>*{display:grid;place-items:center;aspect-ratio:3/2;background:var(--nebel);border-radius:10px;padding:16px}
+.sp-logos img{max-height:66px;width:auto;object-fit:contain;border-radius:0}
+.sp-logos a:hover{outline:2px solid var(--mittel)}
+
+/* Tabellen mit Beiträgen o. Ä. */
+.sp-tabelle td:first-child{width:50%}
+
+/* FuPa-Kasten (Zwei-Klick) */
+.sp-fupa{max-width:72ch;padding:22px 24px;background:var(--nebel);border-radius:12px;border-left:5px solid var(--navy)}
+.sp-fupa p{font-size:15px!important}
+.sp-fupa p b{display:block;font-stretch:112%;font-size:18px;margin-bottom:4px}
+.sp-fupa button{margin-top:14px;min-height:48px;padding:0 22px;border-radius:999px;border:0;background:var(--navy);color:#fff;font:650 16px "Archivo",Arial,sans-serif;cursor:pointer}
+.sp-fupa button:hover{background:var(--tief)}
+.sp-fupa iframe{max-width:100%}
+
+/* ---------- Termine ---------- */
+.tm-filter{display:flex;flex-wrap:wrap;gap:8px;margin:1.6em 0 0!important}
+.tm-filter button{min-height:44px;padding:0 20px;border-radius:999px;border:2px solid var(--navy);background:transparent;color:var(--navy);font:650 15px "Archivo",Arial,sans-serif;cursor:pointer}
+.tm-filter button[aria-pressed=true]{background:var(--navy);color:#fff}
+.tm-tag{margin-top:2.6em!important}
+.tm-tag[hidden],.tm-spiel[hidden],.tm-tag.vorbei{display:none!important}
+.tm-tag h2{font-size:clamp(24px,2.2vw,32px);margin:0 0 14px}
+.tm-tag h2 span{color:var(--grau);font-stretch:100%;font-weight:500}
+.tm-liste{border-top:2px solid var(--navy);max-width:none!important}
+.tm-spiel{display:grid;grid-template-columns:72px 190px minmax(0,1fr) auto;gap:6px 20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--linie)}
+.tm-zeit{font-stretch:125%;font-weight:850;font-size:22px;font-variant-numeric:tabular-nums}
+.tm-team{display:flex;flex-direction:column}
+.tm-team b{font-weight:700}
+.tm-team small,.tm-platz{font-size:14px;color:var(--grau)}
+.tm-paar{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tm-gegner{display:flex;flex-wrap:wrap;gap:2px 8px;font-weight:600}
+.tm-gegner i{font-style:normal;color:var(--grau)}
+.tm-info{display:flex;align-items:center;gap:14px}
+.tm-info a{font-weight:650;font-size:15px;white-space:nowrap}
+.tm-marke{font-style:normal;font-size:13px;font-weight:650;padding:4px 12px;border-radius:999px;background:var(--navy);color:#fff;white-space:nowrap}
+.tm-marke.aus{background:var(--nebel);color:var(--navy)}
+.tm-marke.ab{background:#b3362b}
+.tm-spiel.abgesetzt .tm-gegner{text-decoration:line-through;color:var(--grau)}
+.tm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.tm-leer{color:var(--grau)}
+
+/* ---------- Newsletter ---------- */
+.nl-form{display:flex;flex-direction:column;gap:16px;padding:clamp(20px,3vw,32px);background:var(--nebel);border-radius:14px}
+.nl-form label{display:flex;flex-direction:column;gap:6px;font-weight:650}
+.nl-form input[type=email],.nl-form input[type=text]{min-height:50px;padding:0 16px;border:2px solid var(--linie);border-radius:10px;font:400 17px "Archivo",Arial,sans-serif;color:var(--navy);background:#fff}
+.nl-form input:focus{outline:none;border-color:var(--navy)}
+.nl-form .nl-haken{flex-direction:row;align-items:flex-start;gap:12px;font-weight:400;font-size:15px}
+.nl-haken input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--navy);flex:0 0 auto}
+.nl-form button{align-self:flex-start;min-height:50px;padding:0 26px;border-radius:999px;border:0;background:var(--navy);color:#fff;font:650 16px "Archivo",Arial,sans-serif;cursor:pointer}
+.nl-form button:hover{background:var(--tief)}
+.nl-form button:disabled{opacity:.6;cursor:wait}
+.nl-klein{font-size:14px!important;color:var(--grau);font-weight:400}
+.nl-meldung{font-weight:650;margin:0}
+.nl-ergebnis{padding:22px 24px;border-radius:12px;background:var(--navy);color:#fff}
+.nl-ergebnis h2{margin-top:0;color:#fff}
+.nl-gutscheine{padding:18px 20px;border-radius:12px;background:var(--hell)}
+.ds-block{border-radius:10px;background:#fff;border:1px solid var(--linie);padding:0 16px}
+.ds-block summary{cursor:pointer;font-weight:650;font-size:15px;padding:14px 0}
+.ds-inhalt p{font-size:15px!important;margin:0 0 12px}
+
+/* ---------- Spielbericht ---------- */
+.bericht{display:block}
+.bericht .sch-scoreboard{max-width:none!important;display:grid;gap:6px;justify-items:center;text-align:center;padding:clamp(22px,3vw,40px);background:var(--navy);color:#fff;border-radius:16px}
+.bericht .sch-scoreboard p{font-size:15px!important;color:#c9d5e8;margin:0}
+.sch-matchstatus{font-size:13px;font-weight:650;padding:4px 12px;border-radius:999px;background:var(--hell);color:var(--tief);margin:6px 0 10px}
+.sch-scorepair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(12px,3vw,48px);width:100%;max-width:820px}
+.sch-scoreteam{min-width:0;overflow-wrap:anywhere;hyphens:auto;display:flex;flex-direction:column;align-items:center;gap:10px;font-stretch:112%;font-weight:800;font-size:clamp(16px,1.6vw,20px);line-height:1.2}
+.sch-scoreteam img{height:clamp(56px,7vw,92px);width:auto;background:#fff;border-radius:10px;padding:6px}
+.sch-scorevalue{display:flex;flex-direction:column;align-items:center}
+.sch-scorevalue strong{font-stretch:125%;font-weight:900;font-size:clamp(52px,8vw,110px);line-height:1;white-space:nowrap}
+.sch-scorevalue span{color:#c9d5e8;font-size:14px;margin-top:6px}
+.sch-reporttabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 6px;margin-top:22px!important;max-width:none!important}
+.sch-reporttabs button{flex:0 0 auto;min-height:44px;padding:0 18px;border-radius:999px;border:2px solid var(--navy);background:transparent;color:var(--navy);font:650 15px "Archivo",Arial,sans-serif;cursor:pointer}
+.sch-reporttabs button[aria-selected=true]{background:var(--navy);color:#fff}
+.sch-reportpanel{padding-top:clamp(20px,3vw,40px)}
+.sch-reportpanel>*{max-width:72ch}
+.sch-reportpanel h1,.sch-reportpanel h2{font-stretch:125%;font-weight:850;font-size:clamp(28px,3vw,44px);line-height:1.02;margin:0 0 14px}
+.sch-reportpanel h3{font-stretch:112%;font-weight:800;font-size:20px;margin:1.4em 0 .4em}
+.sch-reportpanel p{font-size:18px;line-height:1.65;margin:0 0 1em}
+.sch-storyhead p{color:var(--grau);font-size:15px!important}
+.sch-storyhead img{width:100%;max-width:720px;border-radius:12px;margin:10px 0 24px}
+.sch-reportinfo p{margin:0 0 .4em}
+.sch-reportgallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-width:none!important}
+.sch-photo{padding:0;border:0;background:none;cursor:zoom-in;border-radius:8px;overflow:hidden}
+.sch-photo img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:0;display:block}
+.sch-photodialog{border:0;padding:0;background:transparent;max-width:min(1100px,94vw)}
+.sch-photodialog::backdrop{background:#0b1529e6}
+.sch-photodialog img{max-height:84vh;max-width:100%;border-radius:8px;display:block;margin:0 auto}
+.sch-photodialog form{display:flex;justify-content:flex-end;margin-bottom:10px}
+.sch-photodialog button{min-height:44px;padding:0 20px;border-radius:999px;border:0;background:#fff;color:var(--navy);font:650 15px "Archivo",Arial,sans-serif;cursor:pointer}
+.sch-tickerhead{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;max-width:none!important}
+.sch-reportbutton{display:inline-flex;align-items:center;min-height:46px;padding:0 20px;border-radius:999px;background:var(--navy);color:#fff!important;font-weight:650;text-decoration:none!important}
+.sch-fupa-widget{padding:18px 20px;background:var(--nebel);border-radius:12px;margin:18px 0}
+.sch-fupa-widget p{font-size:15px!important;margin:0}
+.sch-timeline{max-width:72ch;margin:18px 0 0!important;border-top:2px solid var(--navy)}
+.sch-timeline li{display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--linie)}
+.sch-eventminute{font-stretch:125%;font-weight:850;font-size:22px}
+.sch-eventtype{font-size:13px;font-weight:650;color:var(--grau)}
+.sch-eventtype.red{color:#b3362b}
+.sch-timeline h3{margin:2px 0 0;font-size:18px}
+.sch-timeline strong{font-stretch:125%;font-weight:850;font-size:22px;font-variant-numeric:tabular-nums}
+.sch-stat{display:grid;grid-template-columns:60px 1fr 60px;align-items:center;text-align:center;padding:12px 0;border-bottom:1px solid var(--linie)}
+.sch-stat b{font-stretch:125%;font-weight:850;font-size:26px}
+.sch-lineups{display:grid;grid-template-columns:1fr 1fr;gap:28px;max-width:none!important}
+.sch-lineups section{padding:20px;background:var(--nebel);border-radius:12px}
+.sch-lineups h3{margin-top:0}
+.sch-lineups p{font-size:16px!important}
+.sch-source-note{font-size:14px}
+.offline-note{color:var(--grau)}
+
+/* ---------- Menü-Markierung ---------- */
+.nav a[aria-current=page]{border-bottom-color:var(--hell)}
+
+/* ---------- Handy ---------- */
+@media (max-width:760px){
+  .tm-spiel{grid-template-columns:58px 1fr;gap:4px 12px}
+  .tm-zeit{grid-row:span 3;align-self:start;font-size:19px}
+  .tm-team,.tm-paar,.tm-info{grid-column:2}
+  .tm-info{justify-content:space-between}
+  .sp-kader{grid-template-columns:repeat(2,1fr);gap:8px}
+  .sp-spieler b{font-size:26px}
+  .sp-galerie{grid-template-columns:repeat(2,1fr)}
+  .sp-logos{grid-template-columns:repeat(2,1fr)}
+  .sp-vorstand{grid-template-columns:1fr}
+  .sch-lineups{grid-template-columns:1fr}
+  .sch-scorepair{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px}
+  .sch-scorevalue strong{font-size:44px}
+  .sch-scoreteam{font-size:14px}
+  .inhalt p,.sch-reportpanel p{font-size:17px}
+}

@@ -68,6 +68,38 @@
     stand();
   }
 
+  // ---------- Galerie: Bild groß anzeigen ----------
+  var galerien = document.querySelectorAll('.sp-galerie');
+  if (galerien.length) {
+    var fenster = document.createElement('dialog');
+    fenster.className = 'bildfenster';
+    fenster.innerHTML = '<form method="dialog"><button>Schließen</button></form><img alt="">';
+    document.body.appendChild(fenster);
+    fenster.addEventListener('click', function (e) { if (e.target === fenster) fenster.close(); });
+    galerien.forEach(function (g) {
+      g.querySelectorAll('img').forEach(function (img) {
+        img.tabIndex = 0;
+        img.setAttribute('role', 'button');
+        if (!img.alt) img.setAttribute('aria-label', 'Bild vergrößern');
+        var oeffne = function () { var b = fenster.querySelector('img'); b.src = img.currentSrc || img.src; b.alt = img.alt; fenster.showModal(); };
+        img.addEventListener('click', oeffne);
+        img.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); oeffne(); } });
+      });
+    });
+  }
+
+  // ---------- Termine-Seite: vergangene Spieltage ausblenden ----------
+  var monate = ['januar', 'februar', 'märz', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'dezember'];
+  var heute = tagNummer(new Date());
+  document.querySelectorAll('.tm-tag[aria-label]').forEach(function (tag) {
+    var m = tag.getAttribute('aria-label').toLowerCase().match(/(\d{1,2})\.\s*([a-zäöü]+)\s+(\d{4})/);
+    if (!m) return;
+    var mon = monate.indexOf(m[2]);
+    if (mon < 0) return;
+    var d = new Date(Number(m[3]), mon, Number(m[1]), 12);
+    if (Math.floor(d.setHours(0, 0, 0, 0) / 864e5) < heute) tag.classList.add('vorbei');
+  });
+
   // ---------- Vergangene Termine ausblenden ----------
   document.querySelectorAll('[data-demnaechst] li[data-zeit]').forEach(function (li) {
     if (new Date(li.dataset.zeit).getTime() + 2 * 3600e3 < jetzt) li.hidden = true;
