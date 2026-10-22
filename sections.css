@@ -41,4 +41,4 @@
 @media(max-width:480px){:is(#top,body) .sch-moregrid{grid-template-columns:1fr}:is(#top,body) .sch-morecard{margin:0 0 20px}:is(#top,body) .sch-socialcard{flex-basis:82%;min-width:0}}
 @media(prefers-reduced-motion:reduce){:is(#top,body) .sch-morecard{transition:none}}
 
-@media(min-width:541px){:is(#top,body) .sch-socialtrack:has(> .sch-socialcard:nth-child(2):last-child)>.sch-socialcard{flex-basis:calc((100% - 24px)/2)}}
+@media(min-width:541px){:is(#top,body) .sch-socialtrack:has(> .sch-socialcard:nth-child(2):last-child)>.sch-socialcard{flex-basis:calc((100% - 24px)/2)}}@media(min-width:900px){:is(#top,body) .sch-socialtrack:has(> .sch-socialcard:nth-child(3):last-child)>.sch-socialcard{flex-basis:calc((100% - 48px)/3)}}
