@@ -147,3 +147,26 @@
 @media(prefers-reduced-motion:reduce){
   :is(#top,body) .sch-home :is(.sch-rail,.sch-toptools) :is(a,button,svg){transition:none}
 }
+
+/* ---------- Menü-Panel im Stil der Leisten ---------- */
+:is(#top,body) .sch-home .sch-panel{left:calc(clamp(16px,4vw,64px) + 88px);width:min(400px,calc(100% - clamp(16px,4vw,64px) - 104px));padding:10px;background:#1b2d4fe6;-webkit-backdrop-filter:blur(12px) saturate(1.2);backdrop-filter:blur(12px) saturate(1.2);border:1px solid #aac7ed33;border-radius:18px;box-shadow:0 18px 40px #0a142a59}
+:is(#top,body) .sch-home .sch-panelhead{margin:0 0 6px;padding:10px 6px 12px 14px;border-bottom:1px solid #aac7ed26}
+:is(#top,body) .sch-home .sch-panelhead span{font:700 24px/1 'SCH Barlow','Arial Narrow',Arial,sans-serif;letter-spacing:.2px;color:#fff}
+:is(#top,body) .sch-home .sch-close{display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid #aac7ed59;border-radius:12px;color:#aac7ed;font:400 26px/1 Arial,sans-serif;transition:background .18s,color .18s,border-color .18s}
+:is(#top,body) .sch-home .sch-close:hover,:is(#top,body) .sch-home .sch-close:focus-visible{background:#aac7ed;border-color:#aac7ed;color:#142440}
+:is(#top,body) .sch-home .sch-close:focus-visible{outline:2px solid #fff;outline-offset:2px}
+:is(#top,body) .sch-home .sch-panel nav{gap:2px}
+:is(#top,body) .sch-home .sch-panel nav a{position:relative;display:block;padding:13px 14px;border:0;border-radius:12px;font:700 21px/1.1 'SCH Barlow','Arial Narrow',Arial,sans-serif;letter-spacing:.2px;color:#fff;text-decoration:none;transition:background .18s,color .18s}
+:is(#top,body) .sch-home .sch-panel nav a+a::before{content:"";position:absolute;top:-1px;left:14px;right:14px;height:1px;background:#aac7ed26}
+:is(#top,body) .sch-home .sch-panel nav a:hover,:is(#top,body) .sch-home .sch-panel nav a:focus-visible{background:#aac7ed;color:#142440}
+:is(#top,body) .sch-home .sch-panel nav a:hover::before,:is(#top,body) .sch-home .sch-panel nav a:hover+a::before,:is(#top,body) .sch-home .sch-panel nav a:focus-visible::before,:is(#top,body) .sch-home .sch-panel nav a:focus-visible+a::before{opacity:0}
+:is(#top,body) .sch-home .sch-panel nav a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media(prefers-reduced-motion:no-preference){
+  :is(#top,body) .sch-home .sch-panel:not([hidden]){animation:sch-panel-auf .22s cubic-bezier(.2,.8,.2,1)}
+  @keyframes sch-panel-auf{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+}
+@media(max-width:767px){
+  :is(#top,body) .sch-home .sch-panel{left:86px;width:calc(100% - 102px);padding:8px;border-radius:16px}
+  :is(#top,body) .sch-home .sch-panelhead span{font-size:21px}
+  :is(#top,body) .sch-home .sch-panel nav a{padding:12px;font-size:19px}
+}
