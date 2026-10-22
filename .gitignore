@@ -2,3 +2,7 @@
 /assets/instagram/
 /_site/
 __pycache__/
+
+# WordPress-Plugin: gebaute Fassung (baue-plugin.py)
+wordpress-plugin/sc1911-startseite/
+wordpress-plugin/sc1911-startseite.zip
