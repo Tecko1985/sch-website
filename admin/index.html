@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Redaktion · 1. SC 1911 Heiligenstadt</title>
+<meta name="theme-color" content="#1b2d4f">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="stylesheet" href="admin.css?v=1">
+</head>
+<body>
+<header class="kopf">
+  <a class="kopf-marke" href="./"><img src="../assets/logo.png" alt="" width="827" height="945"><span>Redaktion</span></a>
+  <nav class="kopf-nav" data-nur-angemeldet hidden>
+    <a href="#liste" data-ziel="liste">Beiträge</a>
+    <a class="kopf-neu" href="#neu" data-ziel="neu">Neuer Beitrag</a>
+    <a href="../index.html" target="_blank" rel="noopener">Seite ansehen</a>
+    <button type="button" class="kopf-ab" data-abmelden>Abmelden</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Anmeldung -->
+  <section class="ansicht anmelden" data-ansicht="anmelden" hidden>
+    <h1>Anmelden</h1>
+    <p>Beiträge werden direkt im GitHub-Repository der Seite gespeichert. Zum Anmelden brauchst du einen persönlichen Zugangsschlüssel von GitHub.</p>
+    <form data-anmeldeform>
+      <label>Zugangsschlüssel
+        <input type="password" name="schluessel" autocomplete="current-password" required spellcheck="false" placeholder="github_pat_…">
+      </label>
+      <label class="haken"><input type="checkbox" name="merken"><span>Auf diesem Gerät angemeldet bleiben</span></label>
+      <button type="submit" class="knopf">Anmelden</button>
+      <p class="meldung" role="status" data-anmeldemeldung></p>
+    </form>
+    <details class="hilfe">
+      <summary>So bekommst du einen Zugangsschlüssel</summary>
+      <ol>
+        <li>Bei GitHub anmelden (das Konto braucht Schreibrechte für <b>Tecko1985/sch-website</b>).</li>
+        <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Neuen „Fine-grained token“ anlegen</a>.</li>
+        <li>Name z. B. „SCH Redaktion“, Ablauf nach Wunsch.</li>
+        <li>Bei <i>Repository access</i> „Only select repositories“ und <b>sch-website</b> wählen.</li>
+        <li>Bei <i>Permissions → Repository permissions</i> „Contents“ auf <b>Read and write</b> stellen.</li>
+        <li>„Generate token“ klicken und den Schlüssel hier einfügen.</li>
+      </ol>
+      <p>Der Schlüssel bleibt in deinem Browser und geht nur an GitHub. Auf fremden Geräten „angemeldet bleiben“ nicht anhaken.</p>
+    </details>
+  </section>
+
+  <!-- Liste -->
+  <section class="ansicht" data-ansicht="liste" hidden>
+    <div class="ansicht-kopf">
+      <h1>Beiträge</h1>
+      <a class="knopf" href="#neu">Neuer Beitrag</a>
+    </div>
+    <p class="hinweis" data-livehinweis hidden></p>
+    <ul class="liste" data-liste></ul>
+    <p class="leer" data-leer hidden>Noch keine Beiträge aus der Redaktion. Ältere Beiträge stehen weiter auf der Seite und lassen sich hier nicht bearbeiten.</p>
+  </section>
+
+  <!-- Bearbeiten -->
+  <section class="ansicht" data-ansicht="bearbeiten" hidden>
+    <div class="ansicht-kopf">
+      <h1 data-editortitel>Neuer Beitrag</h1>
+      <a class="zurueck" href="#liste">Zurück zur Liste</a>
+    </div>
+    <form class="editor" data-editor novalidate>
+      <div class="editor-haupt">
+        <label class="feld">Titel
+          <input type="text" name="titel" required maxlength="140" placeholder="z. B. Auswärtssieg in Schleiz">
+        </label>
+        <div class="feld">
+          <span id="text-label">Text</span>
+          <div class="werkzeuge" role="toolbar" aria-label="Textformat">
+            <button type="button" data-befehl="formatBlock" data-wert="p" title="Absatz">Absatz</button>
+            <button type="button" data-befehl="formatBlock" data-wert="h2" title="Zwischenüberschrift">Überschrift</button>
+            <button type="button" data-befehl="bold" title="Fett (Strg+B)"><b>F</b></button>
+            <button type="button" data-befehl="italic" title="Kursiv (Strg+I)"><i>K</i></button>
+            <button type="button" data-befehl="insertUnorderedList" title="Aufzählung">• Liste</button>
+            <button type="button" data-befehl="insertOrderedList" title="Nummerierte Liste">1. Liste</button>
+            <button type="button" data-befehl="formatBlock" data-wert="blockquote" title="Zitat">Zitat</button>
+            <button type="button" data-befehl="link" title="Link einfügen">Link</button>
+            <button type="button" data-befehl="removeFormat" title="Formatierung entfernen">Format weg</button>
+          </div>
+          <div class="text" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="text-label" data-text></div>
+        </div>
+        <label class="feld">Anreißer <small>für Startseite und Newsliste, ein bis zwei Sätze</small>
+          <textarea name="teaser" rows="3" maxlength="300" placeholder="Wenn leer, wird der Anfang des Textes genommen."></textarea>
+        </label>
+        <div class="feld">
+          <span>Bildergalerie <small>optional, mehrere Bilder möglich</small></span>
+          <div class="galerie" data-galerie></div>
+          <label class="hochladen">Bilder hinzufügen<input type="file" accept="image/*" multiple data-galeriedatei></label>
+        </div>
+      </div>
+
+      <aside class="editor-seite">
+        <div class="feld">
+          <span>Titelbild</span>
+          <div class="titelbild" data-titelbild><p>Noch kein Bild</p></div>
+          <label class="hochladen">Bild wählen<input type="file" accept="image/*" data-titeldatei></label>
+          <button type="button" class="klein-knopf" data-titelweg hidden>Bild entfernen</button>
+        </div>
+        <label class="feld">Datum
+          <input type="date" name="datum" required>
+        </label>
+        <label class="feld">Rubrik
+          <select name="rubrik">
+            <option>News</option>
+            <option>Spielbericht</option>
+            <option>Vorbericht</option>
+            <option>Nachwuchs</option>
+            <option>Verein</option>
+          </select>
+        </label>
+        <label class="haken"><input type="checkbox" name="entwurf"><span>Nur als Entwurf speichern (noch nicht auf der Seite zeigen)</span></label>
+        <button type="submit" class="knopf breit" data-speichern>Veröffentlichen</button>
+        <p class="meldung" role="status" data-editormeldung></p>
+        <button type="button" class="loeschen" data-loeschen hidden>Beitrag löschen</button>
+      </aside>
+    </form>
+  </section>
+</main>
+
+<dialog class="dialog" data-linkdialog>
+  <form method="dialog">
+    <label>Adresse des Links<input type="url" name="url" placeholder="https://…" required></label>
+    <div class="dialog-knoepfe"><button value="abbrechen" formnovalidate class="klein-knopf">Abbrechen</button><button value="ok" class="knopf">Link setzen</button></div>
+  </form>
+</dialog>
+
+<script src="admin.js?v=1"></script>
+</body>
+</html>
