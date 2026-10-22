@@ -35,3 +35,4 @@
 @media(max-width:799px){:is(#top,body) .sch-matches{width:calc(100% - 36px);padding:48px 0}:is(#top,body) .sch-game{flex-basis:calc((100% - 18px)/2)}}
 @media(max-width:540px){:is(#top,body) .sch-matchtabs{gap:15px}:is(#top,body) .sch-matchtabs button{font-size:12px}:is(#top,body) .sch-allgames{font-size:12px}:is(#top,body) .sch-game{flex-basis:88%;min-height:284px}:is(#top,body) .sch-matchpanelhead p{font-size:12px}:is(#top,body) .sch-matches h2{margin-bottom:20px}}
 @media(prefers-reduced-motion:reduce){:is(#top,body) .sch-game{transition:none}}
+@media(max-width:560px){:is(#top,body) .sch-matchbar{flex-wrap:wrap;row-gap:4px}:is(#top,body) .sch-allgames{order:-1;flex:1 0 100%;text-align:right;padding-top:4px}}
