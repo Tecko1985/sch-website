@@ -1,0 +1,192 @@
+/* Spielbericht-Seite: Bild mit Titel, Ergebnisleiste, Reiter, Bericht, Statistik, Ticker.
+   Vereinsfarben Navy, Hellblau, Weiß. */
+@font-face{font-family:"SCH Barlow";src:url(sch-startseite/assets/barlow.woff) format("woff");font-weight:700;font-display:swap}
+
+.sb{--navy:#1b2d4f;--tief:#121f39;--hell:#aac7ed;--mittel:#82a8e9;--nebel:#eef2f8;--linie:#dce3ec;--grau:#56627a;--rot:#c0392b;--gelb:#e9b100;
+  --breit:1180px;--rand:clamp(16px,4vw,48px);
+  color:var(--navy);background:#fff;font:16px/1.65 Arial,Helvetica,sans-serif}
+.sb *{box-sizing:border-box}
+.sb img{display:block;max-width:100%;height:auto}
+.sb h1,.sb h2,.sb h3,.sb p,.sb figure,.sb ol,.sb ul,.sb dl,.sb blockquote{margin:0}
+.sb ol,.sb ul{padding:0;list-style:none}
+.sb :focus-visible{outline:3px solid var(--mittel);outline-offset:2px}
+.sb a{color:var(--navy);text-decoration-color:var(--mittel);text-decoration-thickness:2px;text-underline-offset:.18em}
+.sb .sb-tafel a,.sb .sb-held a{color:#fff}
+.sb .stitel{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.2px;line-height:1.02}
+
+/* ---------- Kopfnavigation ---------- */
+.sb-kopfnav{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif}
+.sb-kopfnav a{color:#fff;text-decoration:none}
+.sb-kopfnav .sb-marke span{font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:.3px}
+.sb-kopfnav .sb-marke img{background:#fff;border-radius:8px;padding:3px;height:52px;width:auto}
+.sb-kopfnav div{flex-wrap:wrap;justify-content:flex-end;gap:6px 22px!important}
+.sb-kopfnav div a{font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.5px;padding:6px 0;border-bottom:2px solid transparent}
+.sb-kopfnav div a:hover{border-bottom-color:#aac7ed}
+@media(max-width:767px){.sb-kopfnav div{display:none!important}.sb-kopfnav .sb-marke span{display:inline!important;font-size:18px}}
+
+/* ---------- Bild mit Titel ---------- */
+.sb-held{position:relative;height:clamp(240px,46vh,480px);overflow:hidden;background:var(--navy)}
+.sb-held img{width:100%;height:100%;object-fit:cover;object-position:50% 32%}
+.sb-held::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#1b2d4f00 35%,#1b2d4fcc 100%)}
+.sb-held h1{position:absolute;z-index:1;left:var(--rand);right:var(--rand);bottom:clamp(18px,3vw,34px);max-width:var(--breit);margin:0 auto;color:#fff;font-size:clamp(44px,7vw,92px)}
+
+/* ---------- Ergebnisleiste ---------- */
+.sb-tafel{background:var(--tief);color:#fff}
+.sb-tafel-innen{max-width:calc(var(--breit) + 2*var(--rand));margin:0 auto;padding:clamp(20px,2.6vw,30px) var(--rand);display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:24px}
+.sb-meta{display:flex;align-items:center;gap:12px;font-size:13px;line-height:1.45;color:#c9d5e8;white-space:nowrap}
+.sb-meta b{display:block;color:#fff;font-weight:700}
+.sb-meta-icon{flex:0 0 auto;width:40px;height:40px;border-radius:8px;background:#ffffff14;display:grid;place-items:center}
+.sb-meta-icon svg{width:22px;height:22px;fill:none;stroke:var(--hell);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.sb-paar{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto minmax(0,1fr);align-items:center;gap:clamp(10px,1.6vw,18px)}
+.sb-team{font-size:clamp(15px,1.6vw,21px);line-height:1.1;min-width:0}
+.sb-team:first-child{text-align:right}
+.sb-wappen{width:clamp(40px,4.4vw,56px);height:clamp(40px,4.4vw,56px);object-fit:contain;background:#fff;border-radius:10px;padding:4px}
+.sb-stand{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sb-stand strong{display:block;min-width:96px;padding:6px 14px 4px;border-radius:10px;background:#fff;color:var(--navy);text-align:center;font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-size:clamp(28px,3.2vw,40px);line-height:1;letter-spacing:1px}
+.sb-stand span{font-size:12px;color:#c9d5e8;letter-spacing:.5px}
+.sb-status{justify-self:end;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 12px;border-radius:999px;background:var(--hell);color:var(--tief)}
+.sb-tore{grid-column:1/-1;display:flex;justify-content:center;flex-wrap:wrap;gap:4px 18px;padding-top:14px;margin-top:4px;border-top:1px solid #ffffff1f;font-size:13px;color:#c9d5e8}
+.sb-tore li{display:flex;align-items:center;gap:6px}
+.sb-tore svg{width:13px;height:13px;flex:0 0 auto}
+.sb-tore .rot{color:#fff}
+
+/* ---------- Reiter ---------- */
+.sb-reiter-band{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--linie)}
+.sb-reiter{max-width:calc(var(--breit) + 2*var(--rand));margin:0 auto;padding:0 var(--rand);display:flex;gap:clamp(4px,1.6vw,22px);overflow-x:auto;scrollbar-width:none}
+.sb-reiter::-webkit-scrollbar{display:none}
+.sb-reiter button{position:relative;flex:0 0 auto;padding:18px 6px 16px;border:0;background:none;color:var(--grau);cursor:pointer;font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:15px;letter-spacing:.6px;text-transform:uppercase}
+.sb-reiter button:hover{color:var(--navy)}
+.sb-reiter button[aria-selected=true]{color:var(--navy)}
+.sb-reiter button[aria-selected=true]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--navy);border-radius:3px 3px 0 0}
+
+/* ---------- Bereiche ---------- */
+.sb-bereich{max-width:calc(var(--breit) + 2*var(--rand));margin:0 auto;padding:clamp(32px,4.5vw,64px) var(--rand) clamp(56px,6vw,88px)}
+.sb-bereich[hidden]{display:none}
+.sb-bereich.grau{max-width:none;background:var(--nebel)}
+.sb-schmal{max-width:900px;margin:0 auto}
+.sb-h2{font-size:clamp(26px,3vw,38px);margin-bottom:22px}
+
+/* Spielbericht */
+.sb-artikel{max-width:900px;margin:0 auto}
+.sb-artikel h2.stitel{font-size:clamp(28px,3.6vw,46px);color:var(--navy)}
+.sb-autor{margin-top:12px!important;color:var(--grau);font-size:14px}
+.sb-artikel figure{margin:28px 0!important}
+.sb-artikel figure img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px}
+.sb-artikel figcaption{margin-top:8px;font-size:14px;color:var(--grau)}
+.sb-artikel p{font-size:17px;line-height:1.75;margin:0 0 1em}
+.sb-artikel p.sb-vorspann{font-size:19px;line-height:1.65;color:var(--navy)}
+.sb-abschnitt{margin-top:36px;padding-top:30px;border-top:1px solid var(--linie)}
+.sb-kicker{display:block;font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.8px;font-size:15px;color:var(--grau);margin-bottom:2px}
+.sb-artikel h3.stitel{font-size:clamp(22px,2.4vw,30px);margin-bottom:14px}
+.sb-zitat{margin:28px 0!important;padding:22px 26px;background:var(--nebel);border-left:5px solid var(--navy);border-radius:0 8px 8px 0}
+.sb-zitat p{font-size:20px!important;line-height:1.5!important;margin:0 0 8px!important}
+.sb-zitat footer{font-size:14px;color:var(--grau)}
+.sb-daten{margin-top:40px;padding-top:30px;border-top:1px solid var(--linie)}
+.sb-daten h3.stitel{font-size:clamp(22px,2.4vw,30px);margin-bottom:16px}
+.sb-daten p{font-size:15px!important;line-height:1.6!important;margin:0 0 12px!important}
+.sb-daten b{font-weight:700}
+
+/* Spielinfo */
+.sb-info{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.sb-info div{padding:18px 20px;background:var(--nebel);border-radius:10px}
+.sb-info dt{font-size:13px;color:var(--grau)}
+.sb-info dd{margin:4px 0 0;font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:22px;line-height:1.15;text-transform:uppercase}
+.sb-verlauf{margin-top:32px!important}
+
+/* Galerie */
+.sb-galerie{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.sb-galerie button{padding:0;border:0;background:var(--nebel);border-radius:6px;overflow:hidden;cursor:zoom-in}
+.sb-galerie img{width:100%;aspect-ratio:4/5;object-fit:cover;transition:transform .3s}
+.sb-galerie button:hover img{transform:scale(1.04)}
+.sb-bildfenster{border:0;padding:0;background:transparent;max-width:min(1000px,94vw);max-height:94vh;overflow:visible}
+.sb-bildfenster::backdrop{background:#0b1529e8}
+.sb-bildfenster img{max-height:82vh;max-width:100%;margin:0 auto;border-radius:6px}
+.sb-bildfenster-leiste{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;color:#fff;font:14px Arial,sans-serif}
+.sb-bildfenster-leiste div{display:flex;gap:8px}
+.sb-bildfenster button{min-height:42px;padding:0 16px;border:0;border-radius:999px;background:#fff;color:var(--navy);font:700 14px Arial,sans-serif;cursor:pointer}
+
+/* Liveticker */
+.sb-ticker{max-width:820px;margin:0 auto}
+.sb-tickerkopf{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px;background:var(--tief);color:#fff;border-radius:8px}
+.sb-tickerkopf b{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.4px}
+.sb-tickerkopf span{font-size:13px;color:#c9d5e8}
+.sb-tickerfazit{padding:16px 18px 6px;font-size:16px}
+.sb-ereignisse li{display:grid;grid-template-columns:52px 1fr auto;gap:16px;align-items:start;padding:18px 0;border-bottom:1px solid var(--linie)}
+.sb-minute{display:grid;place-items:center;height:36px;border-radius:6px;background:var(--nebel);font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:19px;color:var(--grau)}
+.sb-ereignisse .tor .sb-minute{background:var(--navy);color:#fff}
+.sb-ereignisse h3{font-size:20px;margin-bottom:4px}
+.sb-ereignisse p{font-size:15px;color:var(--grau)}
+.sb-ereignisse .stand{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:22px;white-space:nowrap}
+.sb-karte{display:inline-block;width:12px;height:16px;border-radius:2px;background:var(--rot);vertical-align:-2px;margin-right:6px}
+.sb-quelle{margin-top:18px!important;font-size:13px;color:var(--grau)}
+.sb-quelle a{color:var(--navy)}
+
+/* Stimmen */
+.sb-stimme{max-width:820px;margin:0 auto;padding:clamp(24px,4vw,44px);background:var(--navy);color:#fff;border-radius:12px;position:relative;overflow:hidden}
+.sb-stimme::before{content:"„";position:absolute;right:24px;top:-40px;font:700 220px/1 Georgia,serif;color:#ffffff12}
+.sb-stimme p{position:relative;font-size:clamp(20px,2.4vw,27px);line-height:1.45}
+.sb-stimme footer{position:relative;margin-top:18px;display:flex;flex-direction:column}
+.sb-stimme footer b{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:.4px}
+.sb-stimme footer span{color:var(--hell);font-size:14px}
+
+/* Statistiken */
+.sb-statkopf{max-width:820px;margin:0 auto 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sb-statkopf div{display:flex;align-items:center;gap:10px;font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;text-transform:uppercase;font-size:16px}
+.sb-statkopf img{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:8px;padding:3px}
+.sb-statliste{max-width:820px;margin:0 auto;display:grid;gap:8px}
+.sb-statliste h3{font-size:24px;margin:22px 0 6px}
+.sb-statliste h3:first-child{margin-top:0}
+.sb-stat{display:grid;grid-template-columns:56px 1fr 1fr 56px;grid-template-rows:auto auto;column-gap:10px;align-items:center;padding:12px 16px 14px;background:#fff;border-radius:8px}
+.sb-stat dt{grid-column:1/-1;text-align:center;font-size:14px;margin-bottom:6px}
+.sb-stat dd{margin:0}
+.sb-stat .wert{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:22px}
+.sb-stat .wert.rechts{text-align:right}
+.sb-balken{height:7px;border-radius:7px;background:#e3e9f1;overflow:hidden;display:flex}
+.sb-balken.links{justify-content:flex-end}
+.sb-balken i{display:block;height:100%;border-radius:7px;background:var(--navy);width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.sb-balken.rechts i{background:#9aa6b8}
+.sb .sb-stathinweis{max-width:820px;margin:16px auto 0;font-size:13px;color:var(--grau)}
+
+/* Aufstellung */
+.sb-aufstellung{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2.4vw,28px)}
+.sb-elf{background:var(--nebel);border-radius:12px;padding:clamp(18px,2.4vw,26px)}
+.sb-elf header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sb-elf header img{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:8px;padding:3px}
+.sb-elf h3{font-size:22px}
+.sb-elf ol{counter-reset:spieler}
+.sb-elf li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 2px;border-top:1px solid var(--linie);font-weight:700}
+.sb-elf li small{font-weight:400;color:var(--grau);font-size:13px;text-align:right}
+.sb-wechsel{color:#1d7a45;font-weight:700}
+.sb-hinweis{margin-top:16px!important;font-size:13px;color:var(--grau)}
+
+/* ---------- Bewegung ---------- */
+@media(prefers-reduced-motion:reduce){.sb-galerie img,.sb-balken i{transition:none}}
+
+/* ---------- Handy ---------- */
+@media(max-width:900px){
+  .sb-tafel-innen{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .sb-meta{order:2;justify-content:center;text-align:left}
+  .sb-status{order:3;justify-self:center}
+  .sb-tore{order:4;width:100%}
+  .sb-held{height:clamp(220px,38vh,340px)}
+  .sb-paar{order:1;width:100%}
+}
+@media(max-width:640px){
+  .sb-paar{grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto;row-gap:8px}
+  .sb-paar .sb-wappen:nth-of-type(1){grid-column:1;grid-row:1;justify-self:center}
+  .sb-paar .sb-stand{grid-column:2;grid-row:1}
+  .sb-paar .sb-wappen:nth-of-type(2){grid-column:3;grid-row:1;justify-self:center}
+  .sb-team{grid-row:2;white-space:normal;text-align:center!important;font-size:15px}
+  .sb-team:first-child{grid-column:1}
+  .sb-team:last-child{grid-column:3}
+  .sb-aufstellung{grid-template-columns:1fr}
+  .sb-ereignisse li{grid-template-columns:44px 1fr auto;gap:12px}
+  .sb-stat{grid-template-columns:40px 1fr 1fr 40px;padding:10px 12px 12px}
+  .sb-reiter button{font-size:14px;padding:16px 4px 14px}
+  .sb-artikel p{font-size:16px}
+}
+
+/* Im neuen Design (/neu/): unter der festen Kopfleiste andocken, Hausschrift übernehmen */
+.unterseite .sb{font-family:"Archivo",Arial,Helvetica,sans-serif}
+.unterseite .sb-reiter-band{top:66px}
+@media(max-width:640px){.unterseite .sb-reiter-band{top:60px}}
