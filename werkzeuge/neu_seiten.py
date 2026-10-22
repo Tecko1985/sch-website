@@ -86,7 +86,8 @@ def fuss(p):
 </footer>"""
 
 
-def seite(p, titel, beschreibung, aktiv, kopf, inhalt, skripte):
+def seite(p, titel, beschreibung, aktiv, kopf, inhalt, skripte, stile=()):
+    zusatz = "".join(f'<link rel="stylesheet" href="{x}">\n' for x in stile)
     skr = "".join(f'<script src="{s}" defer></script>\n' for s in skripte)
     return f"""<!doctype html>
 <html lang="de">
@@ -102,7 +103,7 @@ def seite(p, titel, beschreibung, aktiv, kopf, inhalt, skripte):
 <link rel="preload" href="{p}fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{p}neu.css?v=3">
 <link rel="stylesheet" href="{p}seite.css?v=1">
-</head>
+{zusatz}</head>
 <body class="unterseite">
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 
@@ -258,15 +259,16 @@ def baue_newsletter():
 
 def baue_spielbericht():
     s = open("spielbericht-erfurt.html", encoding="utf-8").read()
-    main = s[s.find("<main"):s.find("</main>")]
     titel = re.search(r"<title>(.*?)</title>", s, re.S).group(1).strip()
-    # Den alten Bildkopf weglassen, der neue Seitenkopf übernimmt
-    main = re.sub(r'<div class="sch-reporthero">.*?</div></div>', "", main, count=1, flags=re.S)
-    main = main.replace('<main class="sch-report">', '<div class="sch-report inhalt bericht">', 1) + "</div>"
+    if '<main class="sb">' not in s:
+        raise SystemExit("spielbericht-erfurt.html hat nicht den erwarteten Aufbau (<main class=\"sb\">)")
+    # Die Spielberichtsseite bringt Bildkopf, Ergebnisleiste und Reiter selbst mit
+    main = s[s.find('<main class="sb">'):s.find("</main>")] + "</div>"
+    main = main.replace('<main class="sb">', '<div class="sb">', 1)
     main = pfade_oben(main)
-    kopf = seitenkopf("Thüringer Landespokal, Achtelfinale", "SCH gegen Rot-Weiß Erfurt", "4. Oktober 2026",
-                      "../assets/report/46.webp", "Spielszene gegen Rot-Weiß Erfurt")
-    out = seite("", titel, meta(s, "description"), "seiten/news.html", kopf, main, ["../sch-startseite/assets/report.js"])
+    main = re.sub(r'data-gross="assets/', 'data-gross="../assets/', main)
+    out = seite("", titel, meta(s, "description"), "seiten/news.html", "", main,
+                ["../spielbericht.js?v=1"], ["../spielbericht.css?v=1"])
     open("neu/spielbericht-erfurt.html", "w", encoding="utf-8").write(out)
 
 
