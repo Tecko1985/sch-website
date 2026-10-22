@@ -66,6 +66,15 @@ jobs:
       # anheben (nur Versionen, die mindestens zwei Wochen alt sind).
       - run: pip install --quiet pillow==12.3.0 tzdata==2026.4
 
+      # Beitraege aus der Redaktion (/admin/, inhalte/beitraege/*.json) als Seiten einbauen,
+      # News-Liste und Startseiten-Karten aktualisieren, danach das neue Design (/neu/) neu erzeugen.
+      # Laeuft vor dem Instagram-Schritt, also ohne Secrets in der Umgebung.
+      - name: Redaktionsbeitraege einbauen
+        run: |
+          python werkzeuge/beitraege.py _site
+          python _site/werkzeuge/neu_seiten.py
+          rm -rf _site/werkzeuge/__pycache__
+
       - name: Instagram-Beitraege holen
         id: instagram
         continue-on-error: true
