@@ -117,4 +117,4 @@
   :is(#top,body) .sch-home .sch-panelhead span{font-size:21px}
   :is(#top,body) .sch-home .sch-panel nav a{padding:12px;font-size:19px}
 }
-
+@media(max-width:600px){:is(#top,body) :is(.sch-allgames,.sch-sectionhead>a,.sch-minihead a,.sch-socialcaption>a,.join a.read,.nl-klein a){display:inline-flex;align-items:center;min-height:44px}:is(#top,body) .sch-allgames{justify-content:flex-end}:is(#top,body) :is(.sch-matcharrows,.sch-socialarrows) button{width:44px;height:44px}:is(#top,body) .sch-home .sch-toptools a{min-width:44px;min-height:44px}:is(#top,body) .sch-logopause{min-height:44px}:is(#top,body) .nl-haken input{width:24px;height:24px}:is(#top,body) .sch-home .sch-rail span{font-size:11px}:is(#top,body) :is(.sch-postcopy time,.sch-matchsource,.sch-minitable th,.sch-minitable td,.sch-minitable abbr){font-size:12px}:is(#top,body) :is(.sch-outcome,.sch-teammark){font-size:11px}}
