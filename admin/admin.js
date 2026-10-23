@@ -88,6 +88,7 @@
         if (merken) localStorage.setItem(SPEICHER, s); else localStorage.removeItem(SPEICHER);
       } catch (e) {}
       $$('[data-nur-angemeldet]').forEach(function (el) { el.hidden = false; });
+      holeVorlagen();
     });
   }
   function abmelden() {
@@ -191,6 +192,9 @@
     titelbild = d.bild || null;
     galerie = (d.galerie || []).slice();
     zeichneBilder();
+    unberuehrt = null;
+    $('[data-vorlagewahl]').value = '';
+    zeichneVorlagen();
     $('[data-loeschen]').hidden = !b;
     meldung('', '');
     aktualisiereKnopf();
@@ -291,6 +295,7 @@
         var sel = window.getSelection();
         auswahl = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
         linkDialog.querySelector('input').value = 'https://';
+        linkDialog.returnValue = '';
         linkDialog.showModal();
         return;
       }
@@ -300,6 +305,7 @@
         document.execCommand('formatBlock', false, aktuellerBlock === b.dataset.wert ? 'p' : b.dataset.wert);
         return;
       }
+      if (befehl === 'platzhalter') { naechsterPlatzhalter(); return; }
       if (befehl === 'removeFormat') { document.execCommand('removeFormat'); document.execCommand('unlink'); document.execCommand('formatBlock', false, 'p'); return; }
       document.execCommand(befehl);
     });
@@ -341,6 +347,213 @@
     });
   }
 
+  // ---------------------------------------------------------------- Vorlagen
+  // Gerüste für wiederkehrende Beiträge. Sie liegen gemeinsam für alle in inhalte/vorlagen.json
+  // (der Seitenbau liest nur inhalte/beitraege/). Solange die Datei fehlt, gelten die Grundvorlagen.
+  var VORLAGEN = 'inhalte/vorlagen.json';
+  var GRUND = [
+    { id: 'grund-spielbericht', name: 'Spielbericht', rubrik: 'Spielbericht', standard: true,
+      titel: '[Sieg/Remis/Niederlage] gegen [Gegner]',
+      teaser: '[Ergebnis in einem Satz: Wer hat wie gespielt?]',
+      text: '<p><b>[Liga], [Spieltag]. Spieltag: SC 1911 Heiligenstadt – [Gegner] [Tore]:[Tore] ([Halbzeit])</b></p>' +
+        '<h2>Spielverlauf</h2><p>[Wie lief die erste Halbzeit?]</p><p>[Wie lief die zweite Halbzeit?]</p>' +
+        '<h2>Stimmen zum Spiel</h2><blockquote>[Zitat Trainer oder Spieler]</blockquote>' +
+        '<h2>Aufstellung und Tore</h2><p><b>SCH:</b> [Aufstellung]</p><p><b>Tore:</b> [Minute, Torschütze]</p>' +
+        '<h2>Wie geht es weiter?</h2><p>[Nächstes Spiel: Tag, Datum, Uhrzeit, Gegner, Ort]</p>' },
+    { id: 'grund-vorbericht', name: 'Vorbericht', rubrik: 'Vorbericht', standard: true,
+      titel: 'Vorschau: SCH gegen [Gegner]',
+      teaser: '[Worum geht es am Wochenende?]',
+      text: '<h2>Die Ausgangslage</h2><p>[Tabellenplatz, letzte Ergebnisse, Bilanz gegen den Gegner]</p>' +
+        '<h2>Personal</h2><p>[Wer fehlt, wer kommt zurück?]</p>' +
+        '<h2>Anpfiff</h2><ul><li><b>Wann:</b> [Tag, Datum, Uhrzeit]</li><li><b>Wo:</b> [Sportplatz, Ort]</li><li><b>Eintritt:</b> [Preis]</li></ul>' +
+        '<p>[Aufruf an die Fans]</p>' },
+    { id: 'grund-nachwuchs', name: 'Nachwuchs', rubrik: 'Nachwuchs', standard: true,
+      titel: '[Mannschaft, z. B. D-Jugend]: [Kurzmeldung]',
+      teaser: '[Was ist passiert?]',
+      text: '<p>[Was ist passiert? Spiel, Turnier, Ausflug …]</p><p>[Besondere Momente, Ergebnisse]</p>' +
+        '<h2>Danke</h2><p>[Dank an Trainer, Eltern, Helfer, Sponsoren]</p>' },
+    { id: 'grund-verein', name: 'Vereinsnachricht', rubrik: 'Verein', standard: true,
+      titel: '[Thema]',
+      teaser: '[Worum geht es in einem Satz?]',
+      text: '<p>[Worum geht es?]</p><ul><li><b>Wann:</b> [Datum, Uhrzeit]</li><li><b>Wo:</b> [Ort]</li></ul>' +
+        '<p><b>Fragen?</b> [Ansprechpartner, Kontakt]</p>' },
+    { id: 'grund-news', name: 'Kurzmeldung', rubrik: 'News', standard: false,
+      titel: '[Überschrift]',
+      teaser: '',
+      text: '<p>[Die Nachricht in zwei, drei Sätzen.]</p><p>[Mehr Infos oder Link]</p>' }
+  ];
+  var vorlagen = [];
+  var vorlagenOk = false;   // false = Datei nicht lesbar; dann wird nichts gespeichert, damit nichts überschrieben wird
+  var unberuehrt = null;    // Stand direkt nach dem Einsetzen einer Vorlage
+  var vorlageWahl = $('[data-vorlagewahl]');
+  var vorlageDialog = $('[data-vorlagedialog]');
+
+  function kopie(x) { return JSON.parse(JSON.stringify(x)); }
+  function vorlageNach(id) { return vorlagen.filter(function (v) { return v.id === id; })[0]; }
+
+  function ladeVorlagen() {
+    return api('/contents/' + VORLAGEN + '?ref=' + ZWEIG).then(function (j) {
+      var liste = JSON.parse(base64ZuText(j.content));
+      return Array.isArray(liste) ? liste : [];
+    }).catch(function (e) {
+      if (e.status === 404) return kopie(GRUND);
+      throw e;
+    });
+  }
+  function holeVorlagen() {
+    return ladeVorlagen().then(function (l) { vorlagen = l; vorlagenOk = true; })
+      .catch(function () { vorlagen = kopie(GRUND); vorlagenOk = false; })
+      .then(zeichneVorlagen);
+  }
+  // Frisch laden, ändern, schreiben – so gehen Vorlagen anderer nicht verloren.
+  // [skip ci]: Vorlagen ändern nichts an der Seite, also kein Neubau.
+  function speichereVorlagen(aendern, nachricht) {
+    return ladeVorlagen().then(function (liste) {
+      liste = aendern(liste);
+      return commit([{ pfad: VORLAGEN, inhalt: textZuBase64(JSON.stringify(liste, null, 2) + '\n') }], nachricht + ' (Redaktion) [skip ci]')
+        .then(function () { vorlagen = liste; vorlagenOk = true; zeichneVorlagen(); });
+    });
+  }
+
+  function zeichneVorlagen() {
+    var alt = vorlageWahl.value, rubrik = form.rubrik.value;
+    var sortiert = vorlagen.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
+    vorlageWahl.innerHTML = '';
+    vorlageWahl.appendChild(new Option(vorlagen.length ? '– Vorlage einsetzen –' : '– noch keine Vorlagen –', ''));
+    [[rubrik, true], ['Andere Rubriken', false]].forEach(function (g) {
+      var teil = sortiert.filter(function (v) { return (v.rubrik === rubrik) === g[1]; });
+      if (!teil.length) return;
+      var og = document.createElement('optgroup');
+      og.label = g[0];
+      teil.forEach(function (v) {
+        og.appendChild(new Option(v.name + (g[1] ? (v.standard ? ' (Standard)' : '') : ' · ' + v.rubrik), v.id));
+      });
+      vorlageWahl.appendChild(og);
+    });
+    vorlageWahl.value = vorlageNach(alt) ? alt : '';
+    $('[data-vorlageweg]').hidden = !vorlageWahl.value;
+  }
+
+  function stand() { return form.titel.value + '\u0001' + form.teaser.value + '\u0001' + textfeld.innerHTML; }
+  function istUnberuehrt() {
+    return (!form.titel.value.trim() && !form.teaser.value.trim() && !textfeld.textContent.trim()) || stand() === unberuehrt;
+  }
+
+  function setzeVorlage(v) {
+    form.rubrik.value = v.rubrik;
+    form.titel.value = v.titel || '';
+    form.teaser.value = v.teaser || '';
+    textfeld.innerHTML = v.text || '';
+    unberuehrt = stand();
+    vorlageWahl.value = v.id;
+    zeichneVorlagen();
+    meldung('Vorlage „' + v.name + '“ eingesetzt. Jetzt die [Platzhalter] ausfüllen.', 'ok');
+  }
+
+  vorlageWahl.addEventListener('change', function () {
+    var v = vorlageNach(vorlageWahl.value);
+    $('[data-vorlageweg]').hidden = !v;
+    if (!v) return;
+    if (!istUnberuehrt() && !window.confirm('Titel, Anreißer und Text werden durch die Vorlage „' + v.name + '“ ersetzt. Weiter?')) {
+      vorlageWahl.value = ''; $('[data-vorlageweg]').hidden = true; return;
+    }
+    setzeVorlage(v);
+  });
+
+  // Neuer, noch leerer Beitrag: Standardvorlage der Rubrik einsetzen
+  form.rubrik.addEventListener('change', function () {
+    var rubrik = form.rubrik.value;
+    var v = vorlagen.filter(function (x) { return x.rubrik === rubrik && x.standard; })[0];
+    if (v && !aktuell && istUnberuehrt()) { setzeVorlage(v); return; }
+    zeichneVorlagen();
+  });
+
+  $('[data-vorlagespeichern]').addEventListener('click', function () {
+    if (!vorlagenOk) { meldung('Die Vorlagen konnten nicht geladen werden. Bitte die Seite neu laden.', 'fehler'); return; }
+    normalisiereText();
+    if (!form.titel.value.trim() && !textfeld.textContent.trim()) { meldung('Erst Titel oder Text schreiben, dann als Vorlage speichern.', 'fehler'); return; }
+    var gewaehlt = vorlageNach(vorlageWahl.value);
+    var passt = gewaehlt && gewaehlt.rubrik === form.rubrik.value;
+    vorlageDialog.querySelector('[name=name]').value = passt ? gewaehlt.name : '';
+    vorlageDialog.querySelector('[name=standard]').checked = passt ? !!gewaehlt.standard :
+      !vorlagen.some(function (v) { return v.rubrik === form.rubrik.value && v.standard; });
+    $('[data-vorlagerubrik]').textContent = '„' + form.rubrik.value + '“';
+    vorlageDialog.returnValue = '';   // sonst gilt nach Esc noch das „ok“ vom letzten Mal
+    vorlageDialog.showModal();
+  });
+
+  vorlageDialog.addEventListener('close', function () {
+    if (vorlageDialog.returnValue !== 'ok') return;
+    var name = vorlageDialog.querySelector('[name=name]').value.trim();
+    if (!name) return;
+    var neu = {
+      id: '', name: name, rubrik: form.rubrik.value,
+      titel: form.titel.value.trim(), teaser: form.teaser.value.trim(), text: textfeld.innerHTML.trim(),
+      standard: vorlageDialog.querySelector('[name=standard]').checked
+    };
+    var gleich = function (v) { return v.rubrik === neu.rubrik && v.name.toLowerCase() === name.toLowerCase(); };
+    var vorhanden = vorlagen.filter(gleich)[0];
+    if (vorhanden && vorhanden.id !== vorlageWahl.value &&
+        !window.confirm('Es gibt schon eine Vorlage „' + vorhanden.name + '“ in der Rubrik ' + neu.rubrik + '. Überschreiben?')) return;
+    meldung('Vorlage wird gespeichert …', '');
+    speichereVorlagen(function (liste) {
+      var alt = liste.filter(gleich)[0];
+      neu.id = alt ? alt.id : 'v-' + Date.now().toString(36);
+      if (neu.standard) liste.forEach(function (v) { if (v.rubrik === neu.rubrik) v.standard = false; });
+      return liste.filter(function (v) { return v.id !== neu.id; }).concat([neu]);
+    }, (vorhanden ? 'Vorlage geändert: ' : 'Neue Vorlage: ') + name).then(function () {
+      vorlageWahl.value = neu.id;
+      unberuehrt = stand();
+      zeichneVorlagen();
+      meldung('Vorlage „' + name + '“ gespeichert. Sie steht jetzt allen in der Redaktion zur Verfügung.', 'ok');
+    }).catch(function (err) { meldung('Vorlage nicht gespeichert: ' + err.message, 'fehler'); });
+  });
+
+  $('[data-vorlageweg]').addEventListener('click', function () {
+    var v = vorlageNach(vorlageWahl.value);
+    if (!v) return;
+    if (!vorlagenOk) { meldung('Die Vorlagen konnten nicht geladen werden. Bitte die Seite neu laden.', 'fehler'); return; }
+    if (!window.confirm('Vorlage „' + v.name + '“ für alle in der Redaktion löschen? Der Beitrag im Editor bleibt, wie er ist.')) return;
+    meldung('Vorlage wird gelöscht …', '');
+    speichereVorlagen(function (liste) {
+      return liste.filter(function (x) { return x.id !== v.id; });
+    }, 'Vorlage gelöscht: ' + v.name).then(function () {
+      meldung('Vorlage „' + v.name + '“ gelöscht.', 'ok');
+    }).catch(function (err) { meldung('Löschen fehlgeschlagen: ' + err.message, 'fehler'); });
+  });
+
+  // [Platzhalter] aus Vorlagen finden und der Reihe nach markieren
+  var PLATZHALTER = /\[[^\]\n]{1,80}\]/g;
+  function offenePlatzhalter() {
+    var gefunden = (form.titel.value + '\n' + form.teaser.value + '\n' + textfeld.textContent).match(PLATZHALTER) || [];
+    return gefunden.filter(function (p, i) { return gefunden.indexOf(p) === i; });
+  }
+  function naechsterPlatzhalter() {
+    var treffer = [], n, m;
+    var gang = document.createTreeWalker(textfeld, NodeFilter.SHOW_TEXT);
+    while ((n = gang.nextNode())) {
+      PLATZHALTER.lastIndex = 0;
+      while ((m = PLATZHALTER.exec(n.data))) treffer.push({ n: n, a: m.index, b: m.index + m[0].length });
+    }
+    if (!treffer.length) {
+      var rest = offenePlatzhalter();
+      meldung(rest.length ? 'Im Text ist alles ausgefüllt. Noch offen in Titel oder Anreißer: ' + rest.join(', ') : 'Keine Platzhalter mehr offen.', rest.length ? 'fehler' : 'ok');
+      return;
+    }
+    var sel = window.getSelection(), ziel = treffer[0];
+    if (sel.rangeCount && textfeld.contains(sel.getRangeAt(0).endContainer)) {
+      var hier = sel.getRangeAt(0).cloneRange();
+      hier.collapse(false);
+      for (var i = 0; i < treffer.length; i++) {
+        if (hier.comparePoint(treffer[i].n, treffer[i].a) >= 0) { ziel = treffer[i]; break; }
+      }
+    }
+    var r = document.createRange();
+    r.setStart(ziel.n, ziel.a); r.setEnd(ziel.n, ziel.b);
+    sel.removeAllRanges(); sel.addRange(r);
+    if (ziel.n.parentNode.scrollIntoView) ziel.n.parentNode.scrollIntoView({ block: 'center' });
+  }
+
   function slugAus(titel, datum) {
     var s = (titel || 'beitrag').toLowerCase()
       .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
@@ -359,6 +572,9 @@
     normalisiereText();
     var text = textfeld.innerHTML.trim();
     if (!textfeld.textContent.trim() && !form.entwurf.checked) { meldung('Der Text ist noch leer.', 'fehler'); textfeld.focus(); return; }
+    var offen = offenePlatzhalter();
+    if (offen.length && !form.entwurf.checked &&
+        !window.confirm('Im Beitrag stehen noch Platzhalter aus der Vorlage: ' + offen.slice(0, 5).join(', ') + (offen.length > 5 ? ' …' : '') + '\n\nTrotzdem veröffentlichen?')) return;
 
     var slug = aktuell ? aktuell.slug : slugAus(titel, form.datum.value);
     var vorher = aktuell ? aktuell.daten : {};

@@ -6,3 +6,7 @@ Die Bilder liegen unter `assets/beitraege/`.
 Beim Veröffentlichen (Workflow „Seite bauen“) macht `werkzeuge/beitraege.py` daraus die Beitragsseite,
 die News-Liste und die Karten auf der Startseite, in beiden Designs. Die Dateien bitte nicht von Hand
 umbenennen: Der Dateiname ist zugleich die Adresse des Beitrags (`seiten/beitrag-<name>.html`).
+
+Vorlagen für wiederkehrende Beiträge (Spielbericht, Vorbericht …) liegen in `inhalte/vorlagen.json`.
+Die Redaktion legt sie an, ändert und löscht sie. Der Seitenbau liest diese Datei nicht.
+Fehlt sie, nimmt die Redaktion eingebaute Grundvorlagen.

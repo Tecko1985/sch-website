@@ -7,7 +7,7 @@
 <title>Redaktion · 1. SC 1911 Heiligenstadt</title>
 <meta name="theme-color" content="#1b2d4f">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
-<link rel="stylesheet" href="admin.css?v=1">
+<link rel="stylesheet" href="admin.css?v=2">
 </head>
 <body>
 <header class="kopf">
@@ -81,6 +81,7 @@
             <button type="button" data-befehl="formatBlock" data-wert="blockquote" title="Zitat">Zitat</button>
             <button type="button" data-befehl="link" title="Link einfügen">Link</button>
             <button type="button" data-befehl="removeFormat" title="Formatierung entfernen">Format weg</button>
+            <button type="button" data-befehl="platzhalter" title="Zum nächsten [Platzhalter] springen">[…] ›</button>
           </div>
           <div class="text" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="text-label" data-text></div>
         </div>
@@ -113,6 +114,15 @@
             <option>Verein</option>
           </select>
         </label>
+        <div class="feld vorlagen">
+          <label for="vorlagewahl">Vorlage <small>Gerüst für wiederkehrende Beiträge</small></label>
+          <select id="vorlagewahl" data-vorlagewahl></select>
+          <p class="vorlagen-tipp">Stellen in [eckigen Klammern] ausfüllen. Der Knopf <b>[…] ›</b> über dem Text springt zur nächsten.</p>
+          <div class="vorlagen-knoepfe">
+            <button type="button" class="klein-knopf" data-vorlagespeichern>Als Vorlage speichern</button>
+            <button type="button" class="loeschen" data-vorlageweg hidden>Vorlage löschen</button>
+          </div>
+        </div>
         <label class="haken"><input type="checkbox" name="entwurf"><span>Nur als Entwurf speichern (noch nicht auf der Seite zeigen)</span></label>
         <button type="submit" class="knopf breit" data-speichern>Veröffentlichen</button>
         <p class="meldung" role="status" data-editormeldung></p>
@@ -129,6 +139,16 @@
   </form>
 </dialog>
 
-<script src="admin.js?v=1"></script>
+<dialog class="dialog" data-vorlagedialog>
+  <form method="dialog">
+    <h2 class="dialog-titel">Als Vorlage speichern</h2>
+    <p class="dialog-text">Gespeichert werden Titel, Anreißer, Text und Rubrik – nicht Bilder und Datum. Die Vorlage steht danach allen in der Redaktion zur Verfügung.</p>
+    <label>Name der Vorlage<input type="text" name="name" maxlength="60" required placeholder="z. B. Spielbericht Herren"></label>
+    <label class="haken"><input type="checkbox" name="standard"><span>Automatisch einsetzen, wenn bei einem neuen Beitrag die Rubrik <b data-vorlagerubrik></b> gewählt wird</span></label>
+    <div class="dialog-knoepfe"><button value="abbrechen" formnovalidate class="klein-knopf">Abbrechen</button><button value="ok" class="knopf">Speichern</button></div>
+  </form>
+</dialog>
+
+<script src="admin.js?v=2"></script>
 </body>
 </html>

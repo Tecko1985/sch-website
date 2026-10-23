@@ -87,6 +87,13 @@ input:focus,select:focus,textarea:focus,.text:focus{outline:none;border-color:va
 .galerie button{position:absolute;top:4px;right:4px;width:30px;height:30px;border:0;border-radius:50%;background:#fff;color:var(--rot);font:700 18px/1 Arial;cursor:pointer;box-shadow:0 2px 8px #0003}
 .loeschen{align-self:flex-start;border:0;background:none;color:var(--rot);font:600 14px "Archivo",Arial,sans-serif;text-decoration:underline;cursor:pointer;padding:0}
 
+.vorlagen{padding:14px;margin:0 -14px;border-radius:12px;background:var(--nebel)}
+.vorlagen label{font-weight:650}
+.vorlagen-tipp{margin:0;font-size:14px;font-weight:400;color:var(--grau);line-height:1.4}
+.vorlagen-knoepfe{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+.dialog-titel{margin:0;font-stretch:125%;font-weight:850;font-size:22px;line-height:1.1}
+.dialog-text{margin:0;color:var(--grau);font-size:15px}
 .dialog{border:0;border-radius:16px;padding:24px;width:min(440px,92vw);color:var(--navy)}
 .dialog::backdrop{background:#0b1529b3}
 .dialog form{display:flex;flex-direction:column;gap:16px}
