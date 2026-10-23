@@ -48,6 +48,9 @@ rumpf = re.sub(r'<script src="[^"]*"[^>]*></script>', '', rumpf)
 if '<script' in rumpf: fehler('Inline-Skript in index.html – im Plugin noch nicht vorgesehen')
 stile = re.findall(r'<link rel="stylesheet" href="([^"?]+)[^"]*">', kopf)
 
+# Satz zur Auslieferung über GitHub Pages gilt nur für die Pages-Fassung, nicht für WordPress
+rumpf = ersetze(rumpf, r'<span data-nur-pages>.*?</span>', '')
+
 # Live-Daten statt fester Inhalte
 rumpf = ersetze(rumpf, r'(<div class="sch-latest"[^>]*>).*?(</div></section>)', r'\1<?php sc1911_sp_neueste(); ?>\2')
 rumpf = ersetze(rumpf, r'(<div class="sch-moregrid">).*?(</div></div></section>)', r'\1<?php sc1911_sp_weitere(); ?>\2')
