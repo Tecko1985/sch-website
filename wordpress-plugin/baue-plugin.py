@@ -41,7 +41,8 @@ kopf = idx[:idx.index('<body')]
 rumpf = idx[idx.index('>', idx.index('<body')) + 1:idx.index('</body>')]
 
 # Reste der Offline-Ausgabe
-rumpf = ersetze(rumpf, r'<div class="offline-bar">.*?</nav></div>', '')
+# Die Offline-Leiste gibt es seit b38fe83 nicht mehr in index.html -- daher optional
+rumpf = re.sub(r'<div class="offline-bar">.*?</nav></div>', '', rumpf, flags=re.S)
 rumpf = re.sub(r'<p class="offline-note">.*?</p>', '', rumpf, flags=re.S)
 skripte = re.findall(r'<script src="([^"?]+)[^"]*"[^>]*></script>', rumpf)
 rumpf = re.sub(r'<script src="[^"]*"[^>]*></script>', '', rumpf)
