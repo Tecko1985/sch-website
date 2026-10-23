@@ -52,18 +52,21 @@
   }
 
   // Mehrere Dateien in EINEM Commit schreiben bzw. löschen (inhalt === null).
+  // dateien darf auch eine Funktion (basisCommitSha) -> Promise<dateien> sein: Sie prüft gegen genau
+  // den Stand, auf dem der Commit aufbaut, und läuft bei jedem Neuversuch wieder.
+  // Ergebnis: { pfad: blobSha } der geschriebenen Dateien.
   function commit(dateien, nachricht, versuch) {
     versuch = versuch || 1;
-    var basis;
+    var basis, shas = {};
     return api('/git/ref/heads/' + ZWEIG).then(function (ref) {
       basis = ref.object.sha;
-      return api('/git/commits/' + basis);
-    }).then(function (c) {
-      var baumBasis = c.tree.sha;
-      return Promise.all(dateien.map(function (d) {
+      return Promise.all([api('/git/commits/' + basis), typeof dateien === 'function' ? dateien(basis) : dateien]);
+    }).then(function (r) {
+      var baumBasis = r[0].tree.sha;
+      return Promise.all(r[1].map(function (d) {
         if (d.inhalt === null) return Promise.resolve({ path: d.pfad, mode: '100644', type: 'blob', sha: null });
         return api('/git/blobs', { method: 'POST', body: { content: d.inhalt, encoding: 'base64' } })
-          .then(function (b) { return { path: d.pfad, mode: '100644', type: 'blob', sha: b.sha }; });
+          .then(function (b) { shas[d.pfad] = b.sha; return { path: d.pfad, mode: '100644', type: 'blob', sha: b.sha }; });
       })).then(function (baum) {
         return api('/git/trees', { method: 'POST', body: { base_tree: baumBasis, tree: baum } });
       });
@@ -71,9 +74,19 @@
       return api('/git/commits', { method: 'POST', body: { message: nachricht, tree: baum.sha, parents: [basis] } });
     }).then(function (neu) {
       return api('/git/refs/heads/' + ZWEIG, { method: 'PATCH', body: { sha: neu.sha } });
+    }).then(function () {
+      return shas;
     }).catch(function (e) {
       // Jemand anderes hat gerade gespeichert: einmal neu aufsetzen.
       if (versuch < 3 && (e.status === 422 || e.status === 409)) return commit(dateien, nachricht, versuch + 1);
+      throw e;
+    });
+  }
+
+  // Blob-sha einer Datei im Stand ref (Zweig oder Commit); null = gibt es dort nicht.
+  function shaIm(pfad, ref) {
+    return api('/contents/' + pfad + '?ref=' + ref).then(function (j) { return j.sha; }, function (e) {
+      if (e.status === 404) return null;
       throw e;
     });
   }
@@ -555,13 +568,16 @@
   }
 
   function slugAus(titel, datum) {
+    var basis = slugStamm(titel, datum), slug = basis, n = 2;
+    while (beitraege.some(function (b) { return b.slug === slug; })) slug = basis + '-' + n++;
+    return slug;
+  }
+  function slugStamm(titel, datum) {
     var s = (titel || 'beitrag').toLowerCase()
       .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
       .normalize('NFKD').replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '');
-    var basis = datum + '-' + (s || 'beitrag'), slug = basis, n = 2;
-    while (beitraege.some(function (b) { return b.slug === slug; })) slug = basis + '-' + n++;
-    return slug;
+    return datum + '-' + (s || 'beitrag');
   }
 
   form.addEventListener('submit', function (e) {
@@ -576,7 +592,10 @@
     if (offen.length && !form.entwurf.checked &&
         !window.confirm('Im Beitrag stehen noch Platzhalter aus der Vorlage: ' + offen.slice(0, 5).join(', ') + (offen.length > 5 ? ' …' : '') + '\n\nTrotzdem veröffentlichen?')) return;
 
+    var neu = !aktuell;
     var slug = aktuell ? aktuell.slug : slugAus(titel, form.datum.value);
+    var stamm = slugStamm(titel, form.datum.value);
+    var geladenSha = aktuell ? aktuell.sha : null;
     var vorher = aktuell ? aktuell.daten : {};
     var daten = {
       titel: titel,
@@ -589,22 +608,44 @@
       galerie: galerie.slice(),
       entwurf: form.entwurf.checked
     };
-    var dateien = [{ pfad: ORDNER + slug + '.json', inhalt: textZuBase64(JSON.stringify(daten, null, 2) + '\n') }];
+    var json = textZuBase64(JSON.stringify(daten, null, 2) + '\n');
+    var bilder = [];
     Object.keys(neueBilder).forEach(function (pfad) {
-      if (pfad === titelbild || galerie.indexOf(pfad) >= 0) dateien.push({ pfad: pfad, inhalt: neueBilder[pfad] });
+      if (pfad === titelbild || galerie.indexOf(pfad) >= 0) bilder.push({ pfad: pfad, inhalt: neueBilder[pfad] });
     });
     // Nicht mehr benutzte Bilder dieses Beitrags entfernen
     [vorher.bild].concat(vorher.galerie || []).forEach(function (p) {
-      if (p && p.indexOf(BILDER) === 0 && p !== titelbild && galerie.indexOf(p) < 0) dateien.push({ pfad: p, inhalt: null });
+      if (p && p.indexOf(BILDER) === 0 && p !== titelbild && galerie.indexOf(p) < 0) bilder.push({ pfad: p, inhalt: null });
     });
+    // Bugjagd 23.10. DS-F2: geprüft wird gegen den Stand, auf dem der Commit aufbaut.
+    // Neuer Beitrag: nie eine vorhandene Datei überschreiben (die Liste ist evtl. nicht geladen
+    // oder veraltet), dann „-2“, „-3“ … anhängen. Bearbeiten: Hat jemand anderes die Datei seit
+    // dem Laden geändert oder gelöscht, wird nicht gespeichert.
+    function konflikt(text) { var e = new Error(text); e.status = 'konflikt'; return e; }
+    function freierSlug(k, n, basisSha) {
+      if (n > 99) return Promise.reject(new Error('Kein freier Dateiname für diesen Titel gefunden.'));
+      return shaIm(ORDNER + k + '.json', basisSha).then(function (sha) {
+        return sha ? freierSlug(stamm + '-' + n, n + 1, basisSha) : k;
+      });
+    }
+    var dateien = function (basisSha) {
+      var weiter = neu ? freierSlug(slug, 2, basisSha).then(function (k) { slug = k; })
+        : shaIm(ORDNER + slug + '.json', basisSha).then(function (sha) {
+          if (!geladenSha || sha === geladenSha) return;
+          throw konflikt(sha
+            ? 'Nicht gespeichert: Dieser Beitrag wurde inzwischen von jemand anderem geändert. Deine Eingaben stehen noch im Formular. Text kopieren, die Liste neu laden, den Beitrag wieder öffnen und die Änderung dort erneut eintragen.'
+            : 'Nicht gespeichert: Dieser Beitrag wurde inzwischen von jemand anderem gelöscht. Deine Eingaben stehen noch im Formular. Text kopieren und bei Bedarf als neuen Beitrag anlegen.');
+        });
+      return weiter.then(function () { return [{ pfad: ORDNER + slug + '.json', inhalt: json }].concat(bilder); });
+    };
 
     var knopf = $('[data-speichern]');
     knopf.disabled = true;
     meldung('Wird gespeichert …', '');
     var art = daten.entwurf ? 'Entwurf' : (aktuell ? 'Beitrag geändert' : 'Neuer Beitrag');
-    commit(dateien, art + ': ' + titel + ' (Redaktion)').then(function () {
+    commit(dateien, art + ': ' + titel + ' (Redaktion)').then(function (shas) {
       neueBilder = {};
-      var eintrag = { slug: slug, daten: daten };
+      var eintrag = { slug: slug, daten: daten, sha: shas[ORDNER + slug + '.json'] };
       beitraege = beitraege.filter(function (b) { return b.slug !== slug; }).concat([eintrag]);
       aktuell = eintrag;
       $('[data-loeschen]').hidden = false;
@@ -612,7 +653,7 @@
       if (!daten.entwurf) zeigeLiveHinweis(slug, titel);
       history.replaceState(null, '', '#bearbeiten/' + slug);
     }).catch(function (err) {
-      meldung('Speichern fehlgeschlagen: ' + err.message, 'fehler');
+      meldung(err.status === 'konflikt' ? err.message : 'Speichern fehlgeschlagen: ' + err.message, 'fehler');
     }).then(function () { knopf.disabled = false; aktualisiereKnopf(); });
   });
 
