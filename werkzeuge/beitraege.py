@@ -183,6 +183,27 @@ def lies_news(news):
     return karten
 
 
+# Emojis, Pfeile/Symbole und Kurzlinks aus Anreißern entfernen (stammen oft aus Facebook-Texten)
+EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u200D\u20E3]+")
+
+
+def teaser_putzen(t):
+    roh = html.unescape(re.sub(r"<[^>]+>", " ", t or ""))
+    for zeichen, ersatz in (("🆚", " gegen "), ("🕒", ", "), ("🏟️", ", "), ("🏟", ", ")):
+        roh = roh.replace(zeichen, ersatz)
+    roh = EMOJI.sub(" ", roh)
+    # „SCHGWO …“ / „FCESCH …“ am Anfang: Kürzel beider Teams ohne Trenner
+    roh = re.sub(r"^\s*SCH([A-Z]{2,5})\b", r"SCH – \1", roh)
+    roh = re.sub(r"^\s*([A-Z]{2,5})SCH\b", r"\1 – SCH", roh)
+    roh = re.sub(r"https?://\S+|\bt1p\.de/\S+", "", roh)
+    roh = re.sub(r"\b(?:Der ausführliche Liveticker auf|Zur Liveübertragung|Liveticker auf)\s*:?\s*", "", roh)
+    roh = re.sub(r"\s*\|\s*", " | ", roh)
+    roh = re.sub(r"\s+([,.:;!?])", r"\1", roh)
+    roh = re.sub(r"(,\s*){2,}", ", ", roh)
+    roh = re.sub(r"\s{2,}", " ", roh).strip(" |:–-")
+    return html.escape(kurz(roh, 220), quote=False)
+
+
 def alle_eintraege(news, beitraege):
     neue = {d["seite"] for d in beitraege}
     liste = [k for k in lies_news(news) if k["seite"] not in neue]
@@ -190,6 +211,8 @@ def alle_eintraege(news, beitraege):
         liste.append({"seite": d["seite"], "bild": d["bild"] or "assets/hero.jpg", "datum": d["datum"],
                       "titel_html": html.escape(d["titel"], quote=False), "teaser_html": html.escape(d["teaser"], quote=False),
                       "zeit": d.get("zeit") or ""})
+    for k in liste:
+        k["teaser_html"] = teaser_putzen(k["teaser_html"])
     # Neueste zuerst; bei gleichem Datum neue Redaktionsbeiträge vor alten Einträgen
     liste.sort(key=lambda k: (k["datum"], k.get("zeit", ""), 1 if k["seite"] in neue else 0), reverse=True)
     return liste
