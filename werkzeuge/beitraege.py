@@ -277,7 +277,7 @@ def schreibe_neu_start(ziel, liste):
             f'        <figure><img src="../{k["bild"]}" alt="" loading="lazy"{masse(ziel, k["bild"])}></figure>\n'
             f'        <time datetime="{k["datum"]}">{int(t)}. {MONATE[int(m) - 1]}</time>\n'
             f'        <h3>{k["titel_html"]}</h3>\n'
-            f'        <p>{kurz(html.unescape(k["teaser_html"]), 140)}</p>\n'
+            f'        <p>{html.escape(kurz(k["teaser_html"], 140), quote=False)}</p>\n'
             f'      </a></li>')
     s = re.sub(r'(<ul class="schiene" data-schiene-spur>).*?(\s*</ul>)', lambda mm: mm.group(1) + "\n" + "\n".join(eintraege) + mm.group(2), s, count=1, flags=re.S)
     open(p, "w", encoding="utf-8").write(s)
