@@ -163,7 +163,8 @@ def baue_seite(ziel, d, vorlage):
     t = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda m: m.group(1) + og_bild, t, count=1)
 
     bild = f'<img src="../{d["bild"]}" alt="">' if d["bild"] else '<img src="../assets/hero.jpg" alt="">'
-    held = (f'<div class="sch-reporthero sp-held">{bild}<div><span>{e(d.get("rubrik") or "News")}</span>'
+    # sp-kopfbild: Bild ganz und ungeschnitten, Rubrik/Titel/Datum darunter (seiten.css)
+    held = (f'<div class="sch-reporthero sp-held sp-kopfbild">{bild}<div><span>{e(d.get("rubrik") or "News")}</span>'
             f'<h1>{e(d["titel"])}</h1><p class="sp-datum">{datum_de(d["datum"])}</p></div></div>')
     inhalt = d["text"]
     if d["galerie"]:

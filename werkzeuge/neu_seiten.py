@@ -187,7 +187,7 @@ def aktiv_fuer(name):
 
 
 def kopf_aus(main):
-    held = re.search(r'<div class="sch-reporthero sp-held">(.*?)</div></div>', main, re.S)
+    held = re.search(r'<div class="sch-reporthero sp-held[^"]*">(.*?)</div></div>', main, re.S)
     rubrik = h1 = datum = bild = ""
     if held:
         h = held.group(1)
