@@ -105,6 +105,8 @@
     });
   }
   function abmelden() {
+    if (!verlassenErlaubt()) return;
+    ohneWarnung = true;   // die Rückfrage kam gerade schon
     try { sessionStorage.removeItem(SPEICHER); localStorage.removeItem(SPEICHER); } catch (e) {}
     schluessel = null;
     location.hash = '';
@@ -114,7 +116,20 @@
   // ---------------------------------------------------------------- Ansichten
   function zeige(name) {
     $$('[data-ansicht]').forEach(function (el) { el.hidden = el.dataset.ansicht !== name; });
+    if (name !== 'bearbeiten') editorHash = null;
     window.scrollTo(0, 0);
+  }
+
+  // Bugjagd 10.11.2026 A2-2: Jeder Wechsel der Ansicht läuft über den Hash („Zurück zur Liste“,
+  // „Beiträge“, „Neuer Beitrag“, Browser-Zurück). Steht im Editor Ungespeichertes, wird vorher
+  // gefragt. Bei „Abbrechen“ kommt der Hash des Editors zurück, OHNE den Editor neu zu füllen.
+  function beimHashwechsel() {
+    var h = location.hash.replace('#', '');
+    if (editorHash !== null) {
+      if (h === editorHash) return;                 // unser eigenes Zurücksetzen (oder nichts geändert)
+      if (!verlassenErlaubt()) { location.hash = editorHash; return; }
+    }
+    route();
   }
 
   function route() {
@@ -212,7 +227,29 @@
     meldung('', '');
     aktualisiereKnopf();
     zeige('bearbeiten');
+    // Aus dem Feld zurückgelesen, nicht aus den Daten: der Browser schreibt innerHTML beim Setzen um.
+    gesichert = editorStand();
+    editorHash = b ? 'bearbeiten/' + b.slug : 'neu';
     setTimeout(function () { form.titel.focus(); }, 50);
+  }
+
+  // ---------------------------------------------------------------- Ungespeichertes (A2-2)
+  var gesichert = null;     // editorStand() beim Öffnen bzw. nach dem letzten Speichern
+  var editorHash = null;    // Hash, unter dem der offene Editor steht; null = kein Editor offen
+  var ohneWarnung = false;  // Abmelden hat schon gefragt
+  function editorStand() {
+    return [form.titel.value, form.teaser.value, textfeld.innerHTML, form.datum.value, form.rubrik.value,
+      form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|')].join('\u0001');
+  }
+  function ungesichert() {
+    if (editorHash === null) return false;
+    if (Object.keys(neueBilder).length) return true;
+    // Neuer Beitrag: leer oder nur eine unberührte Vorlage ist nichts, was verloren ginge.
+    if (!aktuell) return !!titelbild || galerie.length > 0 || !istUnberuehrt();
+    return editorStand() !== gesichert;
+  }
+  function verlassenErlaubt() {
+    return !ungesichert() || window.confirm('Der Beitrag hat ungespeicherte Änderungen.\n\nOK = verlassen, die Änderungen gehen verloren.\nAbbrechen = im Beitrag bleiben.');
   }
 
   function aktualisiereKnopf() {
@@ -609,6 +646,7 @@
       entwurf: form.entwurf.checked
     };
     var json = textZuBase64(JSON.stringify(daten, null, 2) + '\n');
+    var standBeimSpeichern = editorStand();   // was während des Speicherns noch getippt wird, bleibt „ungespeichert“
     var bilder = [];
     Object.keys(neueBilder).forEach(function (pfad) {
       if (pfad === titelbild || galerie.indexOf(pfad) >= 0) bilder.push({ pfad: pfad, inhalt: neueBilder[pfad] });
@@ -648,6 +686,8 @@
       var eintrag = { slug: slug, daten: daten, sha: shas[ORDNER + slug + '.json'] };
       beitraege = beitraege.filter(function (b) { return b.slug !== slug; }).concat([eintrag]);
       aktuell = eintrag;
+      gesichert = standBeimSpeichern;
+      editorHash = 'bearbeiten/' + slug;
       $('[data-loeschen]').hidden = false;
       meldung(daten.entwurf ? 'Entwurf gespeichert.' : 'Gespeichert. Der Beitrag ist in etwa 2 Minuten auf der Seite.', 'ok');
       if (!daten.entwurf) zeigeLiveHinweis(slug, titel);
@@ -668,6 +708,7 @@
       var slug = aktuell.slug;
       beitraege = beitraege.filter(function (b) { return b.slug !== slug; });
       aktuell = null;
+      editorHash = null;   // gelöscht: nichts mehr zu verlieren, keine Rückfrage
       location.hash = 'liste';
     }).catch(function (err) { meldung('Löschen fehlgeschlagen: ' + err.message, 'fehler'); });
   });
@@ -684,9 +725,9 @@
     h.appendChild(a);
   }
 
-  // Vor dem Verlassen mit ungespeicherten Bildern warnen
+  // Vor dem Verlassen warnen, wenn etwas ungespeichert ist (Titel, Text, Anreißer, Bilder …)
   window.addEventListener('beforeunload', function (e) {
-    if (Object.keys(neueBilder).length) { e.preventDefault(); e.returnValue = ''; }
+    if (!ohneWarnung && ungesichert()) { e.preventDefault(); e.returnValue = ''; }
   });
 
   // ---------------------------------------------------------------- Start
@@ -704,7 +745,7 @@
     });
   });
   $('[data-abmelden]').addEventListener('click', abmelden);
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', beimHashwechsel);
 
   var gemerkt = null;
   try { gemerkt = sessionStorage.getItem(SPEICHER) || localStorage.getItem(SPEICHER); } catch (e) {}
