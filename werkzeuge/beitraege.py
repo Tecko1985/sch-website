@@ -6,7 +6,8 @@ Aufruf:  python3 werkzeuge/beitraege.py ZIELORDNER
 
 Liest inhalte/beitraege/*.json aus dem Repo und schreibt in ZIELORDNER:
 - seiten/beitrag-<slug>.html  (eine Seite je Beitrag, im Aufbau der übrigen Beitragsseiten)
-- seiten/news.html            (Liste aller Beiträge, neueste zuerst)
+- seiten/news.html            (die letzten 20 Beiträge, neueste zuerst, mit Link zum Archiv)
+- seiten/archiv.html          (Liste aller Beiträge, neueste zuerst)
 - index.html                  (die drei neuesten und „Was läuft weiter beim SCH?“)
 - neu/index.html              (News-Schiene im neuen Design)
 Die Unterseiten unter neu/ entstehen danach mit werkzeuge/neu_seiten.py.
@@ -219,14 +220,45 @@ def alle_eintraege(news, beitraege):
     return liste
 
 
-def schreibe_news(ziel, news, liste):
-    karten = "".join(
+NEWS_ANZAHL = 20  # Aktuelles zeigt die letzten 20 (5 Reihen à 4 Kacheln), alles Weitere steht im Archiv
+
+
+def baue_karten(liste):
+    return "".join(
         f'<a class="sp-karte" href="{k["seite"]}"><span class="sp-kartenbild"><img src="../{k["bild"]}" alt="" loading="lazy"></span>'
         f'<span class="sp-kartentext"><time datetime="{k["datum"]}">{datum_de(k["datum"])}</time><b>{k["titel_html"]}</b>'
         f'<span>{k["teaser_html"]}</span><em>Beitrag lesen</em></span></a>'
         for k in liste)
-    neu = ersetze_block(news, '<div class="sp-karten"', karten)
+
+
+def block_ende(text, start):
+    """Stelle direkt hinter dem schließenden </div> des ersten <div …start…>."""
+    i = text.find(start)
+    j = text.find(">", i) + 1
+    tiefe = 1
+    for m in re.finditer(r"<(/?)div\b", text[j:]):
+        tiefe += -1 if m.group(1) else 1
+        if tiefe == 0:
+            return j + m.end() + 1  # hinter dem ">" von </div>
+    return j
+
+
+def schreibe_news(ziel, news, liste):
+    neu = ersetze_block(news, '<div class="sp-karten"', baue_karten(liste[:NEWS_ANZAHL]))
+    if len(liste) > NEWS_ANZAHL:
+        e = block_ende(neu, '<div class="sp-karten"')
+        link = (f'<p class="sp-archivlink"><a href="archiv.html">Alle {len(liste)} Beiträge im Archiv</a></p>')
+        neu = neu[:e] + link + neu[e:]
     open(os.path.join(ziel, "seiten/news.html"), "w", encoding="utf-8").write(neu)
+    # Archiv: gleiche Seite, aber mit allen Beiträgen
+    arch = ersetze_block(news, '<div class="sp-karten"', baue_karten(liste))
+    e = block_ende(arch, '<div class="sp-karten"')
+    arch = arch[:e] + '<p class="sp-archivlink"><a href="news.html">← Zurück zu den aktuellen News</a></p>' + arch[e:]
+    arch = arch.replace("<title>News · ", "<title>Archiv · ")
+    arch = arch.replace('<span>Aktuelles</span><h1>News</h1>', '<span>News</span><h1>Archiv</h1>')
+    arch = arch.replace('content="News · 1. SC', 'content="Archiv · 1. SC')
+    arch = arch.replace("seiten/news.html", "seiten/archiv.html")
+    open(os.path.join(ziel, "seiten/archiv.html"), "w", encoding="utf-8").write(arch)
 
 
 def ersetze_block(text, start, inneres):
