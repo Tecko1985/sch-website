@@ -16,6 +16,4 @@
 :is(#top,body) .sch-footericons :is(img,svg){width:40px;height:40px;display:block}
 :is(#top,body) .sch-footericons .sch-wa-placeholder{color:#fff;display:flex;align-items:center;gap:8px;font-size:14px}
 :is(#top,body) .sch-socket{background:#14233e;margin-top:45px;padding:20px max(40px,calc((100vw - 1310px)/2));font-size:14px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.sch-tickets-dialog{border:0;border-radius:8px;padding:32px;width:min(480px,calc(100vw - 32px));color:#1b2d4f;font:16px/1.6 Arial,sans-serif}
-.sch-tickets-dialog::backdrop{background:#0b1a38aa}.sch-tickets-dialog h2{font-size:28px}.sch-tickets-dialog button{background:#1b2d4f;color:#fff;border:0;border-radius:4px;padding:10px 20px;cursor:pointer}.sch-tickets-dialog a{color:#1b2d4f}
 @media(max-width:767px){:is(#top,body) .sch-home .sch-wordmark h1{font-size:clamp(29px,6vw,42px)}:is(#top,body) .sch-home .sch-wordmark{left:88px;right:20px;bottom:158px}:is(#top,body) .sch-footergrid{grid-template-columns:1fr;width:calc(100% - 36px);gap:28px}:is(#top,body) .sch-socket{padding:20px 18px}:is(#top,body) .sch-home .sch-rail>a,:is(#top,body) .sch-home .sch-rail>button{font-size:10px}}
