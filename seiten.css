@@ -1,45 +1,45 @@
 /* Unterseiten im Stil von Startseite und Spielbericht. Gebaut von werkzeug/seiten-bauen.py */
 body{margin:0;background:#fff}
 .sp-nav div a{color:#fff;font:700 14px Arial,sans-serif;text-decoration:none;padding:6px 0;border-bottom:3px solid transparent}
-.sp-nav div a:hover,.sp-nav div a[aria-current=page]{border-color:#c4bdf0}
-.sp-held{position:relative;min-height:340px;min-height:min(340px,55vh);display:flex;align-items:flex-end;overflow:hidden;background:#2b255c}
+.sp-nav div a:hover,.sp-nav div a[aria-current=page]{border-color:#aac7ed}
+.sp-held{position:relative;min-height:340px;min-height:min(340px,55vh);display:flex;align-items:flex-end;overflow:hidden;background:#1b2d4f}
 .sp-held>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.sp-held::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#141030d9,#14103033 70%)}
+.sp-held::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#0b1a38d9,#0b1a3833 70%)}
 .sp-held>div{position:relative;z-index:1;color:#fff;max-width:1100px;width:100%;margin:0 auto;padding:48px 32px 40px}
-.sp-held span{font:700 13px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#c4bdf0}
+.sp-held span{font:700 13px Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#aac7ed}
 .sp-held h1{font:700 clamp(36px,5vw,64px)/1.04 'SCH Barlow',Impact,sans-serif;margin:10px 0 0;color:#fff;text-transform:uppercase}
-.sp-held .sp-datum{margin:12px 0 0;font:700 14px Arial,sans-serif;color:#e2dff2}
-.sp-inhalt{max-width:900px;margin:0 auto;padding:52px 32px 72px;color:#2b255c}
+.sp-held .sp-datum{margin:12px 0 0;font:700 14px Arial,sans-serif;color:#dce3ef}
+.sp-inhalt{max-width:900px;margin:0 auto;padding:52px 32px 72px;color:#1b2d4f}
 .sp-inhalt h2{font:700 clamp(28px,3vw,40px)/1.1 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;margin:44px 0 14px}
 .sp-inhalt h3{font:700 24px/1.2 'SCH Barlow',Impact,sans-serif;margin:32px 0 10px}
 .sp-inhalt>:first-child{margin-top:0}
 .sp-inhalt p,.sp-inhalt li{font:17px/1.75 Arial,sans-serif;color:#33415c}
 .sp-inhalt p{margin:0 0 18px}
 .sp-inhalt ul,.sp-inhalt ol{padding-left:22px;margin:0 0 20px}
-.sp-inhalt a{color:#2b255c;font-weight:700}
+.sp-inhalt a{color:#1b2d4f;font-weight:700}
 .sp-bild{margin:28px 0}
 .sp-bild img,.sp-galerie img{width:100%;height:auto;display:block;border-radius:6px}
 .sp-galerie{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:28px 0}
 .sp-galerie img{aspect-ratio:4/3;object-fit:cover}
 .sp-logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;margin:28px 0}
 .sp-logos a,.sp-logos span{display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dce1e9;border-radius:6px;padding:14px;aspect-ratio:4/3;transition:transform .2s,box-shadow .2s}
-.sp-logos a:hover{transform:translateY(-3px);box-shadow:0 8px 20px #2b255c1f}
+.sp-logos a:hover{transform:translateY(-3px);box-shadow:0 8px 20px #1b2d4f1f}
 .sp-logos img{max-width:100%;max-height:100%;object-fit:contain}
 .sp-tabelle{overflow-x:auto;margin:20px 0}
 .sp-tabelle table{border-collapse:collapse;width:100%}
 .sp-tabelle td{border-bottom:1px solid #dce1e9;padding:10px 12px;font:15px/1.5 Arial,sans-serif;vertical-align:top}
 .sp-knoepfe{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}
-.sp-knopf{display:inline-block;background:#2b255c;color:#fff!important;padding:14px 24px;border-radius:3px;font:700 15px Arial,sans-serif;text-decoration:none}
-.sp-knopf.hell{background:#efedf7;color:#2b255c!important}
+.sp-knopf{display:inline-block;background:#1b2d4f;color:#fff!important;padding:14px 24px;border-radius:3px;font:700 15px Arial,sans-serif;text-decoration:none}
+.sp-knopf.hell{background:#eaf0f7;color:#1b2d4f!important}
 .sp-kacheln{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:28px 0}
-.sp-kachel{display:flex;flex-direction:column;gap:6px;background:#2b255c;color:#fff!important;padding:28px 24px;border-radius:6px;text-decoration:none;transition:transform .2s}
+.sp-kachel{display:flex;flex-direction:column;gap:6px;background:#1b2d4f;color:#fff!important;padding:28px 24px;border-radius:6px;text-decoration:none;transition:transform .2s}
 .sp-kachel:hover{transform:translateY(-4px)}
 .sp-kachel b{font:700 30px/1.05 'SCH Barlow',Impact,sans-serif;text-transform:uppercase}
-.sp-kachel span{font:15px/1.5 Arial,sans-serif;color:#e2dff2;font-weight:400}
+.sp-kachel span{font:15px/1.5 Arial,sans-serif;color:#dce3ef;font-weight:400}
 .sp-karten{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px}
 .sp-inhalt:has(.sp-karten){max-width:1240px}
-.sp-karte{display:flex;flex-direction:column;background:#fff;border:1px solid #dce1e9;border-radius:6px;overflow:hidden;text-decoration:none;color:#2b255c!important;font-weight:400!important;transition:transform .2s,box-shadow .2s}
-.sp-karte:hover{transform:translateY(-4px);box-shadow:0 10px 24px #2b255c1f}
+.sp-karte{display:flex;flex-direction:column;background:#fff;border:1px solid #dce1e9;border-radius:6px;overflow:hidden;text-decoration:none;color:#1b2d4f!important;font-weight:400!important;transition:transform .2s,box-shadow .2s}
+.sp-karte:hover{transform:translateY(-4px);box-shadow:0 10px 24px #1b2d4f1f}
 .sp-kartenbild{aspect-ratio:4/3;background:#f1f4f8;overflow:hidden}
 .sp-kartenbild img{width:100%;height:100%;object-fit:cover;display:block}
 .sp-kartentext{display:flex;flex-direction:column;gap:10px;padding:20px 20px 24px;flex:1}
@@ -47,7 +47,7 @@ body{margin:0;background:#fff}
 .sp-kartentext b{font:700 24px/1.15 'SCH Barlow',Impact,sans-serif;text-transform:uppercase}
 .sp-kartentext span{font:15px/1.6 Arial,sans-serif;color:#4e586a;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}
 .sp-kartentext em{margin-top:auto;font:700 13px Arial,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.5px}
-.sp-inhalt :is(a,button):focus-visible,.sp-nav a:focus-visible{outline:3px solid #9b8fe6;outline-offset:4px}
+.sp-inhalt :is(a,button):focus-visible,.sp-nav a:focus-visible{outline:3px solid #82a8e9;outline-offset:4px}
 @media(max-width:767px){
 .sp-nav{flex-wrap:wrap}
 .sp-nav div{flex-wrap:wrap;gap:6px 16px}
@@ -62,16 +62,16 @@ body{margin:0;background:#fff}
 .sp-held>div{left:auto;right:auto;top:auto;bottom:auto}.sp-held h1,.sp-inhalt h2,.sp-inhalt h3{overflow-wrap:anywhere;hyphens:auto}
 /* Termine */
 .tm-filter{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 8px}
-.tm-filter button{font:700 14px Arial,sans-serif;color:#2b255c;background:#efedf7;border:0;border-radius:999px;padding:11px 20px;cursor:pointer}
-.tm-filter button[aria-pressed=true]{background:#2b255c;color:#fff}
-.tm-filter button:focus-visible{outline:3px solid #9b8fe6;outline-offset:3px}
+.tm-filter button{font:700 14px Arial,sans-serif;color:#1b2d4f;background:#eaf0f7;border:0;border-radius:999px;padding:11px 20px;cursor:pointer}
+.tm-filter button[aria-pressed=true]{background:#1b2d4f;color:#fff}
+.tm-filter button:focus-visible{outline:3px solid #82a8e9;outline-offset:3px}
 .tm-tag{margin-top:34px}
 .tm-tag[hidden],.tm-spiel[hidden]{display:none}
 .tm-tag h2{margin:0 0 12px;font-size:28px}
 .tm-tag h2 span{color:#5f6a7b}
 .tm-liste{list-style:none;margin:0!important;padding:0!important;border-top:1px solid #dce1e9}
 .tm-spiel{display:grid;grid-template-columns:64px 170px 1fr auto;gap:8px 20px;align-items:center;padding:16px 0;border-bottom:1px solid #dce1e9;margin:0}
-.tm-spiel.heim{background:linear-gradient(90deg,#efedf7,transparent 60%)}
+.tm-spiel.heim{background:linear-gradient(90deg,#eaf0f7,transparent 60%)}
 .tm-zeit{font:700 22px/1 'SCH Barlow',Impact,sans-serif;padding-left:10px}
 .tm-team{display:flex;flex-direction:column;gap:2px}
 .tm-team b{font:700 18px/1.1 'SCH Barlow',Impact,sans-serif;text-transform:uppercase}
@@ -81,8 +81,8 @@ body{margin:0;background:#fff}
 .tm-gegner i{font-style:normal;color:#5f6a7b}
 .tm-info{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .tm-info a{font:700 13px Arial,sans-serif;white-space:nowrap}
-.tm-marke{font:700 12px Arial,sans-serif;font-style:normal;letter-spacing:.6px;text-transform:uppercase;background:#2b255c;color:#fff;border-radius:3px;padding:4px 8px}
-.tm-marke.aus{background:#efedf7;color:#2b255c}
+.tm-marke{font:700 12px Arial,sans-serif;font-style:normal;letter-spacing:.6px;text-transform:uppercase;background:#1b2d4f;color:#fff;border-radius:3px;padding:4px 8px}
+.tm-marke.aus{background:#eaf0f7;color:#1b2d4f}
 .tm-marke.ab{background:#b3261e}
 .tm-spiel.abgesetzt .tm-gegner{text-decoration:line-through;color:#5f6a7b}
 .tm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -95,27 +95,27 @@ body{margin:0;background:#fff}
 /* Kader */
 .sp-kader{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;margin:18px 0 36px}
 .sp-spieler{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid #dce1e9;border-radius:6px;overflow:hidden}
-.sp-spieler img,.sp-ohnebild{width:100%;aspect-ratio:5/7;object-fit:cover;object-position:top;background:#efedf7;display:block}
-.sp-spieler b{position:absolute;top:8px;left:10px;font:700 34px/1 'SCH Barlow',Impact,sans-serif;color:#fff;text-shadow:0 2px 8px #14103099}
-.sp-spieler span{padding:12px 14px 14px;font:700 17px/1.2 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;color:#2b255c}
+.sp-spieler img,.sp-ohnebild{width:100%;aspect-ratio:5/7;object-fit:cover;object-position:top;background:#eaf0f7;display:block}
+.sp-spieler b{position:absolute;top:8px;left:10px;font:700 34px/1 'SCH Barlow',Impact,sans-serif;color:#fff;text-shadow:0 2px 8px #0b1a3899}
+.sp-spieler span{padding:12px 14px 14px;font:700 17px/1.2 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;color:#1b2d4f}
 @media(max-width:767px){.sp-kader{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
 .sp-bild img{max-height:380px;width:auto;max-width:100%;margin:0 auto}
 /* Vorstand */
 .sp-vorstand{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;margin:10px 0 30px}
 .sp-person{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid #dce1e9;border-radius:6px;padding:14px}
 .sp-person img,.sp-initialen{flex:0 0 76px;width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:top}
-.sp-initialen{display:flex;align-items:center;justify-content:center;background:#2b255c;color:#fff;font:700 26px/1 'SCH Barlow',Impact,sans-serif}
+.sp-initialen{display:flex;align-items:center;justify-content:center;background:#1b2d4f;color:#fff;font:700 26px/1 'SCH Barlow',Impact,sans-serif}
 .sp-person div{display:flex;flex-direction:column;gap:3px;min-width:0}
 .sp-person small{font:700 12px Arial,sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#5f6a7b;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}
-.sp-person b{font:700 21px/1.15 'SCH Barlow',Impact,sans-serif;color:#2b255c}
+.sp-person b{font:700 21px/1.15 'SCH Barlow',Impact,sans-serif;color:#1b2d4f}
 .sp-person div span{font:14px/1.45 Arial,sans-serif;color:#33415c;overflow-wrap:anywhere}
 .sp-person .sp-initialen{color:#fff}
 /* FuPa erst nach Klick */
 .sp-fupa{border:1px dashed #9fb0c8;background:#f5f8fc;border-radius:6px;padding:22px 24px;margin:16px 0 30px}
 .sp-fupa p{font-size:15px!important;margin:0 0 14px!important}
-.sp-fupa p b{display:block;font:700 13px Arial,sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#2b255c;margin-bottom:6px}
-.sp-fupa button{font:700 15px Arial,sans-serif;background:#2b255c;color:#fff;border:0;border-radius:3px;padding:13px 22px;cursor:pointer}
-.sp-fupa button:focus-visible{outline:3px solid #9b8fe6;outline-offset:3px}
+.sp-fupa p b{display:block;font:700 13px Arial,sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#1b2d4f;margin-bottom:6px}
+.sp-fupa button{font:700 15px Arial,sans-serif;background:#1b2d4f;color:#fff;border:0;border-radius:3px;padding:13px 22px;cursor:pointer}
+.sp-fupa button:focus-visible{outline:3px solid #82a8e9;outline-offset:3px}
 .sp-fupa-geladen{margin:16px 0 30px;min-height:60px;overflow-x:auto}
 
 /* ---------- Feinschliff 23.10.2026 ---------- */
@@ -134,7 +134,7 @@ body{margin:0;background:#fff}
 /* Beitragsbilder im Kopf: Grafiken mit Schrift oben nicht abschneiden */
 .sp-held img{object-position:center 30%}
 /* Beitraege aus der Redaktion: Bild ganz zeigen (Grafiken mit Text), Titel darunter */
-.sch-reporthero.sp-kopfbild{height:auto;min-height:0;display:block;overflow:visible;background:#2b255c}.sch-reporthero.sp-kopfbild::after,.sch-reporthero.sp-kopfbild:after{display:none}.sch-reporthero.sp-kopfbild>img{position:static;display:block;width:100%;max-width:none;height:auto;margin:0;object-fit:contain}.sch-reporthero.sp-kopfbild>div{position:static;max-width:1100px;margin:0 auto;padding:28px 32px 34px;box-sizing:border-box}@media(max-width:600px){.sch-reporthero.sp-kopfbild>div{padding:22px 18px 26px}}
-.sp-newsliste{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin:0 0 30px}.sp-newskarte{display:flex;flex-direction:column;background:#fff;border:1px solid #d5deec;border-radius:8px;overflow:hidden;text-decoration:none;color:#2b255c;transition:box-shadow .15s,transform .15s}.sp-newskarte:hover{box-shadow:0 8px 22px #2b255c26;transform:translateY(-2px)}.sp-newskarte img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.sp-newskarte span{padding:14px 16px 16px;font:700 20px/1.2 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;color:#2b255c}.sp-newskarte:not(:has(img)){border-left:6px solid #2b255c}.sp-zurueck a{font-size:15px;display:inline-block;padding:10px 0}.sp-inhalt .sp-newskarte{font-weight:400}
+.sch-reporthero.sp-kopfbild{height:auto;min-height:0;display:block;overflow:visible;background:#1b2d4f}.sch-reporthero.sp-kopfbild::after,.sch-reporthero.sp-kopfbild:after{display:none}.sch-reporthero.sp-kopfbild>img{position:static;display:block;width:100%;max-width:none;height:auto;margin:0;object-fit:contain}.sch-reporthero.sp-kopfbild>div{position:static;max-width:1100px;margin:0 auto;padding:28px 32px 34px;box-sizing:border-box}@media(max-width:600px){.sch-reporthero.sp-kopfbild>div{padding:22px 18px 26px}}
+.sp-newsliste{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin:0 0 30px}.sp-newskarte{display:flex;flex-direction:column;background:#fff;border:1px solid #d5deec;border-radius:8px;overflow:hidden;text-decoration:none;color:#1b2d4f;transition:box-shadow .15s,transform .15s}.sp-newskarte:hover{box-shadow:0 8px 22px #1b2d4f26;transform:translateY(-2px)}.sp-newskarte img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.sp-newskarte span{padding:14px 16px 16px;font:700 20px/1.2 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;color:#1b2d4f}.sp-newskarte:not(:has(img)){border-left:6px solid #1b2d4f}.sp-zurueck a{font-size:15px;display:inline-block;padding:10px 0}.sp-inhalt .sp-newskarte{font-weight:400}
 .sp-inhalt:has(.sp-zurueck) .sp-bild img{width:100%;max-height:none}
-.sp-inhalt .sp-archivlink{margin:56px 0 24px;text-align:center}.sp-inhalt .sp-archivlink a{display:inline-block;padding:14px 26px;border:2px solid #2b255c;border-radius:4px;font:700 14px Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px;text-decoration:none;color:#2b255c}.sp-inhalt .sp-archivlink a:hover{background:#2b255c;color:#fff}
+.sp-inhalt .sp-archivlink{margin:56px 0 24px;text-align:center}.sp-inhalt .sp-archivlink a{display:inline-block;padding:14px 26px;border:2px solid #1b2d4f;border-radius:4px;font:700 14px Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px;text-decoration:none;color:#1b2d4f}.sp-inhalt .sp-archivlink a:hover{background:#1b2d4f;color:#fff}

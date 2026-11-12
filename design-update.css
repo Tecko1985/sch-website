@@ -1,8 +1,8 @@
 /* =========================================================
    SCH Design-Update – Vereinsfarbe, Akzent, Schrift, Hero
    Wird als LETZTES Stylesheet geladen.
-   Logofarbe #2B255C ist jetzt die Grundfarbe (vorher #1B2D4F),
-   die Hex-Werte in den übrigen CSS-Dateien wurden mit getauscht.
+   Grundfarbe: Vereinsblau #1B2D4F (wie Seitenleiste/Wappen-Navigation).
+   Fließtext in Barlow, mehr Kontrast im Hero.
    ========================================================= */
 
 /* Barlow für Fließtext (400/500) + vorhandener Headline-Schnitt (700) */
@@ -11,15 +11,15 @@
 @font-face{font-family:'SCH Barlow';src:url('assets/barlow.woff') format('woff');font-weight:700 900;font-display:swap}
 
 :root{
-  --navy:#2b255c;          /* Logofarbe */
-  --ink:#1f1a45;
-  --sch-akzent:#6c5fc7;    /* aus der Logofarbe abgeleitet, für Aktionen/Hervorhebungen */
-  --sch-akzent-hover:#5a4db5;
-  --sch-akzent-hell:#c4bdf0;
-  --muted:#5b5778;
+  --navy:#1b2d4f;          /* Vereinsblau */
+  --ink:#142440;
+  --sch-akzent:#1b2d4f;    /* Aktionen/Hervorhebungen */
+  --sch-akzent-hover:#304e79;
+  --sch-akzent-hell:#aac7ed;
+  --muted:#647086;
 }
-:is(#top,body) .sch-home{--sch-blue:#2b255c}
-:is(#top,body) .sch-matches{--sch-navy:#2b255c}
+:is(#top,body) .sch-home{--sch-blue:#1b2d4f}
+:is(#top,body) .sch-matches{--sch-navy:#1b2d4f}
 
 /* ---------- Schrift: Barlow statt Arial ---------- */
 body, body *:not(svg):not(svg *):not(code):not(pre){font-family:'SCH Barlow','Arial Narrow',Arial,sans-serif!important}
@@ -28,9 +28,9 @@ body{font-size:17px}
 /* ---------- Hero: mehr Kontrast hinter der Headline ---------- */
 :is(#top,body) .sch-home .sch-scene::after{
   background:
-    linear-gradient(90deg,#141030cc 0%,#14103066 38%,transparent 65%),
-    linear-gradient(0deg,#141030b3 0%,#14103040 40%,transparent 62%)!important}
-:is(#top,body) .sch-home .sch-wordmark h1{text-shadow:0 2px 24px #14103066}
+    linear-gradient(90deg,#0b1a38cc 0%,#0b1a3866 38%,transparent 65%),
+    linear-gradient(0deg,#0b1a38b3 0%,#0b1a3840 40%,transparent 62%)!important}
+:is(#top,body) .sch-home .sch-wordmark h1{text-shadow:0 2px 24px #0b1a3866}
 
 /* ---------- Primäre Buttons in Akzentfarbe ---------- */
 :is(#top,body) :is(.button.navy,.navbutton,.nl-form button[type=submit],.partners .button:not(.outline)){
@@ -42,7 +42,7 @@ body{font-size:17px}
 :is(#top,body) .club .button.white:hover{background:var(--sch-akzent-hell)}
 
 /* ---------- Navigation: Hover in Akzentfarbe ---------- */
-:is(#top,body) .sch-home :is(.sch-rail>a,.sch-rail>button,.sch-toptools a):hover{background:var(--sch-akzent)!important}
+:is(#top,body) .sch-home :is(.sch-rail>a,.sch-rail>button,.sch-toptools a):hover{background:var(--sch-akzent-hover)!important}
 
 /* ---------- Tabs „Männer / 2. Mannschaft / Nachwuchs“ ---------- */
 :is(#top,body) .sch-matches [aria-selected=true]{color:var(--sch-akzent)!important}
@@ -52,11 +52,11 @@ body{font-size:17px}
 :is(#top,body) :is(.sch-home .sch-postcopy time,.sch-morecopy time){color:var(--sch-akzent)!important;font-size:12.5px!important;font-weight:600;letter-spacing:1px}
 :is(#top,body) :is(.sch-home .sch-read,.sch-morecopy .sch-read,.read){text-decoration-color:var(--sch-akzent);text-decoration-thickness:2px}
 :is(#top,body) :is(.sch-home .sch-post,.sch-morecard):hover :is(.sch-read,h2,h3){color:var(--sch-akzent)}
-:is(#top,body) .sch-morecopy p,:is(#top,body) .sch-home .sch-excerpt{color:#45415f!important}
-:is(#top,body) :is(.lower p,.partners p,.newscopy p){color:#45415f}
+:is(#top,body) .sch-morecopy p,:is(#top,body) .sch-home .sch-excerpt{color:#4a5670!important}
+:is(#top,body) :is(.lower p,.partners p,.newscopy p){color:#4a5670}
 
 /* ---------- Social-Pfeile sichtbar machen ---------- */
-:is(#top,body) .sch-socialarrows button{border-color:#2b255c55!important;color:#2b255c!important}
+:is(#top,body) .sch-socialarrows button{border-color:#1b2d4f55!important;color:#1b2d4f!important}
 :is(#top,body) .sch-socialarrows button:disabled{opacity:.35}
 
 /* ---------- Eyebrows (kleine Überzeilen) in Akzent ---------- */

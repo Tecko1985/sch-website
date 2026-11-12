@@ -4,7 +4,7 @@
 :is(#top,body) .sch-home .sch-wordmark{right:5%;bottom:165px}
 :is(#top,body) .sch-moreimage img{object-fit:cover;object-position:50% 50%;width:100%;height:100%}
 :is(#top,body) .sch-home .sch-rail>a,:is(#top,body) .sch-home .sch-rail>button{font-size:12px}
-:is(#top,body) .sch-footer{background:#2b255c;color:#fff;padding:55px 0 0;font:400 16px/1.65 Arial,sans-serif;clear:both}
+:is(#top,body) .sch-footer{background:#1b2d4f;color:#fff;padding:55px 0 0;font:400 16px/1.65 Arial,sans-serif;clear:both}
 :is(#top,body) .sch-footergrid{width:min(1310px,calc(100% - 80px));margin:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:42px}
 :is(#top,body) .sch-footer h3{font-size:20px;color:inherit;margin:0 0 20px}
 :is(#top,body) .sch-footer p{margin:0 0 20px;color:inherit}
