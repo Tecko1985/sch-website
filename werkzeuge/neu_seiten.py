@@ -97,7 +97,7 @@ def seite(p, titel, beschreibung, aktiv, kopf, inhalt, skripte, stile=()):
 <meta name="robots" content="noindex">
 <title>{titel}</title>
 <meta name="description" content="{beschreibung}">
-<meta name="theme-color" content="#1b2d4f">
+<meta name="theme-color" content="#2b255c">
 <link rel="icon" type="image/png" sizes="32x32" href="{p}../favicon-32.png">
 <link rel="apple-touch-icon" href="{p}../apple-touch-icon.png">
 <link rel="preload" href="{p}fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
