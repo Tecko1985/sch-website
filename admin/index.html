@@ -7,7 +7,7 @@
 <title>Redaktion · 1. SC 1911 Heiligenstadt</title>
 <meta name="theme-color" content="#1b2d4f">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
-<link rel="stylesheet" href="admin.css?v=2">
+<link rel="stylesheet" href="admin.css?v=3">
 </head>
 <body>
 <header class="kopf">
@@ -93,6 +93,56 @@
           <div class="galerie" data-galerie></div>
           <label class="hochladen">Bilder hinzufügen<input type="file" accept="image/*" multiple data-galeriedatei></label>
         </div>
+
+        <!-- Nur bei Rubrik „Spielbericht“: daraus entsteht die Seite im Aufbau des Erfurt-Berichts -->
+        <fieldset class="spieldaten" data-spieldaten hidden>
+          <legend>Spieldaten <small>für Ergebnisleiste, Spielinfo, Liveticker, Statistik und Aufstellung</small></legend>
+          <p class="spieldaten-tipp">Der Spielbericht bekommt oben die Ergebnisleiste und die Reiter Vorbericht, Spielinfo, Spielbericht, Galerie, Liveticker, Stimmen, Statistiken und Aufstellung. Reiter ohne Angaben fallen weg. Im Text werden <b>Überschrift</b> zur kleinen Rubrik (z.&nbsp;B. „1. Halbzeit“) und die erste Zeile eines Absatzes vor einem Zeilenumbruch zur Zwischenüberschrift.</p>
+          <div class="spieldaten-raster">
+            <label>Gegner<input type="text" name="sp_gegner" placeholder="z. B. FC Rot-Weiß Erfurt"></label>
+            <label>SCH spielt
+              <select name="sp_ort_art"><option value="heim">zu Hause (Heimspiel)</option><option value="auswaerts">auswärts</option></select>
+            </label>
+            <label>Wettbewerb<input type="text" name="sp_wettbewerb" placeholder="z. B. Thüringenliga"></label>
+            <label>Runde / Spieltag<input type="text" name="sp_runde" placeholder="z. B. 12. Spieltag"></label>
+            <label>Spieltag (Datum)<input type="date" name="sp_spieldatum"></label>
+            <label>Anstoß<input type="time" name="sp_anstoss"></label>
+            <label>Spielort<input type="text" name="sp_spielort" placeholder="z. B. Gesundbrunnenstadion"></label>
+            <label>Autor<input type="text" name="sp_autor" placeholder="z. B. Michael Apel"></label>
+            <div class="ergebnis">
+              <span>Endstand <small>SCH : Gegner</small></span>
+              <div><input type="text" inputmode="numeric" name="sp_end_sch" maxlength="2" aria-label="Endstand SCH"> : <input type="text" inputmode="numeric" name="sp_end_geg" maxlength="2" aria-label="Endstand Gegner"></div>
+            </div>
+            <div class="ergebnis">
+              <span>Halbzeit <small>SCH : Gegner</small></span>
+              <div><input type="text" inputmode="numeric" name="sp_hz_sch" maxlength="2" aria-label="Halbzeit SCH"> : <input type="text" inputmode="numeric" name="sp_hz_geg" maxlength="2" aria-label="Halbzeit Gegner"></div>
+            </div>
+            <label>Tore SCH <small>je Zeile: Minute. Name (Zusatz)</small><textarea name="sp_tore_sch" rows="3" placeholder="39. Wolanski (Strafstoß)&#10;59. Wolanski"></textarea></label>
+            <label>Tore Gegner <small>je Zeile: Minute. Name (Zusatz)</small><textarea name="sp_tore_geg" rows="3" placeholder="13. Fehler (Strafstoß)"></textarea></label>
+            <label>Rote Karten SCH <small>Minute. Name (Grund)</small><textarea name="sp_karten_sch" rows="2" placeholder="41. Wolanski (Nachtreten)"></textarea></label>
+            <label>Rote Karten Gegner <small>Minute. Name (Grund)</small><textarea name="sp_karten_geg" rows="2"></textarea></label>
+            <label>Aufstellung SCH <small>mit „–“ getrennt oder je Zeile, Wechsel in Klammern</small><textarea name="sp_aufstellung_sch" rows="4" placeholder="Fröhlich – Wolanski (73. Opfermann) – Köhler – …"></textarea></label>
+            <label>Aufstellung Gegner<textarea name="sp_aufstellung_geg" rows="4" placeholder="Rodtnick – Wolf (60. Caciel) – …"></textarea></label>
+            <label>Zuschauer<input type="text" name="sp_zuschauer" placeholder="z. B. 350"></label>
+            <label>Schiedsrichter<input type="text" name="sp_schiedsrichter"></label>
+          </div>
+          <div class="spieldaten-wappen">
+            <span>Wappen des Gegners <small>optional, sonst ein neutrales Wappen</small></span>
+            <div class="wappen-zeile"><div class="wappen-bild" data-wappenbild></div>
+              <label class="hochladen">Wappen wählen<input type="file" accept="image/*" data-wappendatei></label>
+              <button type="button" class="klein-knopf" data-wappenweg hidden>Entfernen</button></div>
+          </div>
+          <label>Vorbericht <small>erscheint als eigener Reiter</small>
+            <select name="sp_vorbericht" data-vorberichtwahl></select>
+          </label>
+          <label>Liveticker <small>optional, je Zeile: Minute | Überschrift | Text. Leer = automatisch aus Toren und Karten</small>
+            <textarea name="sp_ticker" rows="4" placeholder="77 | Tor für Erfurt | Lucas Falcão schnürt seinen Dreierpack."></textarea>
+          </label>
+          <label>Link zum vollständigen Liveticker <small>optional</small><input type="url" name="sp_ticker_link" placeholder="https://…"></label>
+          <label>Stimmen zum Spiel <small>je Zeile: Name | Rolle | Zitat</small>
+            <textarea name="sp_stimmen" rows="3" placeholder="Alexander Ludwig | Trainer 1. SC 1911 Heiligenstadt | Am Ende zählen die drei Punkte."></textarea>
+          </label>
+        </fieldset>
       </div>
 
       <aside class="editor-seite">
@@ -149,6 +199,6 @@
   </form>
 </dialog>
 
-<script src="admin.js?v=4"></script>
+<script src="admin.js?v=5"></script>
 </body>
 </html>

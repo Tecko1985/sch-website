@@ -106,3 +106,19 @@ input:focus,select:focus,textarea:focus,.text:focus{outline:none;border-color:va
   .liste img,.liste .ohnebild{width:72px;height:52px}
   .liste-aktionen{grid-column:1/-1;justify-content:flex-start}
 }
+
+/* Spieldaten (nur Rubrik „Spielbericht“) */
+.spieldaten{display:flex;flex-direction:column;gap:16px;margin:0;padding:18px;border:2px solid var(--hell);border-radius:14px;background:#f7f9fc;min-width:0}
+.spieldaten legend{padding:0 8px;font-stretch:112%;font-weight:800;font-size:18px}
+.spieldaten legend small{font-weight:400;font-size:14px;color:var(--grau)}
+.spieldaten-tipp{margin:0;font-size:14px;color:var(--grau);line-height:1.45}
+.spieldaten-raster{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.spieldaten input[type=time]{width:100%;min-height:46px;padding:10px 14px;border:2px solid var(--linie);border-radius:10px;background:#fff;color:var(--navy);font:400 16px "Archivo",Arial,sans-serif}
+.ergebnis{display:flex;flex-direction:column;gap:6px;font-weight:650}
+.ergebnis div{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px}
+.ergebnis input{width:64px!important;text-align:center;font-weight:700!important}
+.spieldaten-wappen{display:flex;flex-direction:column;gap:6px;font-weight:650}
+.wappen-zeile{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.wappen-bild{width:56px;height:56px;border-radius:10px;background:#fff;border:2px solid var(--linie);padding:4px}
+.wappen-bild img{width:100%;height:100%;object-fit:contain}
+@media(max-width:640px){.spieldaten-raster{grid-template-columns:1fr}}

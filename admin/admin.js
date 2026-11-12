@@ -219,11 +219,15 @@
     textfeld.innerHTML = d.text || '';
     titelbild = d.bild || null;
     galerie = (d.galerie || []).slice();
+    spielSetzen(d.spiel || {});
     zeichneBilder();
     unberuehrt = null;
     $('[data-vorlagewahl]').value = '';
     zeichneVorlagen();
     $('[data-loeschen]').hidden = !b;
+    zeigeSpieldaten();
+    zeichneVorberichte();
+    if (!beitraege.length) ladeListe().then(zeichneVorberichte);
     meldung('', '');
     aktualisiereKnopf();
     zeige('bearbeiten');
@@ -239,13 +243,14 @@
   var ohneWarnung = false;  // Abmelden hat schon gefragt
   function editorStand() {
     return [form.titel.value, form.teaser.value, textfeld.innerHTML, form.datum.value, form.rubrik.value,
-      form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|')].join('\u0001');
+      form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|'), JSON.stringify(spielFelder())].join('\u0001');
   }
   function ungesichert() {
     if (editorHash === null) return false;
     if (Object.keys(neueBilder).length) return true;
     // Neuer Beitrag: leer oder nur eine unberührte Vorlage ist nichts, was verloren ginge.
-    if (!aktuell) return !!titelbild || galerie.length > 0 || !istUnberuehrt();
+    if (!aktuell) return !!titelbild || !!wappen || galerie.length > 0 || !istUnberuehrt() ||
+      (form.rubrik.value === 'Spielbericht' && SPIELFELDER.some(function (n) { return n !== 'ort_art' && form['sp_' + n].value.trim(); }));
     return editorStand() !== gesichert;
   }
   function verlassenErlaubt() {
@@ -261,6 +266,9 @@
     var tb = $('[data-titelbild]');
     tb.innerHTML = titelbild ? '<img alt="" src="' + rohUrl(titelbild) + '">' : '<p>Noch kein Bild</p>';
     $('[data-titelweg]').hidden = !titelbild;
+    var wb = $('[data-wappenbild]');
+    wb.innerHTML = wappen ? '<img alt="" src="' + rohUrl(wappen) + '">' : '<img alt="" src="../assets/wappen-leer.svg">';
+    $('[data-wappenweg]').hidden = !wappen;
     var g = $('[data-galerie]');
     g.innerHTML = '';
     galerie.forEach(function (pfad, i) {
@@ -332,6 +340,80 @@
     }, Promise.resolve()).then(function () { meldung('', ''); }).catch(function (err) { meldung(err.message, 'fehler'); });
     e.target.value = '';
   });
+
+  // ---------------------------------------------------------------- Spieldaten (Rubrik „Spielbericht“)
+  // Daraus baut werkzeuge/spielbericht.py die Seite im Aufbau von spielbericht-erfurt.html.
+  var SPIELFELDER = ['gegner', 'ort_art', 'wettbewerb', 'runde', 'spieldatum', 'anstoss', 'spielort', 'autor',
+    'end_sch', 'end_geg', 'hz_sch', 'hz_geg', 'tore_sch', 'tore_geg', 'karten_sch', 'karten_geg',
+    'aufstellung_sch', 'aufstellung_geg', 'zuschauer', 'schiedsrichter', 'vorbericht', 'ticker', 'ticker_link', 'stimmen'];
+  var wappen = null;
+  var vorberichtWahl = $('[data-vorberichtwahl]');
+
+  function spielFelder() {
+    var sp = {};
+    SPIELFELDER.forEach(function (n) { sp[n] = (form['sp_' + n].value || '').trim(); });
+    sp.wappen = wappen || '';
+    return sp;
+  }
+  function spielSetzen(sp) {
+    SPIELFELDER.forEach(function (n) { form['sp_' + n].value = sp[n] || ''; });
+    if (!form.sp_ort_art.value) form.sp_ort_art.value = 'heim';
+    wappen = sp.wappen || null;
+    vorberichtWahl.dataset.wert = sp.vorbericht || '';
+  }
+  function zeigeSpieldaten() {
+    $('[data-spieldaten]').hidden = form.rubrik.value !== 'Spielbericht';
+  }
+  form.rubrik.addEventListener('change', zeigeSpieldaten);
+
+  // Vorbericht-Auswahl: „automatisch“ nimmt den neuesten Vorbericht bis 10 Tage vor dem Spiel
+  function autoVorbericht() {
+    var tag = form.sp_spieldatum.value || form.datum.value;
+    if (!tag) return null;
+    var bis = new Date(tag + 'T12:00:00');
+    var gegner = form.sp_gegner.value.trim().toLowerCase().split(/\s+/).filter(function (w) { return w.length > 3; });
+    var passend = beitraege.filter(function (b) {
+      var d = b.daten, tage = (bis - new Date(d.datum + 'T12:00:00')) / 864e5;
+      return d.rubrik === 'Vorbericht' && !d.entwurf && tage >= 0 && tage <= 10;
+    });
+    var mitName = passend.filter(function (b) {
+      var t = ((b.daten.titel || '') + ' ' + (b.daten.text || '')).toLowerCase();
+      return gegner.some(function (w) { return t.indexOf(w) >= 0; });
+    });
+    passend = (gegner.length && mitName.length ? mitName : passend).sort(function (a, b) {
+      return (b.daten.datum + (b.daten.zeit || '')).localeCompare(a.daten.datum + (a.daten.zeit || ''));
+    });
+    return passend[0] || null;
+  }
+  function zeichneVorberichte() {
+    var wert = vorberichtWahl.dataset.wert || '';
+    var auto = autoVorbericht();
+    vorberichtWahl.innerHTML = '';
+    vorberichtWahl.appendChild(new Option('Automatisch' + (auto ? ': „' + auto.daten.titel + '“ (' + datumDe(auto.daten.datum) + ')' : ' (zurzeit keiner passend)'), ''));
+    vorberichtWahl.appendChild(new Option('Kein Vorbericht', '-'));
+    beitraege.filter(function (b) { return b.daten.rubrik === 'Vorbericht' && !b.daten.entwurf; }).forEach(function (b) {
+      vorberichtWahl.appendChild(new Option(datumDe(b.daten.datum) + ' · ' + (b.daten.titel || b.slug), b.slug));
+    });
+    if (wert && wert !== '-' && !beitraege.some(function (b) { return b.slug === wert; })) {
+      vorberichtWahl.appendChild(new Option('(nicht mehr vorhanden) ' + wert, wert));
+    }
+    vorberichtWahl.value = wert;
+  }
+  vorberichtWahl.addEventListener('change', function () { vorberichtWahl.dataset.wert = vorberichtWahl.value; });
+  [form.sp_spieldatum, form.sp_gegner, form.datum].forEach(function (f) { f.addEventListener('change', zeichneVorberichte); });
+
+  $('[data-wappendatei]').addEventListener('change', function (e) {
+    var datei = e.target.files[0];
+    if (!datei) return;
+    bildVerkleinern(datei).then(function (b) {
+      var pfad = neuerBildpfad(b.endung);
+      neueBilder[pfad] = b.base64;
+      wappen = pfad;
+      zeichneBilder();
+    }).catch(function (err) { meldung(err.message, 'fehler'); });
+    e.target.value = '';
+  });
+  $('[data-wappenweg]').addEventListener('click', function () { wappen = null; zeichneBilder(); });
 
   // Werkzeugleiste
   var linkDialog = $('[data-linkdialog]');
@@ -405,11 +487,11 @@
     { id: 'grund-spielbericht', name: 'Spielbericht', rubrik: 'Spielbericht', standard: true,
       titel: '[Sieg/Remis/Niederlage] gegen [Gegner]',
       teaser: '[Ergebnis in einem Satz: Wer hat wie gespielt?]',
-      text: '<p><b>[Liga], [Spieltag]. Spieltag: SC 1911 Heiligenstadt – [Gegner] [Tore]:[Tore] ([Halbzeit])</b></p>' +
-        '<h2>Spielverlauf</h2><p>[Wie lief die erste Halbzeit?]</p><p>[Wie lief die zweite Halbzeit?]</p>' +
-        '<h2>Stimmen zum Spiel</h2><blockquote>[Zitat Trainer oder Spieler]</blockquote>' +
-        '<h2>Aufstellung und Tore</h2><p><b>SCH:</b> [Aufstellung]</p><p><b>Tore:</b> [Minute, Torschütze]</p>' +
-        '<h2>Wie geht es weiter?</h2><p>[Nächstes Spiel: Tag, Datum, Uhrzeit, Gegner, Ort]</p>' },
+      // Ergebnis, Tore, Aufstellung und Stimmen kommen aus den Spieldaten unter dem Text.
+      text: '<h2>1. Halbzeit</h2><p>[Zwischenüberschrift]<br>[Wie lief die erste Halbzeit?]</p>' +
+        '<h2>2. Halbzeit</h2><p>[Zwischenüberschrift]<br>[Wie lief die zweite Halbzeit?]</p>' +
+        '<h2>Nach dem Spiel</h2><p>[Zwischenüberschrift]<br>[Einordnung, Stimmen]</p>' +
+        '<h2>Ausblick</h2><p>[Nächstes Spiel: Tag, Datum, Uhrzeit, Gegner, Ort]</p>' },
     { id: 'grund-vorbericht', name: 'Vorbericht', rubrik: 'Vorbericht', standard: true,
       titel: 'Vorschau: SCH gegen [Gegner]',
       teaser: '[Worum geht es am Wochenende?]',
@@ -626,6 +708,9 @@
     var text = textfeld.innerHTML.trim();
     if (!textfeld.textContent.trim() && !form.entwurf.checked) { meldung('Der Text ist noch leer.', 'fehler'); textfeld.focus(); return; }
     var offen = offenePlatzhalter();
+    var istSpiel = form.rubrik.value === 'Spielbericht';
+    if (istSpiel && !form.entwurf.checked && !form.sp_gegner.value.trim() &&
+        !window.confirm('Bei den Spieldaten fehlt der Gegner. Ohne Gegner gibt es keine Ergebnisleiste, keine Spielinfo und keinen Liveticker.\n\nTrotzdem veröffentlichen?')) return;
     if (offen.length && !form.entwurf.checked &&
         !window.confirm('Im Beitrag stehen noch Platzhalter aus der Vorlage: ' + offen.slice(0, 5).join(', ') + (offen.length > 5 ? ' …' : '') + '\n\nTrotzdem veröffentlichen?')) return;
 
@@ -645,15 +730,17 @@
       galerie: galerie.slice(),
       entwurf: form.entwurf.checked
     };
+    if (istSpiel) daten.spiel = spielFelder();
+    var wappenNeu = istSpiel ? (wappen || '') : '';
     var json = textZuBase64(JSON.stringify(daten, null, 2) + '\n');
     var standBeimSpeichern = editorStand();   // was während des Speicherns noch getippt wird, bleibt „ungespeichert“
     var bilder = [];
     Object.keys(neueBilder).forEach(function (pfad) {
-      if (pfad === titelbild || galerie.indexOf(pfad) >= 0) bilder.push({ pfad: pfad, inhalt: neueBilder[pfad] });
+      if (pfad === titelbild || pfad === wappenNeu || galerie.indexOf(pfad) >= 0) bilder.push({ pfad: pfad, inhalt: neueBilder[pfad] });
     });
     // Nicht mehr benutzte Bilder dieses Beitrags entfernen
-    [vorher.bild].concat(vorher.galerie || []).forEach(function (p) {
-      if (p && p.indexOf(BILDER) === 0 && p !== titelbild && galerie.indexOf(p) < 0) bilder.push({ pfad: p, inhalt: null });
+    [vorher.bild, (vorher.spiel || {}).wappen].concat(vorher.galerie || []).forEach(function (p) {
+      if (p && p.indexOf(BILDER) === 0 && p !== titelbild && p !== wappenNeu && galerie.indexOf(p) < 0) bilder.push({ pfad: p, inhalt: null });
     });
     // Bugjagd 23.10. DS-F2: geprüft wird gegen den Stand, auf dem der Commit aufbaut.
     // Neuer Beitrag: nie eine vorhandene Datei überschreiben (die Liste ist evtl. nicht geladen
@@ -702,7 +789,7 @@
     if (!window.confirm('„' + (aktuell.daten.titel || 'Beitrag') + '“ wirklich löschen? Das lässt sich hier nicht rückgängig machen.')) return;
     var d = aktuell.daten;
     var dateien = [{ pfad: ORDNER + aktuell.slug + '.json', inhalt: null }];
-    [d.bild].concat(d.galerie || []).forEach(function (p) { if (p && p.indexOf(BILDER) === 0) dateien.push({ pfad: p, inhalt: null }); });
+    [d.bild, (d.spiel || {}).wappen].concat(d.galerie || []).forEach(function (p) { if (p && p.indexOf(BILDER) === 0) dateien.push({ pfad: p, inhalt: null }); });
     meldung('Wird gelöscht …', '');
     commit(dateien, 'Beitrag gelöscht: ' + (d.titel || aktuell.slug) + ' (Redaktion)').then(function () {
       var slug = aktuell.slug;

@@ -190,3 +190,6 @@
 .unterseite .sb{font-family:"Archivo",Arial,Helvetica,sans-serif}
 .unterseite .sb-reiter-band{top:66px}
 @media(max-width:640px){.unterseite .sb-reiter-band{top:60px}}
+
+/* Mehrere Stimmen untereinander (Redaktionsbeiträge) */
+.sb-stimme+.sb-stimme{margin-top:16px}

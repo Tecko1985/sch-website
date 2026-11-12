@@ -22,8 +22,12 @@ import re
 import sys
 from html.parser import HTMLParser
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spielbericht  # noqa: E402  Spielbericht-Seiten im Aufbau von spielbericht-erfurt.html
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VORLAGE = "seiten/beitrag-serie-haelt-weiter.html"
+SB_VORLAGE = "spielbericht-erfurt.html"  # Rahmen (Kopf, Menü, Fuß) für Beiträge der Rubrik „Spielbericht“
 ADRESSE = "https://tecko1985.github.io/sch-website/"
 
 try:
@@ -146,12 +150,14 @@ def lade_beitraege():
         d["galerie"] = [g for g in d.get("galerie", []) if re.match(r"^assets/beitraege/[a-z0-9._-]+$", g)]
         if d["bild"] and not re.match(r"^assets/beitraege/[a-z0-9._-]+$", d["bild"]):
             d["bild"] = ""
+        if not isinstance(d.get("spiel"), dict):
+            d["spiel"] = {}
         beitraege.append(d)
     return beitraege
 
 
 # ---------------------------------------------------------------- Beitragsseite
-def baue_seite(ziel, d, vorlage):
+def baue_seite(ziel, d, vorlage, zusatz=""):
     t = vorlage
     e = lambda s: html.escape(s, quote=True)
     titel = f'{e(d["titel"])} · 1. SC 1911 Heiligenstadt'
@@ -167,7 +173,7 @@ def baue_seite(ziel, d, vorlage):
     # sp-kopfbild: Bild ganz und ungeschnitten, Rubrik/Titel/Datum darunter (seiten.css)
     held = (f'<div class="sch-reporthero sp-held sp-kopfbild">{bild}<div><span>{e(d.get("rubrik") or "News")}</span>'
             f'<h1>{e(d["titel"])}</h1><p class="sp-datum">{datum_de(d["datum"])}</p></div></div>')
-    inhalt = d["text"]
+    inhalt = d["text"] + zusatz
     if d["galerie"]:
         inhalt += '\n<div class="sp-galerie">' + "".join(f'<img src="../{g}" alt="" loading="lazy">' for g in d["galerie"]) + "</div>"
     main = f'<main class="sch-report sp-seite">{held}<article class="sp-inhalt">\n{inhalt}\n</article>'
@@ -324,8 +330,21 @@ def main():
     ziel = os.path.abspath(sys.argv[1])
     beitraege = lade_beitraege()
     vorlage = open(os.path.join(REPO, VORLAGE), encoding="utf-8").read()
+    sb_vorlage = open(os.path.join(REPO, SB_VORLAGE), encoding="utf-8").read()
+    # Spielberichte im Erfurt-Aufbau; dabei merken, welcher Vorbericht zu welchem Spielbericht gehört
+    zum_bericht = {}
     for d in beitraege:
-        baue_seite(ziel, d, vorlage)
+        if d.get("rubrik") == "Spielbericht":
+            seite, vb = spielbericht.baue(d, sb_vorlage, beitraege, ADRESSE)
+            open(os.path.join(ziel, "seiten", d["seite"]), "w", encoding="utf-8").write(seite)
+            if vb and vb["slug"] not in zum_bericht:
+                zum_bericht[vb["slug"]] = d
+    for d in beitraege:
+        if d.get("rubrik") == "Spielbericht":
+            continue
+        sb = zum_bericht.get(d["slug"])
+        zusatz = f'\n<p><strong><a href="{sb["seite"]}#spielbericht">Zum Spielbericht</a></strong></p>' if sb else ""
+        baue_seite(ziel, d, vorlage, zusatz)
     news = open(os.path.join(REPO, "seiten/news.html"), encoding="utf-8").read()
     liste = alle_eintraege(news, beitraege)
     schreibe_news(ziel, news, liste)

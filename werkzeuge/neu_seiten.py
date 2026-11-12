@@ -165,7 +165,7 @@ def pfade_unterseite(t):
         if ziel.split("#")[0] in NEU_OBEN:
             return f'{attr}="../{ziel}'
         return f'{attr}="../../{ziel}'
-    return re.sub(r'(src|href|data-photo|srcset)="\.\./([^"]*)', ersetze, t)
+    return re.sub(r'(src|href|data-photo|data-gross|srcset)="\.\./([^"]*)', ersetze, t)
 
 
 def pfade_oben(t):
@@ -215,6 +215,10 @@ def baue_unterseiten():
     for pfad in sorted(glob.glob("seiten/*.html")):
         name = os.path.basename(pfad)
         s = open(pfad, encoding="utf-8").read()
+        if '<main class="sb">' in s:  # Spielbericht aus der Redaktion: Aufbau wie spielbericht-erfurt.html
+            baue_spielbericht_unterseite(name, s)
+            anzahl += 1
+            continue
         main = s[s.find("<main"):s.find("</main>")]
         titel = re.search(r"<title>(.*?)</title>", s, re.S).group(1).strip()
         beschreibung = meta(s, "description")
@@ -244,6 +248,17 @@ def baue_unterseiten():
     return anzahl
 
 
+def baue_spielbericht_unterseite(name, s):
+    """seiten/beitrag-*.html im Spielbericht-Aufbau (Bildkopf, Ergebnisleiste, Reiter) für neu/seiten/."""
+    titel = re.search(r"<title>(.*?)</title>", s, re.S).group(1).strip()
+    main = s[s.find('<main class="sb">'):s.find("</main>")] + "</div>"
+    main = main.replace('<main class="sb">', '<div class="sb">', 1)
+    main = pfade_unterseite(main)
+    out = seite("../", titel, meta(s, "description"), aktiv_fuer(name), "", main,
+                ["../../spielbericht.js?v=1"], ["../../spielbericht.css?v=2"])
+    open(f"neu/seiten/{name}", "w", encoding="utf-8").write(out)
+
+
 def baue_newsletter():
     s = open("newsletter.html", encoding="utf-8").read()
     main = s[s.find("<main"):s.find("</main>")]
@@ -268,7 +283,7 @@ def baue_spielbericht():
     main = pfade_oben(main)
     main = re.sub(r'data-gross="assets/', 'data-gross="../assets/', main)
     out = seite("", titel, meta(s, "description"), "seiten/news.html", "", main,
-                ["../spielbericht.js?v=1"], ["../spielbericht.css?v=1"])
+                ["../spielbericht.js?v=1"], ["../spielbericht.css?v=2"])
     open("neu/spielbericht-erfurt.html", "w", encoding="utf-8").write(out)
 
 
