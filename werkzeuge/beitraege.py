@@ -244,6 +244,7 @@ def block_ende(text, start):
 
 
 def schreibe_news(ziel, news, liste):
+    news = re.sub(r'<p class="sp-knoepfe"><a [^>]*>Ältere Beiträge auf der Vereinsseite</a></p>\s*', "", news)
     neu = ersetze_block(news, '<div class="sp-karten"', baue_karten(liste[:NEWS_ANZAHL]))
     if len(liste) > NEWS_ANZAHL:
         e = block_ende(neu, '<div class="sp-karten"')
