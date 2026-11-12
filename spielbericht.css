@@ -71,7 +71,7 @@
 .sb-artikel h2.stitel{font-size:clamp(28px,3.6vw,46px);color:var(--navy)}
 .sb-autor{margin-top:12px!important;color:var(--grau);font-size:14px}
 .sb-artikel figure{margin:28px 0!important}
-.sb-artikel figure img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px}
+.sb-artikel figure img{width:100%;aspect-ratio:16/9;object-fit:contain;background:#eaf0f7;border-radius:6px}
 .sb-artikel figcaption{margin-top:8px;font-size:14px;color:var(--grau)}
 .sb-artikel p{font-size:17px;line-height:1.75;margin:0 0 1em}
 .sb-artikel p.sb-vorspann{font-size:19px;line-height:1.65;color:var(--navy)}
