@@ -2,7 +2,7 @@
    Vereinsfarben Navy, Hellblau, Weiß. */
 @font-face{font-family:"SCH Barlow";src:url(sch-startseite/assets/barlow.woff) format("woff");font-weight:700;font-display:swap}
 
-.sb{--navy:#1b2d4f;--tief:#121f39;--hell:#aac7ed;--mittel:#82a8e9;--nebel:#eef2f8;--linie:#dce3ec;--grau:#56627a;--rot:#c0392b;--gelb:#e9b100;
+.sb{--navy:#2b255c;--tief:#1c1740;--hell:#c4bdf0;--mittel:#9b8fe6;--nebel:#f1eff8;--linie:#dce3ec;--grau:#56627a;--rot:#c0392b;--gelb:#e9b100;
   --breit:1180px;--rand:clamp(16px,4vw,48px);
   color:var(--navy);background:#fff;font:16px/1.65 Arial,Helvetica,sans-serif}
 .sb *{box-sizing:border-box}
@@ -21,13 +21,13 @@
 .sb-kopfnav .sb-marke img{background:#fff;border-radius:8px;padding:3px;height:52px;width:auto}
 .sb-kopfnav div{flex-wrap:wrap;justify-content:flex-end;gap:6px 22px!important}
 .sb-kopfnav div a{font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.5px;padding:6px 0;border-bottom:2px solid transparent}
-.sb-kopfnav div a:hover{border-bottom-color:#aac7ed}
+.sb-kopfnav div a:hover{border-bottom-color:#c4bdf0}
 @media(max-width:767px){.sb-kopfnav div{display:none!important}.sb-kopfnav .sb-marke span{display:inline!important;font-size:18px}}
 
 /* ---------- Bild mit Titel ---------- */
 .sb-held{position:relative;height:clamp(240px,46vh,480px);overflow:hidden;background:var(--navy)}
 .sb-held img{width:100%;height:100%;object-fit:cover;object-position:50% 32%}
-.sb-held::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#1b2d4f00 35%,#1b2d4fcc 100%)}
+.sb-held::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#2b255c00 35%,#2b255ccc 100%)}
 .sb-held h1{position:absolute;z-index:1;left:var(--rand);right:var(--rand);bottom:clamp(18px,3vw,34px);max-width:var(--breit);margin:0 auto;color:#fff;font-size:clamp(44px,7vw,92px)}
 
 /* ---------- Ergebnisleiste ---------- */

@@ -1,0 +1,67 @@
+/* =========================================================
+   SCH Design-Update – Vereinsfarbe, Akzent, Schrift, Hero
+   Wird als LETZTES Stylesheet geladen.
+   Logofarbe #2B255C ist jetzt die Grundfarbe (vorher #1B2D4F),
+   die Hex-Werte in den übrigen CSS-Dateien wurden mit getauscht.
+   ========================================================= */
+
+/* Barlow für Fließtext (400/500) + vorhandener Headline-Schnitt (700) */
+@font-face{font-family:'SCH Barlow';src:url('assets/fonts/barlow-latin-400-normal.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'SCH Barlow';src:url('assets/fonts/barlow-latin-500-normal.woff2') format('woff2');font-weight:500 600;font-display:swap}
+@font-face{font-family:'SCH Barlow';src:url('assets/barlow.woff') format('woff');font-weight:700 900;font-display:swap}
+
+:root{
+  --navy:#2b255c;          /* Logofarbe */
+  --ink:#1f1a45;
+  --sch-akzent:#6c5fc7;    /* aus der Logofarbe abgeleitet, für Aktionen/Hervorhebungen */
+  --sch-akzent-hover:#5a4db5;
+  --sch-akzent-hell:#c4bdf0;
+  --muted:#5b5778;
+}
+:is(#top,body) .sch-home{--sch-blue:#2b255c}
+:is(#top,body) .sch-matches{--sch-navy:#2b255c}
+
+/* ---------- Schrift: Barlow statt Arial ---------- */
+body, body *:not(svg):not(svg *):not(code):not(pre){font-family:'SCH Barlow','Arial Narrow',Arial,sans-serif!important}
+body{font-size:17px}
+
+/* ---------- Hero: mehr Kontrast hinter der Headline ---------- */
+:is(#top,body) .sch-home .sch-scene::after{
+  background:
+    linear-gradient(90deg,#141030cc 0%,#14103066 38%,transparent 65%),
+    linear-gradient(0deg,#141030b3 0%,#14103040 40%,transparent 62%)!important}
+:is(#top,body) .sch-home .sch-wordmark h1{text-shadow:0 2px 24px #14103066}
+
+/* ---------- Primäre Buttons in Akzentfarbe ---------- */
+:is(#top,body) :is(.button.navy,.navbutton,.nl-form button[type=submit],.partners .button:not(.outline)){
+  background:var(--sch-akzent)!important;color:#fff!important;border-color:var(--sch-akzent)!important;
+  border-radius:6px;transition:background .2s,transform .2s}
+:is(#top,body) :is(.button.navy,.navbutton,.nl-form button[type=submit],.partners .button:not(.outline)):hover{
+  background:var(--sch-akzent-hover)!important;filter:none;transform:translateY(-1px)}
+:is(#top,body) :is(.button.white,.button.outline){border-radius:6px}
+:is(#top,body) .club .button.white:hover{background:var(--sch-akzent-hell)}
+
+/* ---------- Navigation: Hover in Akzentfarbe ---------- */
+:is(#top,body) .sch-home :is(.sch-rail>a,.sch-rail>button,.sch-toptools a):hover{background:var(--sch-akzent)!important}
+
+/* ---------- Tabs „Männer / 2. Mannschaft / Nachwuchs“ ---------- */
+:is(#top,body) .sch-matches [aria-selected=true]{color:var(--sch-akzent)!important}
+:is(#top,body) .sch-matches [aria-selected=true]:after{background:var(--sch-akzent)!important}
+
+/* ---------- Karten: Datum, Links, Lesbarkeit ---------- */
+:is(#top,body) :is(.sch-home .sch-postcopy time,.sch-morecopy time){color:var(--sch-akzent)!important;font-size:12.5px!important;font-weight:600;letter-spacing:1px}
+:is(#top,body) :is(.sch-home .sch-read,.sch-morecopy .sch-read,.read){text-decoration-color:var(--sch-akzent);text-decoration-thickness:2px}
+:is(#top,body) :is(.sch-home .sch-post,.sch-morecard):hover :is(.sch-read,h2,h3){color:var(--sch-akzent)}
+:is(#top,body) .sch-morecopy p,:is(#top,body) .sch-home .sch-excerpt{color:#45415f!important}
+:is(#top,body) :is(.lower p,.partners p,.newscopy p){color:#45415f}
+
+/* ---------- Social-Pfeile sichtbar machen ---------- */
+:is(#top,body) .sch-socialarrows button{border-color:#2b255c55!important;color:#2b255c!important}
+:is(#top,body) .sch-socialarrows button:disabled{opacity:.35}
+
+/* ---------- Eyebrows (kleine Überzeilen) in Akzent ---------- */
+:is(#top,body) :is(.lower,.partners,.club) .eyebrow{color:var(--sch-akzent)}
+:is(#top,body) :is(.club,.nl-band) .eyebrow{color:var(--sch-akzent-hell)}
+
+/* ---------- Fokus (Tastatur) ---------- */
+a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}

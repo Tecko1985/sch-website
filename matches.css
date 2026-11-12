@@ -1,5 +1,5 @@
 /* SCH fixtures: scoped to this section, including when rendered in Enfold. */
-:is(#top,body) .sch-matches{--sch-navy:#1b2d4f;box-sizing:border-box;background:#fff;color:var(--sch-navy);width:min(1400px,calc(100% - 96px));margin:0 auto;padding:76px 0 84px;font-family:Arial,Helvetica,sans-serif;text-align:left}
+:is(#top,body) .sch-matches{--sch-navy:#2b255c;box-sizing:border-box;background:#fff;color:var(--sch-navy);width:min(1400px,calc(100% - 96px));margin:0 auto;padding:76px 0 84px;font-family:Arial,Helvetica,sans-serif;text-align:left}
 :is(#top,body) .sch-matches *{box-sizing:border-box}
 :is(#top,body) .sch-matches h2{font-family:Impact,'Arial Narrow',Arial,sans-serif;font-size:clamp(30px,4vw,54px);font-weight:800;line-height:1.08;letter-spacing:-.8px;margin:0 0 30px;color:var(--sch-navy)}
 :is(#top,body) .sch-matchbar{display:flex;justify-content:space-between;gap:20px;align-items:center;border-bottom:1px solid #d7dce4;margin-bottom:24px}
