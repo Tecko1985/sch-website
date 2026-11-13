@@ -255,7 +255,7 @@ def baue_spielbericht_unterseite(name, s):
     main = main.replace('<main class="sb">', '<div class="sb">', 1)
     main = pfade_unterseite(main)
     out = seite("../", titel, meta(s, "description"), aktiv_fuer(name), "", main,
-                ["../../spielbericht.js?v=1"], ["../../spielbericht.css?v=20261113"])
+                ["../../spielbericht.js?v=1"], ["../../spielbericht.css?v=20261113b"])
     open(f"neu/seiten/{name}", "w", encoding="utf-8").write(out)
 
 
@@ -283,7 +283,7 @@ def baue_spielbericht():
     main = pfade_oben(main)
     main = re.sub(r'data-gross="assets/', 'data-gross="../assets/', main)
     out = seite("", titel, meta(s, "description"), "seiten/news.html", "", main,
-                ["../spielbericht.js?v=1"], ["../spielbericht.css?v=20261113"])
+                ["../spielbericht.js?v=1"], ["../spielbericht.css?v=20261113b"])
     open("neu/spielbericht-erfurt.html", "w", encoding="utf-8").write(out)
 
 
