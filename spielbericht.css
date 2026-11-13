@@ -193,3 +193,8 @@
 
 /* Mehrere Stimmen untereinander (Redaktionsbeiträge) */
 .sb-stimme+.sb-stimme{margin-top:16px}
+
+/* Redaktions-Spielberichte: Titelbild immer ganz zeigen, Rand mit unscharfer Kopie füllen */
+.sb-held-ganz .sb-held-hinter{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(22px) brightness(.75);transform:scale(1.05)}
+.sb-held-ganz img.sb-held-bild{position:relative;object-fit:contain;object-position:50% 50%}
+.sb-held-ganz::after{background:linear-gradient(180deg,#1b2d4f00 60%,#1b2d4f99 100%)}

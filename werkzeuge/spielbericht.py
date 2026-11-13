@@ -542,7 +542,8 @@ def baue(d, vorlage, alle_beitraege, adresse):
         f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
         f'{"" if n == "spielbericht" else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
-    main = (f'<main class="sb">\n<header class="sb-held"><img src="{titelbild}" alt="" fetchpriority="high"><h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
+    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz"><img class="sb-held-hinter" src="{titelbild}" alt="" aria-hidden="true">'
+            f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high"><h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
             f'{tafel(s)}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche des Spielberichts">{knoepfe}</div></div>\n\n'
             f"{bereiche}\n</main>")
 
