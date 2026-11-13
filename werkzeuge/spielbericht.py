@@ -512,13 +512,15 @@ def baue(d, vorlage, alle_beitraege, adresse):
     s = Spiel(sp, d)
     titel = d["titel"]
     teaser = d["teaser"] if d.get("teaser") and not platzhalter(d["teaser"]) else ""
+    # Steht der Anreißer schon als erster Absatz im Text (langer Einstieg), nicht doppelt zeigen
+    vorspann = "" if teaser and nur_text(d["text"]).startswith(teaser.rstrip(" …")[:80]) else teaser
     # Bild 1 = Titelbild (Bildkopf), Bild 2-4 in den Text, alle weiteren in die Galerie
     alle = ([d["bild"]] if d.get("bild") else []) + [g for g in (d.get("galerie") or []) if g != d.get("bild")]
     titelbild = alle[0] if alle else "assets/hero.jpg"
     im_text, fuer_galerie = alle[1:4], alle[4:]
     vb = finde_vorbericht(d, alle_beitraege)
 
-    bericht = artikel(titel, d["datum"], sp.get("autor"), teaser, d["text"], im_text,
+    bericht = artikel(titel, d["datum"], sp.get("autor"), vorspann, d["text"], im_text,
                       f"{s.gegner and ('SCH gegen ' + s.gegner) or titel} (Foto: SCH)", spieldaten(s),
                       kicker=(sp.get("kurztitel") or "").strip())
     reiter = [

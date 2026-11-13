@@ -533,6 +533,24 @@
     // Einstieg vor der ersten Zwischenüberschrift = Anreißer
     if (rest.length && !istKopf(rest[0], rest[1])) aus.teaser = rest.shift().text;
     var html = '';
+    // Langer Einstieg: ganz in den Text, als Anreißer nur die ersten Sätze (max. 300 Zeichen)
+    if (aus.teaser.length > 300) {
+      html += '<p>' + escHtml(aus.teaser) + '</p>';
+      var saetze = aus.teaser.match(/[^.!?]+[.!?]+(\s|$)/g) || [aus.teaser], kurzT = '';
+      saetze.forEach(function (s) { if ((kurzT + s).trim().length <= 300) kurzT += s; });
+      aus.teaser = kurzT.trim() || aus.teaser.slice(0, 297).replace(/\s+\S*$/, '') + ' …';
+    }
+    // Was im Fließtext steht, für die Spieldaten nutzen: Spieltag, Liga, Stadion, Trainerzitat
+    var alles = artikelZ.map(function (z) { return z.text; }).join('\n');
+    var extra = {}, m;
+    if ((m = alles.match(/(\d{1,2})\.\s*Spieltag\s+(?:der|in der|im)\s+([A-ZÄÖÜ][\wäöüß-]+(?:-[A-ZÄÖÜ][\wäöüß]+)?)/))) {
+      extra.runde = m[1] + '. Spieltag'; extra.wettbewerb = m[2];
+    }
+    if ((m = alles.match(/\b(?:im|auf dem|in der)\s+([A-ZÄÖÜ][\wäöüß-]*(?:stadion|sportplatz|sportpark|arena|kampfbahn|sportfeld))\b/i))) extra.spielort = m[1];
+    if ((m = alles.match(/Trainer(?:in)?\s+((?:\[[^\]]+\]\s+)?[A-ZÄÖÜ][\wäöüß-]+(?:\s+[A-ZÄÖÜ][\wäöüß-]+)?)[^„\n]{0,40}„([^“\n]+)“/))) {
+      extra.stimmen = m[1] + ' | Trainer | ' + m[2];
+    }
+    aus.extra = extra;
     rest.forEach(function (z, k) {
       // Schlusssatz mit Rückfrage nach fehlenden Angaben gehört nicht in den Bericht
       if (k === rest.length - 1 && /fehl(en|t)\b.*\?$/i.test(z.text)) return;
@@ -548,15 +566,20 @@
     form.rubrik.value = 'Spielbericht';
     form.rubrik.dispatchEvent(new Event('change'));
     form.titel.value = r.titel;
-    if (r.teaser) form.teaser.value = r.teaser.length > 300 ? r.teaser.slice(0, 297).replace(/\s+\S*$/, '') + ' …' : r.teaser;
+    if (r.teaser) form.teaser.value = r.teaser;
     textfeld.innerHTML = r.html;
     form.sp_kurztitel.value = r.kurz;
     if (r.spiel) Object.keys(r.spiel).forEach(function (n) { if (form['sp_' + n]) form['sp_' + n].value = r.spiel[n]; });
+    // Spieltag, Liga, Stadion, Zitat aus dem Text nur eintragen, wo noch nichts steht
+    Object.keys(r.extra).forEach(function (n) { if (form['sp_' + n] && !form['sp_' + n].value.trim()) form['sp_' + n].value = r.extra[n]; });
     zeichneVorberichte();
     aktualisiereKnopf();
     var teile = ['Titel', r.kurz && 'Kurzüberschrift', r.teaser && 'Anreißer', 'Text', r.spiel && 'Spieldaten'].filter(Boolean);
+    var fehlt = ['wettbewerb', 'runde', 'spielort'].filter(function (n) { return !form['sp_' + n].value.trim(); })
+      .map(function (n) { return { wettbewerb: 'Wettbewerb', runde: 'Spieltag', spielort: 'Spielort' }[n]; });
     meldung('Spielbericht erkannt und aufgeteilt: ' + teile.join(', ') + '. Bitte kurz prüfen' +
-      (r.spiel ? ' (Wettbewerb und Spieltag fehlen noch).' : '. Gegner und Ergebnis bitte bei den Spieldaten eintragen.'), 'ok');
+      (!r.spiel ? '; Gegner und Ergebnis bei den Spieldaten eintragen' : '') +
+      (fehlt.length ? '; noch offen: ' + fehlt.join(', ') : '') + '.', 'ok');
     return true;
   }
 
