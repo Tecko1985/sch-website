@@ -66,10 +66,13 @@ def zeit(iso):
     return d.strftime("%d.%m.%Y | %H:%M Uhr")
 
 
-def team_html(name, ist_sch, kurz):
+def team_html(name, ist_sch, kurz, wappen=None):
     e = html.escape(name)
     if ist_sch:
         return f'<span class="sch-matchteam">{LOGO}<b>SCH</b><span class="sch-teamname">{e}</span></span>'
+    if wappen:
+        return (f'<span class="sch-matchteam"><img src="{html.escape(wappen)}" alt="" width="200" height="200">'
+                f'<b>{html.escape(kurz)}</b><span class="sch-teamname">{e}</span></span>')
     return (f'<span class="sch-matchteam"><span class="sch-teammark" aria-hidden="true">{html.escape(kurz)}</span>'
             f'<b>{html.escape(kurz)}</b><span class="sch-teamname">{e}</span></span>')
 
@@ -87,8 +90,8 @@ def karte(sp, bekannt):
         kopf = f'<a class="sch-game sch-upcoming" href="{html.escape(sp["href"])}">'
         stand = "–"
         link = "Zum Spielbericht" if sp.get("bericht") else "Zum Spiel"
-    heim = team_html(sp["heim"], sp["heim_sch"], kuerzel(sp["heim"], bekannt))
-    gast = team_html(sp["gast"], not sp["heim_sch"], kuerzel(sp["gast"], bekannt))
+    heim = team_html(sp["heim"], sp["heim_sch"], kuerzel(sp["heim"], bekannt), sp.get("wappen"))
+    gast = team_html(sp["gast"], not sp["heim_sch"], kuerzel(sp["gast"], bekannt), sp.get("wappen"))
     return (f'{kopf}<span class="sch-matchmeta">{html.escape(sp["meta"])}</span>'
             f'<time datetime="{sp["kickoff"]}">{zeit(sp["kickoff"])}</time>'
             f'<span class="sch-gamepair">{heim}<strong class="sch-result">{stand}</strong>{gast}</span>'
@@ -100,6 +103,31 @@ def hole(url):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (SCH-Webseite)"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read().decode("utf-8")
+
+
+WAPPEN_ORDNER = "assets/wappen"
+
+
+def lade_wappen(team):
+    """Vereinswappen des Gegners von FuPa als PNG (200 x 200) nach assets/wappen/<verein>.png; gibt den Pfad zurück."""
+    verein = (team.get("club") or {}).get("slug") or team.get("clubSlug") or ""
+    bild = ((team.get("image") or (team.get("club") or {}).get("image") or {}).get("path") or "")
+    if not re.match(r"^[a-z0-9-]+$", verein) or not bild.startswith("https://image.fupa.net/"):
+        return None
+    pfad = f"{WAPPEN_ORDNER}/{verein}.png"
+    ziel = os.path.join(REPO, pfad)
+    if not os.path.exists(ziel):
+        try:
+            req = urllib.request.Request(bild.rstrip("/") + "/200x200.png", headers={"User-Agent": "Mozilla/5.0 (SCH-Webseite)"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                daten = r.read()
+        except Exception:
+            return None
+        if not daten.startswith(b"\x89PNG"):
+            return None
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        open(ziel, "wb").write(daten)
+    return pfad
 
 
 def teamname(t):
@@ -178,13 +206,17 @@ def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute):
         else:
             gast = sch_name
         eigener = links.get(m["kickoff"][:10]) if reiter_id != "sch-fixtures-youth" else None
+        gegner_team = m["awayTeam"] if seite == "homeTeam" else m["homeTeam"]
         karten_daten.append({
             "kickoff": m["kickoff"], "meta": meta, "heim": heim, "gast": gast, "heim_sch": seite == "homeTeam",
             "tore": (m["homeGoal"], m["awayGoal"]) if gespielt else None,
-            "href": eigener or f"https://www.fupa.net/match/{m['slug']}", "bericht": bool(eigener)})
+            "href": eigener or f"https://www.fupa.net/match/{m['slug']}", "bericht": bool(eigener),
+            "gegner_team": gegner_team})
     karten_daten.sort(key=lambda k: k["kickoff"])
     fertig = [k for k in karten_daten if k["tore"]][-regel["zurueck"]:]
     kommend = [k for k in karten_daten if not k["tore"]][:regel["vor"]]
+    for k in fertig + kommend:  # Wappen nur für Karten, die auch angezeigt werden
+        k["wappen"] = lade_wappen(k["gegner_team"])
     return fertig + kommend, max(0, len(fertig) - 1)
 
 
