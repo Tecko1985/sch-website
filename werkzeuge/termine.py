@@ -116,11 +116,32 @@ def tag_kopf(iso):
             f'<ul class="tm-liste">\n')
 
 
+def eintraege_der_seite(teil):
+    """Spiele im Listenteil der Seite: Schlüssel (Spiel-Link) -> lesbare Kurzform mit Datum."""
+    aus = {}
+    for tag_html in re.findall(r'<section class="tm-tag" aria-label="([^"]*)">(.*?)</section>', teil, re.S):
+        tag, inhalt = tag_html
+        for li in re.findall(r'<li class="tm-spiel[^"]*">.*?</li>', inhalt, re.S):
+            text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<span class=\"tm-sr\">.*?</span>|<[^>]+>", " ", li))).strip()
+            link = re.search(r'<a href="([^"]*)"', li)
+            paar = re.sub(r"<[^>]+>", "|", re.search(r'<span class="tm-gegner">(.*?)</span></span>', li).group(1))
+            schluessel = (spiel_id(link.group(1)) + paar) if link else text
+            aus[schluessel] = f"{tag}: {text}"
+    return aus
+
+
+def tag_iso(kurzform):
+    m = re.match(r"\w+, (\d+)\. (\w+) (\d{4})", kurzform)
+    return f"{m.group(3)}-{MONATE.index(m.group(2)) + 1:02d}-{int(m.group(1)):02d}" if m else ""
+
+
 def baue(heute=None):
     heute = heute or datetime.date.today().isoformat()
     alt = open(SEITE, encoding="utf-8").read()
     bekannt = alte_bezeichnungen(alt)
-    zeilen = spielplan(heute, SAISONENDE)
+    # Ab 60 Tagen zurück: verlegte Spiele stehen bei fussball.de unter ihrem ursprünglichen Datum
+    von = (datetime.date.fromisoformat(heute) - datetime.timedelta(days=60)).isoformat()
+    zeilen = spielplan(von, SAISONENDE)
     if not zeilen:
         sys.exit("Keine Spiele von fussball.de erhalten – Seite bleibt unverändert.")
     # Mannschaft (fussball.de team-id) -> Bezeichnung, gelernt aus Spielen, die schon auf der Seite stehen
@@ -144,7 +165,19 @@ def baue(heute=None):
         sch_name = z["heim"] if ist_sch(z["heim"]) else z["gast"]
         z["label"] = bezeichnung(z, sch_name, nach_team)
         spiele.append(z)
-    spiele.sort(key=lambda z: (z["datum"], z["zeit"]))
+    # Doppelte weg: ein verlegtes Spiel steht am alten Datum (mit Hinweis) und am neuen Termin;
+    # Turniere teilen sich eine Spiel-Nummer, deshalb gehören die Mannschaften zum Schlüssel.
+    einmal = {}
+    for z in spiele:
+        k = (spiel_id(z["spiel"]), z["heim"], z["gast"]) if z["spiel"] else (z["datum"], z["zeit"], z["heim"], z["gast"])
+        if k not in einmal:
+            einmal[k] = z
+        elif einmal[k].get("verlegt") and not z.get("verlegt"):
+            z["verlegt"] = True  # Eintrag am neuen Termin nehmen, Hinweis „verlegt“ behalten
+            einmal[k] = z
+        elif z.get("verlegt"):
+            einmal[k]["verlegt"] = True
+    spiele = sorted(einmal.values(), key=lambda z: (z["datum"], z["zeit"]))
 
     teile, tag = [], None
     for z in spiele:
@@ -161,13 +194,36 @@ def baue(heute=None):
     b = alt.find('<p class="tm-leer"')
     if a < 0 or b < 0:
         sys.exit("Aufbau der Termine-Seite nicht erkannt – Seite bleibt unverändert.")
-    neu_seite = alt[:a] + "".join(teile) + alt[b:]
+    neu_liste = "".join(teile)
+
+    # Abgleich: was ist neu, geändert, gestrichen, vorbei?
+    vorher, nachher = eintraege_der_seite(alt[a:b]), eintraege_der_seite(neu_liste)
+    noch_kommend = {k: v for k, v in vorher.items() if tag_iso(v) >= heute}
+    if len(noch_kommend) >= 20 and len(nachher) < len(noch_kommend) * 0.6:
+        sys.exit(f"fussball.de liefert nur {len(nachher)} statt bisher {len(noch_kommend)} kommender Spiele – "
+                 "vermutlich eine Störung, Seite bleibt unverändert.")
+    neu_k = [nachher[k] for k in nachher if k not in vorher]
+    weg_k = [vorher[k] for k in vorher if k not in nachher and tag_iso(vorher[k]) >= heute]
+    vorbei = [k for k in vorher if k not in nachher and tag_iso(vorher[k]) < heute]
+    anders = [f"{vorher[k]}  →  {nachher[k]}" for k in nachher if k in vorher and vorher[k] != nachher[k]]
+    if neu_liste == alt[a:b]:
+        print("Keine Änderungen an den Terminen.")
+        return []
+    bericht = [f"{len(neu_k)} neu, {len(anders)} geändert, {len(weg_k)} gestrichen, {len(vorbei)} vorbei"]
+    bericht += [f"+ {x}" for x in neu_k] + [f"~ {x}" for x in anders] + [f"- {x}" for x in weg_k]
+    print("\n".join(bericht))
+
+    neu_seite = alt[:a] + neu_liste + alt[b:]
     neu_seite = re.sub(r"Stand \d{2}\.\d{2}\.\d{4}", "Stand " + datetime.date.fromisoformat(heute).strftime("%d.%m.%Y"), neu_seite)
     neu_seite = neu_seite.replace("Alle Spiele unserer Mannschaften bis Jahresende", "Alle Spiele unserer Mannschaften bis Saisonende")
     neu_seite = neu_seite.replace("gibt es bis Jahresende keine Spiele", "gibt es bis Saisonende keine Spiele")
     open(SEITE, "w", encoding="utf-8").write(neu_seite)
     print(f"{len(spiele)} Spiele an {len({z['datum'] for z in spiele})} Tagen, "
           f"{sum(1 for z in spiele if z.get('verlegt'))} verlegt, {sum(1 for z in spiele if z.get('abgesetzt'))} abgesetzt.")
+    # Für den täglichen Abgleich: Kurzbericht als Commit-Text
+    if os.environ.get("TERMINE_BERICHT"):
+        open(os.environ["TERMINE_BERICHT"], "w", encoding="utf-8").write(
+            f"Termine abgeglichen: {bericht[0]}\n\n" + "\n".join(bericht[1:40]) + "\n")
     return spiele
 
 

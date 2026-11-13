@@ -1,0 +1,56 @@
+# Taeglicher Abgleich der Termine-Seite (seiten/termine.html) mit dem Vereinsspielplan auf fussball.de.
+# werkzeuge/termine.py holt alle Spiele bis Saisonende, nimmt neue auf, streicht weggefallene und
+# vorbeie, uebernimmt Zeit-/Ortsaenderungen, Verlegungen und Absetzungen.
+# Nur wenn sich etwas geaendert hat: Commit auf main (Commit-Text = Liste der Aenderungen) und danach
+# "Seite bauen" anstossen (ein Push mit dem GITHUB_TOKEN startet keinen anderen Ablauf von selbst).
+# Liefert fussball.de auffaellig wenige Spiele (Stoerung), bricht termine.py ab und es bleibt alles, wie es ist.
+# Keine Secrets, keine Zusatzpakete (nur Python-Standardbibliothek).
+name: Termine abgleichen
+
+on:
+  schedule:
+    - cron: '23 4 * * *'   # taeglich 05:23 (Winter) bzw. 06:23 (Sommer) deutscher Zeit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: termine
+  cancel-in-progress: false
+
+jobs:
+  abgleichen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # geaenderte Termine-Seite committen
+      actions: write    # danach "Seite bauen" starten
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Termine mit fussball.de abgleichen
+        env:
+          TZ: Europe/Berlin
+          TERMINE_BERICHT: ${{ runner.temp }}/bericht.txt
+        run: python werkzeuge/termine.py
+
+      - name: Aenderungen speichern und Seite neu bauen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- seiten/termine.html; then
+            echo "Keine Aenderungen an den Terminen."
+            exit 0
+          fi
+          git config user.name "Termine-Abgleich"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add seiten/termine.html
+          git commit -q -F "$RUNNER_TEMP/bericht.txt"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main
+          gh workflow run seite.yml --ref main
+          cat "$RUNNER_TEMP/bericht.txt" >> "$GITHUB_STEP_SUMMARY"
