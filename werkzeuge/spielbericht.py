@@ -55,10 +55,26 @@ def name_zusatz(rest):
     return (m.group(1).strip(), m.group(2).strip()) if m else (rest.strip(), "")
 
 
+ARTEN = {"FE": "Strafstoß", "ET": "Eigentor", "HE": "Handelfmeter"}
+VEREINSFORMAT = re.compile(r"^\s*\d+\s*:\s*\d+\s+(.+?)\s*\(\s*(\d{1,3})(?:\s*\+\s*(\d{1,2}))?\s*\.?\s*([^)]*)\)\s*$")
+
+
+def vereinsformat(z):
+    """„1:0 Wolanski (39. FE)“ -> „39. Wolanski (Strafstoß)“; sonst unverändert."""
+    m = VEREINSFORMAT.match(z)
+    if not m:
+        return z
+    name, n, plus, art = m.group(1).strip(), m.group(2), m.group(3), m.group(4).strip().rstrip(".")
+    art = ARTEN.get(art.upper(), art)
+    return f"{n}{'+' + plus if plus else ''}. {name}" + (f" ({art})" if art else "")
+
+
 def ereignisse(text, team):
     aus = []
-    for z in zeilen(text):
-        m = minute(z)
+    # Mehrere Einträge in einer Zeile („1:0 A (17.), 2:0 B (30.)“) auftrennen
+    teile = [t for z in zeilen(text) for t in re.split(r"\s*[,;]\s*(?![^()]*\))", z) if t.strip()]
+    for z in teile:
+        m = minute(vereinsformat(z))
         if m and m[2]:
             name, zusatz = name_zusatz(m[2])
             aus.append({"min": m[0], "label": m[1], "name": name, "zusatz": zusatz, "team": team})
@@ -87,6 +103,7 @@ class Spiel:
         self.da = bool(self.gegner)
         self.heim = sp.get("ort_art", "heim") != "auswaerts"
         self.tore = sorted(ereignisse(sp.get("tore_sch"), "sch") + ereignisse(sp.get("tore_geg"), "geg"), key=lambda x: x["min"])
+        self.tore = self.teams_aus_spielstand(sp) or self.tore
         self.karten = sorted(ereignisse(sp.get("karten_sch"), "sch") + ereignisse(sp.get("karten_geg"), "geg"), key=lambda x: x["min"])
         self.elf_sch = aufstellung(sp.get("aufstellung_sch"))
         self.elf_geg = aufstellung(sp.get("aufstellung_geg"))
@@ -101,6 +118,22 @@ class Spiel:
         self.hz = (hs, hg) if hs is not None and hg is not None else None
         self.spieldatum = sp.get("spieldatum") or d["datum"]
         self.wappen = sp.get("wappen") if BILDPFAD.match(sp.get("wappen") or "") else LEER_WAPPEN
+
+    def teams_aus_spielstand(self, sp):
+        """Stehen alle Tore im Vereinsformat („1:1 Kurth (31.)“) da, ergibt der Spielstand,
+        wer getroffen hat – auch wenn beide Mannschaften in einem Feld stehen."""
+        roh = [t for f in ("tore_sch", "tore_geg") for z in zeilen(sp.get(f))
+               for t in re.split(r"\s*[,;]\s*(?![^()]*\))", z) if t.strip()]
+        if not roh or not all(VEREINSFORMAT.match(t) for t in roh):
+            return None
+        aus, vor = [], (0, 0)
+        for t in sorted(roh, key=lambda t: sum(int(x) for x in re.match(r"\s*(\d+)\s*:\s*(\d+)", t).groups())):
+            h, g = (int(x) for x in re.match(r"\s*(\d+)\s*:\s*(\d+)", t).groups())
+            heim_tor = h > vor[0]
+            vor = (h, g)
+            for ev in ereignisse(t, "sch" if heim_tor == self.heim else "geg"):
+                aus.append(ev)
+        return sorted(aus, key=lambda x: x["min"])
 
     def zaehle(self, bis):
         s = sum(1 for t in self.tore if t["team"] == "sch" and t["min"] <= bis)
@@ -147,7 +180,14 @@ def tafel(s):
     stand = (f'<strong aria-label="Endstand {s.hg(s.end)[0]} zu {s.hg(s.end)[1]}">{s.stand(s.end)}</strong>' if s.end
              else '<strong>– : –</strong>')
     hz = f"<span>Halbzeit {s.stand(s.hz)}</span>" if s.hz else ""
-    tore = "".join(f'<li>{BALL}<span>{e(t["label"])}. {e(t["name"])}{" (" + e(t["zusatz"]) + ")" if t["zusatz"] else ""}</span></li>' for t in s.tore)
+    # Vereinsformat mit Spielstand: „1:0 Wolanski (39. FE)“
+    kurz = {v: k for k, v in ARTEN.items()}
+    lauf, tore = [0, 0], ""
+    for t in s.tore:
+        lauf[0 if t["team"] == "sch" else 1] += 1
+        h, g = s.hg(lauf)
+        zus = kurz.get(t["zusatz"], t["zusatz"])
+        tore += f'<li>{BALL}<span>{h}:{g} {e(t["name"])} ({e(t["label"])}.{" " + e(zus) if zus else ""})</span></li>'
     tore += "".join(f'<li class="rot"><span class="sb-karte" aria-hidden="true"></span><span>{e(k["label"])}. Rote Karte {e(k["name"])}</span></li>' for k in s.karten)
     tore_html = f'\n<ul class="sb-tore" aria-label="Tore und Platzverweise">{tore}</ul>' if tore else ""
     return f"""<section class="sb-tafel" aria-label="Ergebnis">
@@ -227,17 +267,31 @@ def text_abschnitte(text):
     return aus
 
 
-def artikel(titel, datum, autor, vorspann, text, bilder, unterschrift, schluss=""):
-    teile = text_abschnitte(text)
-    # Bilder aus der Galerie wie im Erfurt-Bericht zwischen die Abschnitte setzen
-    if len(bilder) > 1 and len(teile) >= 3:
-        teile.insert(2, figur(bilder[1], unterschrift))
-    if len(bilder) > 2 and len(teile) >= 6:
-        teile.insert(5, figur(bilder[2], unterschrift))
+def verteile(teile, bilder, unterschrift):
+    """Bilder gleichmäßig zwischen die Abschnitte setzen (nie vor den ersten Abschnitt)."""
+    if not bilder:
+        return teile
+    n = len(teile)
+    if n == 0:
+        return [figur(b, unterschrift) for b in bilder]
+    k = len(bilder)
+    # Abschnitt, nach dem Bild i kommt: gleichmäßig über den Text verteilt
+    nach = [max(1, min(n, round((i + 1) * n / (k + 1)))) for i in range(k)]
+    aus = []
+    for j, teil in enumerate(teile, 1):
+        aus.append(teil)
+        aus += [figur(b, unterschrift) for b, pos in zip(bilder, nach) if pos == j]
+    return aus
+
+
+def artikel(titel, datum, autor, vorspann, text, bilder, unterschrift, schluss="", oben_bild="", kicker=""):
+    """bilder: kommen zwischen die Abschnitte; oben_bild: steht direkt unter der Überschrift."""
+    teile = verteile(text_abschnitte(text), bilder, unterschrift)
     zeile = datum_lang(datum) + (f" · {e(autor)}" if autor else "")
-    oben = figur(bilder[0], unterschrift).replace(' loading="lazy"', "") if bilder else ""
+    oben = figur(oben_bild, unterschrift).replace(' loading="lazy"', "") if oben_bild else ""
+    kk = f'<span class="sb-kicker">{e(kicker)}</span>\n' if kicker else ""
     vs = f'<p class="sb-vorspann">{e(vorspann)}</p>' if vorspann else ""
-    return (f'<article class="sb-artikel">\n<h2 class="stitel">{e(titel)}</h2>\n<p class="sb-autor">{zeile}</p>\n'
+    return (f'<article class="sb-artikel">\n{kk}<h2 class="stitel">{e(titel)}</h2>\n<p class="sb-autor">{zeile}</p>\n'
             f'{oben}\n{vs}\n{"".join(teile)}\n{schluss}</article>')
 
 
@@ -259,7 +313,7 @@ def spieldaten(s):
     if s.karten:
         k = ", ".join(f'{e(x["name"])} ({e(x["label"])}.{", " + e(x["zusatz"]) if x["zusatz"] else ""})' for x in s.karten)
         zeilen_.append(f"<p><b>Rote Karte:</b> {k}</p>")
-    for feld, text in (("schiedsrichter", "Schiedsrichter"), ("zuschauer", "Zuschauer")):
+    for feld, text in (("schiedsrichter", "Schiedsrichter"), ("zuschauer", "Zuschauer"), ("trainer", "Trainer")):
         if s.sp.get(feld):
             zeilen_.append(f"<p><b>{text}:</b> {e(s.sp[feld])}</p>")
     if not zeilen_:
@@ -417,12 +471,11 @@ def aufstellungen(s):
 def vorbericht_html(vb):
     if not vb:
         return ""
-    bilder = [vb["bild"]] if vb.get("bild") else []
     vorspann = vb["teaser"] if vb.get("teaser") and not platzhalter(vb["teaser"]) else ""
     if vorspann and nur_text(vb["text"]).startswith(vorspann.rstrip(" …")[:80]):
         vorspann = ""  # Anreißer ist nur der Textanfang
     schluss = f'<p class="sb-hinweis"><a href="seiten/{vb["seite"]}">Vorbericht als eigene Seite öffnen</a></p>\n'
-    return artikel(vb["titel"], vb["datum"], "", vorspann, vb["text"], bilder, "", schluss)
+    return artikel(vb["titel"], vb["datum"], "", vorspann, vb["text"], [], "", schluss, oben_bild=vb.get("bild") or "")
 
 
 # ---------------------------------------------------------------- Seite
@@ -453,23 +506,26 @@ def pfade_fuer_seiten(t):
     return t
 
 
-def baue(d, vorlage, alle, adresse):
+def baue(d, vorlage, alle_beitraege, adresse):
     """Fertige HTML-Seite (für seiten/) zu einem Spielbericht-Beitrag."""
     sp = d.get("spiel") or {}
     s = Spiel(sp, d)
     titel = d["titel"]
     teaser = d["teaser"] if d.get("teaser") and not platzhalter(d["teaser"]) else ""
-    bilder = list(d.get("galerie") or [])
-    titelbild = d["bild"] or "assets/hero.jpg"
-    vb = finde_vorbericht(d, alle)
+    # Bild 1 = Titelbild (Bildkopf), Bild 2-4 in den Text, alle weiteren in die Galerie
+    alle = ([d["bild"]] if d.get("bild") else []) + [g for g in (d.get("galerie") or []) if g != d.get("bild")]
+    titelbild = alle[0] if alle else "assets/hero.jpg"
+    im_text, fuer_galerie = alle[1:4], alle[4:]
+    vb = finde_vorbericht(d, alle_beitraege)
 
-    bericht = artikel(titel, d["datum"], sp.get("autor"), teaser, d["text"], bilder,
-                      f"{s.gegner and ('SCH gegen ' + s.gegner) or titel} (Foto: SCH)", spieldaten(s))
+    bericht = artikel(titel, d["datum"], sp.get("autor"), teaser, d["text"], im_text,
+                      f"{s.gegner and ('SCH gegen ' + s.gegner) or titel} (Foto: SCH)", spieldaten(s),
+                      kicker=(sp.get("kurztitel") or "").strip())
     reiter = [
         ("vorbericht", "Vorbericht", vorbericht_html(vb), ""),
         ("spielinfo", "Spielinfo", spielinfo(s), ""),
         ("spielbericht", "Spielbericht", bericht, ""),
-        ("galerie", "Galerie", galerie(bilder, titel), ""),
+        ("galerie", "Galerie", galerie(fuer_galerie, titel), ""),
         ("liveticker", "Liveticker", ticker(s, teaser), ""),
         ("stimmen", "Stimmen", stimmen(s), ""),
         ("statistiken", "Statistiken", statistik(s), "grau"),

@@ -333,7 +333,9 @@
         return bildVerkleinern(datei).then(function (b) {
           var pfad = neuerBildpfad(b.endung);
           neueBilder[pfad] = b.base64;
-          galerie.push(pfad);
+          // Spielbericht: ohne Titelbild wird das erste Bild automatisch zum Titelbild
+          if (form.rubrik.value === 'Spielbericht' && !titelbild) titelbild = pfad;
+          else galerie.push(pfad);
           zeichneBilder();
         });
       });
@@ -345,7 +347,8 @@
   // Daraus baut werkzeuge/spielbericht.py die Seite im Aufbau von spielbericht-erfurt.html.
   var SPIELFELDER = ['gegner', 'ort_art', 'wettbewerb', 'runde', 'spieldatum', 'anstoss', 'spielort', 'autor',
     'end_sch', 'end_geg', 'hz_sch', 'hz_geg', 'tore_sch', 'tore_geg', 'karten_sch', 'karten_geg',
-    'aufstellung_sch', 'aufstellung_geg', 'zuschauer', 'schiedsrichter', 'vorbericht', 'ticker', 'ticker_link', 'stimmen'];
+    'aufstellung_sch', 'aufstellung_geg', 'zuschauer', 'schiedsrichter', 'vorbericht', 'ticker', 'ticker_link', 'stimmen',
+    'kurztitel', 'trainer'];
   var wappen = null;
   var vorberichtWahl = $('[data-vorberichtwahl]');
 
@@ -363,6 +366,7 @@
   }
   function zeigeSpieldaten() {
     $('[data-spieldaten]').hidden = form.rubrik.value !== 'Spielbericht';
+    $('[data-sbbildtipp]').hidden = form.rubrik.value !== 'Spielbericht';
   }
   form.rubrik.addEventListener('change', zeigeSpieldaten);
 
@@ -453,11 +457,118 @@
   });
   document.execCommand('defaultParagraphSeparator', false, 'p');
 
+  // ---------------------------------------------------------------- Spielbericht einfügen und selbst aufteilen
+  // Erkennt den fertigen Bericht (Überschrift, Kurzüberschrift, Einstieg, Zwischenüberschriften,
+  // Absätze, Block „Spieldaten“) und verteilt ihn auf Titel, Anreißer, Text und Spieldaten-Felder.
+  function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function zeilenAus(t) {
+    return t.replace(/\r/g, '').split('\n').map(function (z) {
+      var roh = z.trim(), kopf = false;
+      if (/^#{1,6}\s+/.test(roh)) { kopf = true; roh = roh.replace(/^#{1,6}\s+/, ''); }
+      if (/^\*\*[^*]+\*\*:?$/.test(roh) || /^__[^_]+__$/.test(roh)) { kopf = true; }
+      roh = roh.replace(/\*\*|__/g, '').replace(/^\s*[-*]\s+(?=\S)/, '').trim();
+      return { text: roh, kopf: kopf };
+    });
+  }
+  function istSpieldatenZeile(z) { return /^spieldaten:?$/i.test(z.text); }
+  function istSch(name) { return /heiligenstadt|^sch\b/i.test(name); }
+
+  function spieldatenLesen(zeilen) {
+    var sp = {}, kopf = null, teams = null, abschnitt = null, werte = {};
+    zeilen.forEach(function (z) {
+      var t = z.text;
+      if (!t) return;
+      if (!kopf) {
+        var m = t.match(/^(.+?)\s+[-–—]\s+(.+?)\s+(\d+)\s*:\s*(\d+)(?:\s*\(\s*(\d+)\s*:\s*(\d+)\s*\))?\s*$/);
+        if (m) { kopf = m; teams = [m[1].trim(), m[2].trim()]; return; }
+      }
+      var label = t.replace(/:$/, '');
+      var bekannt = { 'schiedsrichter': 'schiri', 'zuschauer': 'zuschauer', 'zuschauerzahl': 'zuschauer', 'tore': 'tore',
+        'trainer': 'trainer', 'rote karte': 'rot', 'rote karten': 'rot', 'gelb-rote karte': 'rot', 'gelb-rote karten': 'rot' }[label.toLowerCase()];
+      if (bekannt) { abschnitt = bekannt; return; }
+      if (teams && (label === teams[0] || label === teams[1])) { abschnitt = label === teams[0] ? 'elf0' : 'elf1'; return; }
+      // „Schiedsrichter: Name“ in einer Zeile
+      var inline = t.match(/^(Schiedsrichter|Zuschauer(?:zahl)?|Tore|Trainer)\s*:\s*(.+)$/i);
+      if (inline) {
+        abschnitt = { sc: 'schiri', zu: 'zuschauer', to: 'tore', tr: 'trainer' }[inline[1].slice(0, 2).toLowerCase()];
+        t = inline[2];
+      }
+      if (abschnitt) werte[abschnitt] = (werte[abschnitt] ? werte[abschnitt] + ' ' : '') + t;
+    });
+    if (!kopf) return null;
+    var schHeim = istSch(teams[0]) || !istSch(teams[1]);
+    sp.ort_art = schHeim ? 'heim' : 'auswaerts';
+    sp.gegner = schHeim ? teams[1] : teams[0];
+    var sch = schHeim ? 0 : 1;
+    function paar(a, b) { return sch === 0 ? [a, b] : [b, a]; }
+    var end = paar(kopf[3], kopf[4]);
+    sp.end_sch = end[0]; sp.end_geg = end[1];
+    if (kopf[5] !== undefined) { var hz = paar(kopf[5], kopf[6]); sp.hz_sch = hz[0]; sp.hz_geg = hz[1]; }
+    sp.aufstellung_sch = werte[sch === 0 ? 'elf0' : 'elf1'] || '';
+    sp.aufstellung_geg = werte[sch === 0 ? 'elf1' : 'elf0'] || '';
+    sp.schiedsrichter = werte.schiri || '';
+    sp.zuschauer = werte.zuschauer || '';
+    sp.trainer = werte.trainer || '';
+    // Tore im Vereinsformat („1:0 Wolanski (17.), 1:1 Kurth (31.)“) je Tor eine Zeile; wer getroffen hat,
+    // ergibt beim Seitenbau der Spielstand (werkzeuge/spielbericht.py)
+    sp.tore_sch = (werte.tore || '').split(/\s*[,;]\s*(?![^()]*\))/).filter(function (x) { return x.trim(); }).join('\n');
+    sp.tore_geg = '';
+    return sp;
+  }
+
+  function spielberichtZerlegen(roh) {
+    var zeilen = zeilenAus(roh);
+    var i = zeilen.findIndex(istSpieldatenZeile);
+    var artikelZ = (i >= 0 ? zeilen.slice(0, i) : zeilen).filter(function (z) { return z.text; });
+    var daten = i >= 0 ? spieldatenLesen(zeilen.slice(i + 1)) : null;
+    if (artikelZ.length < 3) return null;
+    var aus = { titel: artikelZ[0].text, kurz: '', teaser: '', html: '', spiel: daten };
+    var rest = artikelZ.slice(1);
+    // Kurzüberschrift: kurze Zeile direkt unter der Überschrift
+    if (rest.length > 1 && rest[0].text.length <= 24 && !/\.$/.test(rest[0].text)) aus.kurz = rest.shift().text;
+    function istKopf(z, naechste) {
+      if (z.kopf) return true;
+      return z.text.length <= 90 && !/[.!?:;,“"…)]$/.test(z.text) && !!naechste && naechste.text.length > z.text.length;
+    }
+    // Einstieg vor der ersten Zwischenüberschrift = Anreißer
+    if (rest.length && !istKopf(rest[0], rest[1])) aus.teaser = rest.shift().text;
+    var html = '';
+    rest.forEach(function (z, k) {
+      // Schlusssatz mit Rückfrage nach fehlenden Angaben gehört nicht in den Bericht
+      if (k === rest.length - 1 && /fehl(en|t)\b.*\?$/i.test(z.text)) return;
+      html += istKopf(z, rest[k + 1]) ? '<h3>' + escHtml(z.text) + '</h3>' : '<p>' + escHtml(z.text) + '</p>';
+    });
+    aus.html = html;
+    return aus;
+  }
+
+  function spielberichtEinsetzen(t) {
+    var r = spielberichtZerlegen(t);
+    if (!r) return false;
+    form.rubrik.value = 'Spielbericht';
+    form.rubrik.dispatchEvent(new Event('change'));
+    form.titel.value = r.titel;
+    if (r.teaser) form.teaser.value = r.teaser.length > 300 ? r.teaser.slice(0, 297).replace(/\s+\S*$/, '') + ' …' : r.teaser;
+    textfeld.innerHTML = r.html;
+    form.sp_kurztitel.value = r.kurz;
+    if (r.spiel) Object.keys(r.spiel).forEach(function (n) { if (form['sp_' + n]) form['sp_' + n].value = r.spiel[n]; });
+    zeichneVorberichte();
+    aktualisiereKnopf();
+    var teile = ['Titel', r.kurz && 'Kurzüberschrift', r.teaser && 'Anreißer', 'Text', r.spiel && 'Spieldaten'].filter(Boolean);
+    meldung('Spielbericht erkannt und aufgeteilt: ' + teile.join(', ') + '. Bitte kurz prüfen' +
+      (r.spiel ? ' (Wettbewerb und Spieltag fehlen noch).' : '. Gegner und Ergebnis bitte bei den Spieldaten eintragen.'), 'ok');
+    return true;
+  }
+
   // Einfügen nur als reiner Text (kein Word-/Webseiten-Ballast); Absätze bleiben erhalten
   textfeld.addEventListener('paste', function (e) {
     var t = (e.clipboardData || window.clipboardData).getData('text/plain');
     if (!t) return;
     e.preventDefault();
+    // Ganzer Spielbericht (Rubrik Spielbericht oder Block „Spieldaten“ dabei): selbst aufteilen
+    var zeilenAnzahl = t.split(/\n/).filter(function (z) { return z.trim(); }).length;
+    if (zeilenAnzahl >= 4 && (form.rubrik.value === 'Spielbericht' || zeilenAus(t).some(istSpieldatenZeile)) &&
+        spielberichtEinsetzen(t)) return;
     var absaetze = t.replace(/\r/g, '').split(/\n{2,}/).map(function (a) {
       var esc = a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
       return '<p>' + esc + '</p>';

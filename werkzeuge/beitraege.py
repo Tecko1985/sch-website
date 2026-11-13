@@ -152,6 +152,9 @@ def lade_beitraege():
             d["bild"] = ""
         if not isinstance(d.get("spiel"), dict):
             d["spiel"] = {}
+        # Spielbericht ohne eigenes Titelbild: das erste Galeriebild ist Bild 1 (auch für die News-Karte)
+        if d.get("rubrik") == "Spielbericht" and not d["bild"] and d["galerie"]:
+            d["bild"], d["galerie"] = d["galerie"][0], d["galerie"][1:]
         beitraege.append(d)
     return beitraege
 

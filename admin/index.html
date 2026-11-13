@@ -90,6 +90,7 @@
         </label>
         <div class="feld">
           <span>Bildergalerie <small>optional, mehrere Bilder möglich</small></span>
+          <p class="spieldaten-tipp" data-sbbildtipp hidden>Spielbericht: Bild 1 wird das Titelbild, Bild 2 bis 4 kommen in den Text, alle weiteren in die Galerie. Einfach alle Bilder in der gewünschten Reihenfolge hier hinzufügen.</p>
           <div class="galerie" data-galerie></div>
           <label class="hochladen">Bilder hinzufügen<input type="file" accept="image/*" multiple data-galeriedatei></label>
         </div>
@@ -97,8 +98,10 @@
         <!-- Nur bei Rubrik „Spielbericht“: daraus entsteht die Seite im Aufbau des Erfurt-Berichts -->
         <fieldset class="spieldaten" data-spieldaten hidden>
           <legend>Spieldaten <small>für Ergebnisleiste, Spielinfo, Liveticker, Statistik und Aufstellung</small></legend>
-          <p class="spieldaten-tipp">Der Spielbericht bekommt oben die Ergebnisleiste und die Reiter Vorbericht, Spielinfo, Spielbericht, Galerie, Liveticker, Stimmen, Statistiken und Aufstellung. Reiter ohne Angaben fallen weg. Im Text werden <b>Überschrift</b> zur kleinen Rubrik (z.&nbsp;B. „1. Halbzeit“) und die erste Zeile eines Absatzes vor einem Zeilenumbruch zur Zwischenüberschrift.</p>
+          <p class="spieldaten-tipp"><b>Am einfachsten:</b> den fertigen Spielbericht samt Block „Spieldaten“ komplett ins Textfeld einfügen. Titel, Kurzüberschrift, Anreißer, Zwischenüberschriften und die Spieldaten werden dann automatisch verteilt; hier nur noch prüfen und Wettbewerb und Spieltag ergänzen. Reiter ohne Angaben fallen weg.</p>
           <div class="spieldaten-raster">
+            <label>Kurzüberschrift <small>steht klein über dem Titel</small><input type="text" name="sp_kurztitel" maxlength="40"></label>
+            <label>Trainer <small>nur Nachwuchs</small><input type="text" name="sp_trainer" placeholder="z. B. Uwe Förster (B1 / U17)"></label>
             <label>Gegner<input type="text" name="sp_gegner" placeholder="z. B. FC Rot-Weiß Erfurt"></label>
             <label>SCH spielt
               <select name="sp_ort_art"><option value="heim">zu Hause (Heimspiel)</option><option value="auswaerts">auswärts</option></select>
@@ -117,7 +120,7 @@
               <span>Halbzeit <small>SCH : Gegner</small></span>
               <div><input type="text" inputmode="numeric" name="sp_hz_sch" maxlength="2" aria-label="Halbzeit SCH"> : <input type="text" inputmode="numeric" name="sp_hz_geg" maxlength="2" aria-label="Halbzeit Gegner"></div>
             </div>
-            <label>Tore SCH <small>je Zeile: Minute. Name (Zusatz)</small><textarea name="sp_tore_sch" rows="3" placeholder="39. Wolanski (Strafstoß)&#10;59. Wolanski"></textarea></label>
+            <label>Tore SCH <small>wie im Vereinsformat, z.&nbsp;B. „1:0 Wolanski (39. FE)“; alle Tore hier reicht</small><textarea name="sp_tore_sch" rows="3" placeholder="1:0 Wolanski (39. FE)&#10;2:0 Wolanski (59.)"></textarea></label>
             <label>Tore Gegner <small>je Zeile: Minute. Name (Zusatz)</small><textarea name="sp_tore_geg" rows="3" placeholder="13. Fehler (Strafstoß)"></textarea></label>
             <label>Rote Karten SCH <small>Minute. Name (Grund)</small><textarea name="sp_karten_sch" rows="2" placeholder="41. Wolanski (Nachtreten)"></textarea></label>
             <label>Rote Karten Gegner <small>Minute. Name (Grund)</small><textarea name="sp_karten_geg" rows="2"></textarea></label>
@@ -199,6 +202,6 @@
   </form>
 </dialog>
 
-<script src="admin.js?v=5"></script>
+<script src="admin.js?v=6"></script>
 </body>
 </html>
