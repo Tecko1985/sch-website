@@ -4,9 +4,8 @@
   "zeit": "16:40",
   "rubrik": "Vorbericht",
   "teaser": "[Worum geht es am Wochenende?]",
-  "bild": "",
+  "bild": "assets/beitraege/mwgkmx6n-6vvku.webp",
   "text": "<h2>Die Ausgangslage</h2><p>TEST</p><h2>Personal</h2><p>[Wer fehlt, wer kommt zurück?]</p><h2>Anpfiff</h2><ul><li><b>Wann:</b> [Tag, Datum, Uhrzeit]</li><li><b>Wo:</b> [Sportplatz, Ort]</li><li><b>Eintritt:</b> [Preis]</li></ul><p>[Aufruf an die Fans]</p>",
   "galerie": [],
-  "entwurf": false,
-  "geplant": "2026-11-14T16:40"
+  "entwurf": false
 }
