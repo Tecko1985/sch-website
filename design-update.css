@@ -73,3 +73,33 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-home .sch-latest{width:calc(100% - 2 * clamp(16px,4vw,64px));max-width:1640px;gap:14px;margin-top:-92px}
   :is(#top,body) .sch-home .sch-postimage{aspect-ratio:3/2}
 }
+
+/* ---------- Aktuelle Spiele 14.11.: große Ergebniszeile in einer Reihe (Kürzel · Wappen · Ergebnis · Wappen · Kürzel) ---------- */
+:is(#top,body) .sch-gamepair{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;margin:30px 0 32px}
+:is(#top,body) .sch-gamepair .sch-matchteam{grid-template-columns:auto auto;gap:12px;align-items:center}
+:is(#top,body) .sch-gamepair .sch-matchteam:first-child{justify-content:end}
+:is(#top,body) .sch-gamepair .sch-matchteam:first-child b{order:-1}
+:is(#top,body) .sch-gamepair .sch-matchteam:last-child{justify-content:start}
+:is(#top,body) .sch-gamepair .sch-matchteam img{width:60px;height:66px}
+:is(#top,body) .sch-gamepair .sch-teammark{width:58px;height:58px;font-size:13px}
+:is(#top,body) .sch-gamepair .sch-matchteam b{font-size:36px;line-height:1}
+:is(#top,body) .sch-gamepair .sch-result{font-size:56px;line-height:66px;letter-spacing:1px}
+/* volle Vereinsnamen nur noch für Vorleseprogramme (Kürzel und Wappen stehen groß da) */
+:is(#top,body) .sch-gamepair .sch-teamname{position:absolute;width:1px;height:1px;min-height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:is(#top,body) .sch-game time{font-size:15px;letter-spacing:.4px}
+@media(min-width:800px) and (max-width:1250px){
+  :is(#top,body) .sch-gamepair{gap:10px}
+  :is(#top,body) .sch-gamepair .sch-matchteam{grid-template-columns:auto auto;justify-items:center;gap:8px}
+  :is(#top,body) .sch-gamepair .sch-matchteam img{width:46px;height:52px}
+  :is(#top,body) .sch-gamepair .sch-teammark{width:44px;height:44px;font-size:11px}
+  :is(#top,body) .sch-gamepair .sch-matchteam b{font-size:26px}
+  :is(#top,body) .sch-gamepair .sch-result{font-size:42px;line-height:52px}
+}
+@media(max-width:799px){
+  :is(#top,body) .sch-gamepair{gap:8px}
+  :is(#top,body) .sch-gamepair .sch-matchteam{gap:7px}
+  :is(#top,body) .sch-gamepair .sch-matchteam img{width:44px;height:50px}
+  :is(#top,body) .sch-gamepair .sch-teammark{width:42px;height:42px;font-size:11px}
+  :is(#top,body) .sch-gamepair .sch-matchteam b{font-size:25px}
+  :is(#top,body) .sch-gamepair .sch-result{font-size:40px;line-height:50px}
+}
