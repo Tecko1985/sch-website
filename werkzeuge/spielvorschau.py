@@ -82,11 +82,16 @@ def tabelle_html(zeilen, hervor):
             f'<p class="sb-hinweis">Quelle: FuPa, Stand {datetime.date.today().strftime("%d.%m.%Y")}.</p>\n</div>')
 
 
-def vorbericht(spieldatum, gegner, beitraege):
-    """Vorbericht aus der Redaktion: bis 10 Tage vor dem Spiel, Gegner im Titel oder Text."""
+def vorbericht(slug, spieldatum, gegner, beitraege):
+    """Vorbericht aus der Redaktion: in der Redaktion diesem Spiel zugeordnet (Feld spiel_slug), sonst
+    automatisch bis 10 Tage vor dem Spiel mit dem Gegner im Titel oder Text (nur nicht zugeordnete)."""
+    vbs = [x for x in beitraege if x.get("rubrik") == "Vorbericht"]
+    gewaehlt = sorted((x for x in vbs if x.get("spiel_slug") == slug), key=lambda x: (x["datum"], x.get("zeit") or ""))
+    if gewaehlt:
+        return gewaehlt[-1]
     tag = datetime.date.fromisoformat(spieldatum)
     worte = [w for w in re.split(r"[\s/\-.]+", gegner.lower()) if len(w) > 3 and not w.isdigit()]
-    passend = [x for x in beitraege if x.get("rubrik") == "Vorbericht"
+    passend = [x for x in vbs if not x.get("spiel_slug")
                and 0 <= (tag - datetime.date.fromisoformat(x["datum"])).days <= 10
                and any(w in (x["titel"] + " " + x["text"]).lower() for w in worte)]
     passend.sort(key=lambda x: (x["datum"], x.get("zeit") or ""), reverse=True)
@@ -131,7 +136,7 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     links.append('<a href="seiten/termine.html">Alle Termine</a>')
     info = (f'<div class="sb-schmal">\n<h2 class="sb-h2 stitel">Spielinfo</h2>\n<dl class="sb-info">\n{dl}\n</dl>\n'
             f'<p class="sb-hinweis">{" · ".join(links)}</p>\n</div>')
-    vb = vorbericht(sp["spieldatum"], gegner, beitraege)
+    vb = vorbericht(m["slug"], sp["spieldatum"], gegner, beitraege)
     hervor = {gegner_t.get("slug")}
     reiter = [("spielinfo", "Spielinfo", info, ""),
               ("tabelle", "Tabelle", tabelle_html(standings, hervor), ""),
@@ -144,7 +149,7 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
 
 def baue_alle(ziel, vorlage, adresse, beitraege):
     """Schreibt die Seiten nach <ziel>/seiten/ und liefert {FuPa-Slug: "seiten/<datei>"}."""
-    links, tabellen = {}, {}
+    links, tabellen, liste_fuer_redaktion = {}, {}, []
     for team in TEAMS:
         try:
             spiele = kommende(team)
@@ -164,9 +169,19 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
                 seite = baue_seite(m, d, tabellen.get(liga) or [], vorlage, adresse, beitraege)
                 open(os.path.join(ziel, "seiten", seitenname(m)), "w", encoding="utf-8").write(seite)
                 links[m["slug"]] = "seiten/" + seitenname(m)
+                heim = ist_sch(m["homeTeam"])
+                runde = d.get("round") or {}
+                liste_fuer_redaktion.append({
+                    "slug": m["slug"], "anstoss": m["kickoff"], "heim": heim,
+                    "gegner": fupa_ticker._teamname(m["awayTeam"] if heim else m["homeTeam"]),
+                    "wettbewerb": (runde.get("competitionSeason") or {}).get("middleName") or "",
+                    "seite": "seiten/" + seitenname(m)})
             except Exception as fehler:
                 print(f"  Spielinfo {m.get('slug')}: {fehler}")
     print(f"{len(links)} Spielinfo-Seiten gebaut.")
+    # Für die Redaktion: Auswahl „Zu welchem Spiel?“ beim Vorbericht
+    with open(os.path.join(ziel, "assets", "kommende-spiele.json"), "w", encoding="utf-8") as f:
+        json.dump(liste_fuer_redaktion, f, ensure_ascii=False, indent=1)
     return links
 
 

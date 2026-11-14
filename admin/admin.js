@@ -226,12 +226,15 @@
     titelbild = d.bild || null;
     galerie = (d.galerie || []).slice();
     spielSetzen(d.spiel || {});
+    form.spiel_slug.dataset.wert = d.spiel_slug || '';
+    zeichneSpielwahl();
     zeichneBilder();
     unberuehrt = null;
     $('[data-vorlagewahl]').value = '';
     zeichneVorlagen();
     $('[data-loeschen]').hidden = !b;
     zeigeSpieldaten();
+    zeigeSpielwahl();
     zeichneVorberichte();
     if (!beitraege.length) ladeListe().then(zeichneVorberichte);
     meldung('', '');
@@ -250,7 +253,8 @@
   function editorStand() {
     return [form.titel.value, form.teaser.value, textfeld.innerHTML, form.datum.value, form.rubrik.value,
       form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|'), JSON.stringify(spielFelder()),
-      form.planen.checked ? form.plan_datum.value + 'T' + form.plan_zeit.value : ''].join('\u0001');
+      form.planen.checked ? form.plan_datum.value + 'T' + form.plan_zeit.value : '',
+      form.rubrik.value === 'Vorbericht' ? (form.spiel_slug.dataset.wert || '') : ''].join('\u0001');
   }
   function ungesichert() {
     if (editorHash === null) return false;
@@ -395,15 +399,59 @@
   }
   form.rubrik.addEventListener('change', zeigeSpieldaten);
 
+  // Vorbericht: „Zu welchem Spiel?“ – kommende Spiele der 1. Mannschaft aus dem Seitenbau
+  // (assets/kommende-spiele.json, werkzeuge/spielvorschau.py). Gespeichert als "spiel_slug" (FuPa-Spiel).
+  var spielWahl = form.spiel_slug;
+  var kommendeSpiele = null;
+  function ladeSpiele() {
+    if (kommendeSpiele) return Promise.resolve(kommendeSpiele);
+    return fetch('../assets/kommende-spiele.json', { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; })
+      .then(function (l) { kommendeSpiele = l; return l; });
+  }
+  function spielText(sp) {
+    var d = new Date(sp.anstoss);
+    var tag = d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Europe/Berlin' });
+    var zeit = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+    return tag + ' ' + zeit + ' · ' + (sp.heim ? 'SCH – ' + sp.gegner : sp.gegner + ' – SCH') + (sp.wettbewerb ? ' (' + sp.wettbewerb + ')' : '');
+  }
+  function zeichneSpielwahl() {
+    var wert = spielWahl.dataset.wert || '';
+    spielWahl.innerHTML = '';
+    spielWahl.appendChild(new Option('Automatisch (nach Gegner und Datum)', ''));
+    (kommendeSpiele || []).forEach(function (sp) { spielWahl.appendChild(new Option(spielText(sp), sp.slug)); });
+    if (wert && !(kommendeSpiele || []).some(function (sp) { return sp.slug === wert; })) {
+      var m = wert.match(/-(\d{2})(\d{2})(\d{2})$/);
+      spielWahl.appendChild(new Option('Spiel vom ' + (m ? m[3] + '.' + m[2] + '.20' + m[1] : wert) + ' (schon gespielt)', wert));
+    }
+    spielWahl.value = wert;
+  }
+  function zeigeSpielwahl() {
+    var an = form.rubrik.value === 'Vorbericht';
+    $('[data-spielwahl]').hidden = !an;
+    if (an) ladeSpiele().then(zeichneSpielwahl);
+  }
+  spielWahl.addEventListener('change', function () { spielWahl.dataset.wert = spielWahl.value; aktualisiereKnopf(); });
+  form.rubrik.addEventListener('change', zeigeSpielwahl);
+
   // Vorbericht-Auswahl: „automatisch“ nimmt den neuesten Vorbericht bis 10 Tage vor dem Spiel
   function autoVorbericht() {
     var tag = form.sp_spieldatum.value || form.datum.value;
     if (!tag) return null;
     var bis = new Date(tag + 'T12:00:00');
     var gegner = form.sp_gegner.value.trim().toLowerCase().split(/\s+/).filter(function (w) { return w.length > 3; });
+    // Einem Spiel zugeordnete Vorberichte („Zu welchem Spiel?“) gelten nur für dieses Spiel
+    var zugeordnet = beitraege.filter(function (b) {
+      var m = (b.daten.spiel_slug || '').match(/-(\d{2})(\d{2})(\d{2})$/);
+      return b.daten.rubrik === 'Vorbericht' && !b.daten.entwurf && m && '20' + m[1] + '-' + m[2] + '-' + m[3] === tag;
+    });
+    if (zugeordnet.length) return zugeordnet.sort(function (a, b) {
+      return (b.daten.datum + (b.daten.zeit || '')).localeCompare(a.daten.datum + (a.daten.zeit || ''));
+    })[0];
     var passend = beitraege.filter(function (b) {
       var d = b.daten, tage = (bis - new Date(d.datum + 'T12:00:00')) / 864e5;
-      return d.rubrik === 'Vorbericht' && !d.entwurf && tage >= 0 && tage <= 10;
+      return d.rubrik === 'Vorbericht' && !d.entwurf && !d.spiel_slug && tage >= 0 && tage <= 10;
     });
     var mitName = passend.filter(function (b) {
       var t = ((b.daten.titel || '') + ' ' + (b.daten.text || '')).toLowerCase();
@@ -904,6 +952,7 @@
       entwurf: form.entwurf.checked
     };
     if (geplant) daten.geplant = geplant;
+    if (form.rubrik.value === 'Vorbericht' && form.spiel_slug.dataset.wert) daten.spiel_slug = form.spiel_slug.dataset.wert;
     if (istSpiel) daten.spiel = spielFelder();
     var wappenNeu = istSpiel ? (wappen || '') : '';
     var json = textZuBase64(JSON.stringify(daten, null, 2) + '\n');

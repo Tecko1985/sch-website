@@ -561,6 +561,12 @@ def vorbericht_html(vb):
 
 
 # ---------------------------------------------------------------- Seite
+def slug_datum(slug):
+    """FuPa-Spiel „…-261121“ -> „2026-11-21“"""
+    m = re.search(r"-(\d{2})(\d{2})(\d{2})$", slug or "")
+    return f"20{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else ""
+
+
 def finde_vorbericht(d, alle):
     """Gewählter Vorbericht; ohne Wahl der neueste Vorbericht bis 10 Tage vor dem Spiel."""
     wahl = ((d.get("spiel") or {}).get("vorbericht") or "").strip()
@@ -571,6 +577,11 @@ def finde_vorbericht(d, alle):
         return next((x for x in vbs if x["slug"] == wahl), None)
     import datetime
     spieltag = (d.get("spiel") or {}).get("spieldatum") or d["datum"]
+    # In der Redaktion einem Spiel zugeordnet („Zu welchem Spiel?“): gilt für den Spielbericht vom selben Spieltag
+    zugeordnet = [x for x in vbs if slug_datum(x.get("spiel_slug")) == spieltag]
+    if zugeordnet:
+        return max(zugeordnet, key=lambda x: (x["datum"], x.get("zeit") or ""))
+    vbs = [x for x in vbs if not x.get("spiel_slug")]
     bis = datetime.date.fromisoformat(spieltag)
     passend = [x for x in vbs if 0 <= (bis - datetime.date.fromisoformat(x["datum"])).days <= 10]
     gegner = ((d.get("spiel") or {}).get("gegner") or "").strip().lower()
