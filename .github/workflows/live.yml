@@ -3,7 +3,8 @@
 # oder laeuft. Dann fragt werkzeuge/live.py bis 15 Min. nach Abpfiff jede Minute FuPa ab und legt
 # ticker.json auf den Branch "live" (eine Datei, Verlauf wird jedes Mal ersetzt). Die Website liest
 # die Datei ueber GitHub; Besucher fragen nie selbst bei FuPa an.
-# Ein Push mit dem GITHUB_TOKEN startet keine anderen Ablaeufe; "Seite bauen" laeuft nur auf main.
+# Nach dem Spiel werden die Spielkarten der Startseite mit dem Ergebnis neu gebaut (werkzeuge/spiele.py)
+# und "Seite bauen" gestartet (ein Push mit dem GITHUB_TOKEN startet keine anderen Ablaeufe von selbst).
 # Keine Secrets, keine Zusatzpakete.
 name: Live-Ticker
 
@@ -25,7 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 330
     permissions:
-      contents: write   # Branch "live" schreiben
+      contents: write   # Branch "live" schreiben, Spielkarten auf main aktualisieren
+      actions: write    # danach "Seite bauen" starten
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -45,3 +47,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PYTHONUNBUFFERED: '1'
         run: python werkzeuge/live.py laufen
+
+      # Nach Abpfiff: Spielkarten "Aktuelle Spiele" mit den Ergebnissen neu bauen (wie "Spiele aktualisieren")
+      - name: Spielkarten aktualisieren
+        if: steps.pruefen.outputs.aktiv == '1'
+        env:
+          TZ: Europe/Berlin
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python werkzeuge/spiele.py
+          if git diff --quiet -- index.html assets/wappen; then
+            echo "Spielkarten unveraendert."
+            exit 0
+          fi
+          git config user.name "Live-Ticker"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/wappen
+          git commit -q -m "Spielkarten nach Abpfiff aktualisiert"
+          git pull -q --rebase "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" main
+          git push -q "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          gh workflow run seite.yml --ref main --repo "$GITHUB_REPOSITORY"

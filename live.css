@@ -68,3 +68,16 @@
 .lv-ungenutzt{opacity:.62}
 .lv-sprung{margin:-8px 0 16px!important;text-align:right;font-weight:700;font-size:14px}
 .lv-sprung a{color:var(--lv-navy)}
+/* Spielkarten unter „Aktuelle Spiele“ während des Spiels */
+.lv-marke{display:none}
+.lv-karte-live .lv-marke,.lv-karte-vor .lv-marke,.lv-karte-ende .lv-marke{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
+  margin-bottom:6px;padding:5px 10px;border-radius:999px;font:700 13px/1 "SCH Barlow","Arial Narrow",Impact,sans-serif;
+  letter-spacing:.6px;text-transform:uppercase;background:#1b2d4f;color:#fff}
+.lv-karte-live .lv-marke{background:#e0322a}
+.lv-karte-live .lv-marke .lv-punkt{background:#fff;animation:lv-puls-weiss 1.6s infinite}
+@keyframes lv-puls-weiss{0%{box-shadow:0 0 0 0 #ffffffaa}70%{box-shadow:0 0 0 8px #ffffff00}100%{box-shadow:0 0 0 0 #ffffff00}}
+@media (prefers-reduced-motion:reduce){.lv-karte-live .lv-marke .lv-punkt{animation:none}}
+.lv-karte-live{box-shadow:0 0 0 3px #e0322a inset}
+.lv-karte-live .sch-result{color:#e0322a}
+.lv-karte-live .sch-outcome{display:none}
+.lv-marke:empty{display:none!important}

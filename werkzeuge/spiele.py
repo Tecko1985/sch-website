@@ -79,15 +79,17 @@ def team_html(name, ist_sch, kurz, wappen=None):
 
 def karte(sp, bekannt):
     """sp: dict mit kickoff, meta, heim, gast, heim_sch, tore (h, g) oder None, href, bericht"""
+    # data-spiel = FuPa-Spiel: daran hängt live.js während des Spiels den Live-Stand und den Ticker-Link
+    spiel_attr = f' data-spiel="{html.escape(sp["slug"])}"' if sp.get("slug") else ""
     if sp["tore"]:
         h, g = sp["tore"]
         eigene, fremde = (h, g) if sp["heim_sch"] else (g, h)
         art, wort = ("sch-win", "Sieg") if eigene > fremde else ("sch-loss", "Niederlage") if eigene < fremde else ("sch-draw", "Remis")
-        kopf = f'<a class="sch-game sch-finished {art}" href="{html.escape(sp["href"])}"><span class="sch-outcome">{wort}</span>'
+        kopf = f'<a class="sch-game sch-finished {art}" href="{html.escape(sp["href"])}"{spiel_attr}><span class="sch-outcome">{wort}</span>'
         stand = f"{h} : {g}"
         link = "Zum Spielbericht" if sp.get("bericht") else "Zur Spielübersicht"
     else:
-        kopf = f'<a class="sch-game sch-upcoming" href="{html.escape(sp["href"])}">'
+        kopf = f'<a class="sch-game sch-upcoming" href="{html.escape(sp["href"])}"{spiel_attr}>'
         stand = "–"
         link = "Zum Spielbericht" if sp.get("bericht") else "Zum Spiel"
     heim = team_html(sp["heim"], sp["heim_sch"], kuerzel(sp["heim"], bekannt), sp.get("wappen"))
@@ -263,7 +265,7 @@ def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute, berichte=()):
             "kickoff": m["kickoff"], "meta": meta, "heim": heim, "gast": gast, "heim_sch": seite == "homeTeam",
             "tore": (m["homeGoal"], m["awayGoal"]) if gespielt else None,
             "href": eigener or f"https://www.fupa.net/match/{m['slug']}", "bericht": bool(eigener),
-            "gegner_team": gegner_team})
+            "gegner_team": gegner_team, "slug": m["slug"]})
     karten_daten.sort(key=lambda k: k["kickoff"])
     fertig = [k for k in karten_daten if k["tore"]][-regel["zurueck"]:]
     kommend = [k for k in karten_daten if not k["tore"]][:regel["vor"]]

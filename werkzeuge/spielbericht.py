@@ -655,8 +655,8 @@ def live_seite(vorlage, adresse):
     kopf = re.sub(r'(<meta property="og:title" content=")[^"]*', lambda m: m.group(1) + titel, kopf, count=1)
     kopf = re.sub(r'(<meta property="og:description" content=")[^"]*', lambda m: m.group(1) + beschreibung, kopf, count=1)
     kopf = re.sub(r'(<meta property="og:url" content=")[^"]*', lambda m: m.group(1) + adresse + "seiten/live.html", kopf, count=1)
-    kopf = kopf.replace("</head>", '<link rel="stylesheet" href="live.css?v=2">\n</head>', 1)
+    kopf = kopf.replace("</head>", '<link rel="stylesheet" href="live.css?v=3">\n</head>', 1)
     main = ('<main class="sb lv-seite">\n<header class="lv-kopf"><p>1. SC 1911 Heiligenstadt</p><h1 class="stitel">Liveticker</h1></header>\n'
             '<div id="sch-live-seite"><noscript><p>Der Liveticker braucht JavaScript.</p></noscript></div>\n'
-            '<script src="live.js?v=2" data-basis="../" defer></script>\n</main>')
+            '<script src="live.js?v=3" data-basis="../" defer></script>\n</main>')
     return pfade_fuer_seiten(kopf + main + fuss)

@@ -46,7 +46,7 @@
     return 'Anpfiff ' + esc(uhr(sp.anstoss)) + ' Uhr';
   }
 
-  // Welche Spiele sind gerade interessant? Live; vor Anpfiff (bis 60 Min. vorher); bis 90 Min. nach Abpfiff.
+  // Welche Spiele sind gerade interessant? Live oder bis 60 Min. vor Anpfiff. Nach Abpfiff verschwindet der Ticker.
   function relevant(d) {
     if (!d || !d.spiele) return [];
     var jetzt = Date.now(), stand_ = new Date(d.aktualisiert).getTime();
@@ -54,7 +54,15 @@
       var a = new Date(sp.anstoss).getTime();
       if (sp.status === 'live') return jetzt - stand_ < 30 * 60000;
       if (sp.status === 'vor') return a - jetzt < 60 * 60000 && jetzt - a < 150 * 60000;
-      return jetzt - stand_ < 90 * 60000;
+      return false;
+    });
+  }
+  // Abgepfiffene Spiele von heute (für die Spielkarten, bis die Karten mit dem Ergebnis neu gebaut sind)
+  function heuteVorbei(d) {
+    if (!d || !d.spiele) return [];
+    var heute = new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' });
+    return d.spiele.filter(function (sp) {
+      return sp.status === 'ende' && new Date(sp.anstoss).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) === heute;
     });
   }
 
@@ -63,7 +71,43 @@
   }
 
   // ---------------------------------------------------------------- Startseite
+  // Spielkarten unter „Aktuelle Spiele“: Live-Stand und Link zum Ticker an die passende Karte hängen
+  var karten = {};
+  function karte(slug) {
+    if (!(slug in karten)) karten[slug] = document.querySelector('.sch-game[data-spiel="' + slug.replace(/"/g, '') + '"]');
+    return karten[slug];
+  }
+  function zeigeKarten(d) {
+    relevant(d).concat(heuteVorbei(d)).forEach(function (sp) {
+      var k = karte(sp.slug);
+      if (!k) return;
+      var ergebnis = k.querySelector('.sch-result'), link = k.querySelector('.sch-matchlink');
+      if (!k.dataset.vorher) { k.dataset.vorher = k.getAttribute('href'); k.dataset.vorherText = link ? link.innerHTML : ''; }
+      var marke = k.querySelector('.lv-marke');
+      if (!marke) {
+        marke = document.createElement('span');
+        marke.className = 'lv-marke';
+        k.insertBefore(marke, k.firstChild);
+      }
+      k.classList.remove('lv-karte-live', 'lv-karte-vor', 'lv-karte-ende');
+      k.classList.add('lv-karte-' + sp.status);
+      if (sp.status === 'ende') {
+        // Nach Abpfiff: Endstand zeigen, Link wieder wie vorher (Spielbericht bzw. FuPa)
+        marke.innerHTML = k.classList.contains('sch-finished') ? '' : 'Abpfiff';
+        if (ergebnis) ergebnis.textContent = stand(sp).replace(':', ' : ');
+        k.setAttribute('href', k.dataset.vorher);
+        if (link) link.innerHTML = k.dataset.vorherText;
+        return;
+      }
+      marke.innerHTML = zustand(sp);
+      if (ergebnis && sp.status === 'live') ergebnis.textContent = stand(sp).replace(':', ' : ');
+      k.setAttribute('href', basis + 'seiten/live.html#' + sp.slug);
+      if (link) link.innerHTML = 'Zum Liveticker <span aria-hidden="true">→</span>';
+    });
+  }
+
   function zeigeLeiste(d) {
+    zeigeKarten(d);
     var liste = relevant(d);
     if (!liste.length) { leiste.hidden = true; return false; }
     leiste.innerHTML = '<div class="lv-leiste-innen">' + liste.map(function (sp) {
@@ -122,9 +166,9 @@
 
   function zeigeSeite(d) {
     var alle = relevant(d);
-    if (!alle.length && d && d.spiele) {
-      // Letztes Spiel noch zeigen, wenn jemand über einen Link kommt
-      alle = d.spiele.filter(function (sp) { return sp.slug === gewaehlt; });
+    if (d && d.spiele) {
+      // Ein abgepfiffenes Spiel bleibt erreichbar, wenn jemand direkt darauf verlinkt (z. B. von der Spielkarte)
+      alle = alle.concat(d.spiele.filter(function (sp) { return sp.slug === gewaehlt && alle.indexOf(sp) < 0; }));
     }
     if (!alle.length) {
       seite.innerHTML = '<div class="lv-leer"><h2 class="stitel">Gerade läuft kein Spiel mit Liveticker</h2>' +
