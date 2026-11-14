@@ -121,3 +121,7 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-matchlink{font-size:16px;letter-spacing:.4px;padding-top:22px}
   :is(#top,body) .sch-matchsource{font-size:13px;margin-top:20px}
 }
+
+/* ---------- Startseite 14.11.: Titelbild Mannschaft im Kreis – Bildausschnitt auf die Köpfe/Rückennummern ---------- */
+:is(#top,body) .sch-home .sch-backdrop{object-position:50% 24%}
+@media(max-width:767px){:is(#top,body) .sch-home .sch-backdrop{object-position:50% 58%}}
