@@ -100,6 +100,14 @@
           <legend>Spieldaten <small>für Ergebnisleiste, Spielinfo, Liveticker, Statistik und Aufstellung</small></legend>
           <p class="spieldaten-tipp"><b>Am einfachsten:</b> den fertigen Spielbericht samt Block „Spieldaten“ komplett ins Textfeld einfügen. Titel, Kurzüberschrift, Anreißer, Zwischenüberschriften und die Spieldaten werden dann automatisch verteilt; hier nur noch prüfen und Wettbewerb und Spieltag ergänzen. Reiter ohne Angaben fallen weg.</p>
           <div class="spieldaten-raster">
+            <label>Mannschaft <small>Nachwuchs: ohne Vorbericht; 2. Mannschaft auswärts: schlanke Seite</small>
+              <select name="sp_mannschaft">
+                <option value="m1">1. Mannschaft</option><option value="m2">2. Mannschaft</option>
+                <option value="u19-1">U19</option><option value="u17-1">U17</option><option value="u17-2">U16</option>
+                <option value="u15-1">U15</option><option value="u13-1">U13</option><option value="u13-3">U13 III</option>
+                <option value="u12-2">U12</option><option value="u11-1">U11</option><option value="u11-2">U11 II</option>
+              </select>
+            </label>
             <label>Kurzüberschrift <small>steht klein über dem Titel</small><input type="text" name="sp_kurztitel" maxlength="40"></label>
             <label>Trainer <small>nur Nachwuchs</small><input type="text" name="sp_trainer" placeholder="z. B. Uwe Förster (B1 / U17)"></label>
             <label>Gegner<input type="text" name="sp_gegner" placeholder="z. B. FC Rot-Weiß Erfurt"></label>
@@ -135,7 +143,8 @@
               <label class="hochladen">Wappen wählen<input type="file" accept="image/*" data-wappendatei></label>
               <button type="button" class="klein-knopf" data-wappenweg hidden>Entfernen</button></div>
           </div>
-          <label>Vorbericht <small>erscheint als eigener Reiter</small>
+          <p class="spieldaten-tipp" data-schlanktipp hidden><b>Auswärtsspiel der 2. Mannschaft:</b> Die Seite zeigt nur Titelbild, Spielbericht, Aufstellung und – falls vorhanden – Vorbericht und Galerie.</p>
+          <label data-vorberichtfeld>Vorbericht <small>erscheint als eigener Reiter</small>
             <select name="sp_vorbericht" data-vorberichtwahl></select>
           </label>
           <label>Liveticker <small>optional, je Zeile: Minute | Überschrift | Text. Leer = automatisch aus Toren und Karten</small>
@@ -214,6 +223,6 @@
   </form>
 </dialog>
 
-<script src="admin.js?v=9"></script>
+<script src="admin.js?v=10"></script>
 </body>
 </html>

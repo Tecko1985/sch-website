@@ -261,7 +261,7 @@
     if (Object.keys(neueBilder).length) return true;
     // Neuer Beitrag: leer oder nur eine unberührte Vorlage ist nichts, was verloren ginge.
     if (!aktuell) return !!titelbild || !!wappen || galerie.length > 0 || !istUnberuehrt() ||
-      (form.rubrik.value === 'Spielbericht' && SPIELFELDER.some(function (n) { return n !== 'ort_art' && form['sp_' + n].value.trim(); }));
+      (form.rubrik.value === 'Spielbericht' && SPIELFELDER.some(function (n) { return n !== 'ort_art' && n !== 'mannschaft' && form['sp_' + n].value.trim(); }));
     return editorStand() !== gesichert;
   }
   function verlassenErlaubt() {
@@ -377,7 +377,7 @@
   var SPIELFELDER = ['gegner', 'ort_art', 'wettbewerb', 'runde', 'spieldatum', 'anstoss', 'spielort', 'autor',
     'end_sch', 'end_geg', 'hz_sch', 'hz_geg', 'tore_sch', 'tore_geg', 'karten_sch', 'karten_geg',
     'aufstellung_sch', 'aufstellung_geg', 'zuschauer', 'schiedsrichter', 'vorbericht', 'ticker', 'ticker_link', 'stimmen',
-    'kurztitel', 'trainer'];
+    'kurztitel', 'trainer', 'mannschaft'];
   var wappen = null;
   var vorberichtWahl = $('[data-vorberichtwahl]');
 
@@ -390,6 +390,8 @@
   function spielSetzen(sp) {
     SPIELFELDER.forEach(function (n) { form['sp_' + n].value = sp[n] || ''; });
     if (!form.sp_ort_art.value) form.sp_ort_art.value = 'heim';
+    if (!form.sp_mannschaft.value) form.sp_mannschaft.value = 'm1';
+    zeigeMannschaft();
     wappen = sp.wappen || null;
     vorberichtWahl.dataset.wert = sp.vorbericht || '';
   }
@@ -398,6 +400,14 @@
     $('[data-sbbildtipp]').hidden = form.rubrik.value !== 'Spielbericht';
   }
   form.rubrik.addEventListener('change', zeigeSpieldaten);
+
+  // Mannschaft: Nachwuchs ohne Vorbericht; 2. Mannschaft auswärts = schlanke Seite (werkzeuge/spielbericht.py)
+  function zeigeMannschaft() {
+    var m = form.sp_mannschaft.value || 'm1';
+    $('[data-vorberichtfeld]').hidden = m !== 'm1' && m !== 'm2';
+    $('[data-schlanktipp]').hidden = !(m === 'm2' && form.sp_ort_art.value === 'auswaerts');
+  }
+  [form.sp_mannschaft, form.sp_ort_art].forEach(function (f) { f.addEventListener('change', zeigeMannschaft); });
 
   // Vorbericht: „Zu welchem Spiel?“ – kommende Spiele der 1. Mannschaft aus dem Seitenbau
   // (assets/kommende-spiele.json, werkzeuge/spielvorschau.py). Gespeichert als "spiel_slug" (FuPa-Spiel).
@@ -414,7 +424,8 @@
     var d = new Date(sp.anstoss);
     var tag = d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Europe/Berlin' });
     var zeit = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
-    return tag + ' ' + zeit + ' · ' + (sp.heim ? 'SCH – ' + sp.gegner : sp.gegner + ' – SCH') + (sp.wettbewerb ? ' (' + sp.wettbewerb + ')' : '');
+    var wir = sp.mannschaft === '2. Mannschaft' ? 'SCH II' : 'SCH';
+    return tag + ' ' + zeit + ' · ' + (sp.heim ? wir + ' – ' + sp.gegner : sp.gegner + ' – ' + wir) + (sp.wettbewerb ? ' (' + sp.wettbewerb + ')' : '');
   }
   function zeichneSpielwahl() {
     var wert = spielWahl.dataset.wert || '';

@@ -14,6 +14,19 @@ import os
 import re
 
 SCH = "1. SC 1911 Heiligenstadt"
+# Allgemeine Namensteile, die nichts über den Gegner sagen (Vorbericht-Suche nach dem Gegnernamen)
+ALLGEMEIN = {"blau", "weiß", "weiss", "gelb", "grün", "gruen", "schwarz", "rot", "rote", "stein", "eintracht", "union",
+             "einheit", "fortuna", "germania", "borussia", "sportfreunde", "verein", "sport", "stadt", "preußen", "preussen",
+             "wacker", "concordia", "viktoria", "victoria", "rotation", "motor", "empor", "aufbau", "lok"}
+
+
+def gegner_worte(name):
+    return [w for w in re.split(r"[\s/\-.]+", (name or "").lower()) if len(w) > 3 and not w.isdigit() and w not in ALLGEMEIN]
+
+
+# Mannschaft (Redaktion: Spieldaten „Mannschaft“; Kürzel wie bei FuPa) -> Beschriftung
+MANNSCHAFTEN = {"m1": "1. Mannschaft", "m2": "2. Mannschaft", "u19-1": "U19", "u17-1": "U17", "u17-2": "U16",
+                "u15-1": "U15", "u13-1": "U13", "u13-3": "U13 III", "u12-2": "U12", "u11-1": "U11", "u11-2": "U11 II"}
 SCH_WAPPEN = "sch-startseite/assets/logo.png"
 LEER_WAPPEN = "assets/wappen-leer.svg"
 TAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
@@ -131,6 +144,8 @@ class Spiel:
         self.sp = sp
         self.gegner = (sp.get("gegner") or "").strip()
         self.da = bool(self.gegner)
+        self.team = sp.get("mannschaft") if sp.get("mannschaft") in MANNSCHAFTEN else "m1"
+        self.jugend = self.team not in ("m1", "m2")
         self.heim = sp.get("ort_art", "heim") != "auswaerts"
         self.tore = sorted(ereignisse(sp.get("tore_sch"), "sch") + ereignisse(sp.get("tore_geg"), "geg"), key=lambda x: x["min"])
         self.tore = self.teams_aus_spielstand(sp) or self.tore
@@ -206,6 +221,8 @@ def tafel(s):
     sp = s.sp
     (n1, w1, _), (n2, w2, _) = s.teams()
     oben = e(sp.get("wettbewerb") or "Spiel")
+    if s.team != "m1":
+        oben = f"{e(MANNSCHAFTEN[s.team])} · {oben}"
     zweite = ", ".join(e(x) for x in (sp.get("runde"), sp.get("spielort")) if x)
     zeit = datum_tag(s.spieldatum) + (f" | {e(sp.get('anstoss'))} Uhr" if sp.get("anstoss") else "")
     stand = (f'<strong aria-label="Endstand {s.hg(s.end)[0]} zu {s.hg(s.end)[1]}">{s.stand(s.end)}</strong>' if s.end
@@ -356,7 +373,8 @@ def spielinfo(s):
     if not s.da:
         return ""
     sp = s.sp
-    felder = [("Wettbewerb", sp.get("wettbewerb")), ("Runde", sp.get("runde")),
+    felder = [("Mannschaft", MANNSCHAFTEN[s.team] if s.team != "m1" else ""),
+              ("Wettbewerb", sp.get("wettbewerb")), ("Runde", sp.get("runde")),
               ("Anstoß", datum_tag(s.spieldatum) + (f", {sp['anstoss']} Uhr" if sp.get("anstoss") else "")),
               ("Spielort", sp.get("spielort")), ("Zuschauer", sp.get("zuschauer")), ("Schiedsrichter", sp.get("schiedsrichter")),
               ("Endstand", s.stand(s.end) if s.end else ""), ("Halbzeit", s.stand(s.hz) if s.hz else "")]
@@ -396,7 +414,7 @@ def fupa_eintraege(s):
             worte = [w for w in _worte(s.gegner) if len(w) > 3] or list(_worte(s.gegner))
             j, mo = int(s.spieldatum[:4]), int(s.spieldatum[5:7])
             saison = f"{j}-{str(j + 1)[2:]}" if mo >= 7 else f"{j - 1}-{str(j)[2:]}"
-            for team in ("m1", "m2"):
+            for team in ([s.team] if s.team != "m1" else ["m1"]):
                 schluessel = f"{team}-{saison}"
                 if schluessel not in _FUPA_SPIELE:
                     _FUPA_SPIELE[schluessel] = fupa_ticker.hole_json(
@@ -578,7 +596,9 @@ def finde_vorbericht(d, alle):
     import datetime
     spieltag = (d.get("spiel") or {}).get("spieldatum") or d["datum"]
     # In der Redaktion einem Spiel zugeordnet („Zu welchem Spiel?“): gilt für den Spielbericht vom selben Spieltag
-    zugeordnet = [x for x in vbs if slug_datum(x.get("spiel_slug")) == spieltag]
+    team = (d.get("spiel") or {}).get("mannschaft") or "m1"
+    zugeordnet = [x for x in vbs if slug_datum(x.get("spiel_slug")) == spieltag
+                  and f"heiligenstadt-{team}-" in (x.get("spiel_slug") or "")]
     if zugeordnet:
         return max(zugeordnet, key=lambda x: (x["datum"], x.get("zeit") or ""))
     vbs = [x for x in vbs if not x.get("spiel_slug")]
@@ -586,8 +606,9 @@ def finde_vorbericht(d, alle):
     passend = [x for x in vbs if 0 <= (bis - datetime.date.fromisoformat(x["datum"])).days <= 10]
     gegner = ((d.get("spiel") or {}).get("gegner") or "").strip().lower()
     if gegner:
-        mit_name = [x for x in passend if any(w in (x["titel"] + " " + x["text"]).lower() for w in gegner.split() if len(w) > 3)]
-        passend = mit_name or passend
+        mit_name = [x for x in passend if any(w in (x["titel"] + " " + x["text"]).lower() for w in gegner_worte(gegner))]
+        # 1. Mannschaft: notfalls der neueste Vorbericht; 2. Mannschaft nur mit Gegnernamen (sonst träfe es oft den der Ersten)
+        passend = mit_name if team != "m1" else (mit_name or passend)
     passend.sort(key=lambda x: (x["datum"], x.get("zeit") or ""), reverse=True)
     return passend[0] if passend else None
 
@@ -611,7 +632,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
     alle = ([d["bild"]] if d.get("bild") else []) + [g for g in (d.get("galerie") or []) if g != d.get("bild")]
     titelbild = alle[0] if alle else "assets/hero.jpg"
     im_text, fuer_galerie = alle[1:4], alle[4:]
-    vb = finde_vorbericht(d, alle_beitraege)
+    vb = None if s.jugend else finde_vorbericht(d, alle_beitraege)  # Nachwuchs: kein Vorbericht
 
     bericht = artikel(titel, d["datum"], sp.get("autor"), vorspann, d["text"], im_text,
                       f"{s.gegner and ('SCH gegen ' + s.gegner) or titel} (Foto: SCH)", spieldaten(s),
@@ -626,6 +647,9 @@ def baue(d, vorlage, alle_beitraege, adresse):
         ("aufstellung", "Aufstellung", aufstellungen(s), ""),
         ("vorbericht", "Vorbericht", vorbericht_html(vb), ""),  # Vorbericht als letzter Reiter
     ]
+    if s.team == "m2" and not s.heim:
+        # 2. Mannschaft auswärts: schlanke Seite (Titelbild, Spielbericht, Aufstellung, ggf. Galerie und Vorbericht)
+        reiter = [r for r in reiter if r[0] in ("spielbericht", "galerie", "aufstellung", "vorbericht")]
     reiter = [r for r in reiter if r[2]]
     knoepfe = "".join(
         f'<button type="button" role="tab" id="sb-tab-{n}" data-name="{n}" aria-controls="sb-{n}" '

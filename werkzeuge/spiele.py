@@ -334,6 +334,10 @@ def verlinke_berichte(t, beitraege):
             datum = re.search(r'datetime="(\d{4}-\d{2}-\d{2})', karte_alt)
             if not datum or datum.group(1) not in tage:
                 return karte_alt
+            # Mannschaft aus der Redaktion (ohne Angabe: 1. Mannschaft) muss zur Karte passen
+            kennung = re.search(r'data-spiel="([^"]+)"', karte_alt)
+            if kennung and f'heiligenstadt-{sp.get("mannschaft") or "m1"}-' not in kennung.group(1):
+                return karte_alt
             namen = re.findall(r'<span class="sch-teamname">([^<]+)</span>', karte_alt)
             if not any(_worte(html.unescape(n)) & gegner for n in namen):
                 return karte_alt

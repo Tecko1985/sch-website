@@ -18,7 +18,7 @@ import fupa_ticker  # noqa: E402
 import spielbericht as sb  # noqa: E402
 
 CLUB = "1-sc-1911-heiligenstadt"
-TEAMS = ["m1"]  # Mannschaften mit Spielinfo-Seiten
+TEAMS = ["m1", "m2"]  # Mannschaften mit Spielinfo-Seiten
 TITELBILD = "assets/hero-mannschaft-1600.webp"
 e = html.escape
 
@@ -90,7 +90,7 @@ def vorbericht(slug, spieldatum, gegner, beitraege):
     if gewaehlt:
         return gewaehlt[-1]
     tag = datetime.date.fromisoformat(spieldatum)
-    worte = [w for w in re.split(r"[\s/\-.]+", gegner.lower()) if len(w) > 3 and not w.isdigit()]
+    worte = sb.gegner_worte(gegner)
     passend = [x for x in vbs if not x.get("spiel_slug")
                and 0 <= (tag - datetime.date.fromisoformat(x["datum"])).days <= 10
                and any(w in (x["titel"] + " " + x["text"]).lower() for w in worte)]
@@ -98,10 +98,18 @@ def vorbericht(slug, spieldatum, gegner, beitraege):
     return passend[0] if passend else None
 
 
+def team_von(m):
+    for t in (m["homeTeam"], m["awayTeam"]):
+        if ist_sch(t):
+            return re.sub(r"-\d{4}-\d{2}$", "", t["slug"][len(CLUB) + 1:])
+    return "m1"
+
+
 def seitenname(m):
     gegner = m["awayTeam"] if ist_sch(m["homeTeam"]) else m["homeTeam"]
     kurz = re.sub(r"-(m\d|u\d+(-\d)?)-\d{4}-\d{2}$", "", gegner.get("slug") or "gegner")
-    return f"spiel-{m['kickoff'][:10]}-{kurz}.html"
+    zusatz = "zweite-" if team_von(m) == "m2" else ""
+    return f"spiel-{zusatz}{m['kickoff'][:10]}-{kurz}.html"
 
 
 def baue_seite(m, d, standings, vorlage, adresse, beitraege):
@@ -112,7 +120,8 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     liga = runde.get("competitionSeason") or {}
     venue = d.get("venue") or {}
     anstoss = datetime.datetime.fromisoformat(m["kickoff"])
-    sp = {"gegner": gegner, "ort_art": "heim" if heim else "auswaerts",
+    team = team_von(m)
+    sp = {"gegner": gegner, "ort_art": "heim" if heim else "auswaerts", "mannschaft": team,
           "wettbewerb": liga.get("middleName") or liga.get("name") or "",
           "runde": f'{runde["number"]}. Spieltag' if runde.get("type") == "league" and runde.get("number") else "",
           "spieldatum": m["kickoff"][:10], "anstoss": anstoss.strftime("%H:%M"), "spielort": venue.get("name") or ""}
@@ -128,7 +137,7 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     for t in (m["homeTeam"], m["awayTeam"]):
         z = platz.get(t.get("slug"))
         if z:
-            felder.append((f'Tabelle {"SCH" if ist_sch(t) else gegner}', f'{z["rank"]}. Platz · {z["points"]} Punkte'))
+            felder.append((f'Tabelle {("SCH II" if team == "m2" else "SCH") if ist_sch(t) else gegner}', f'{z["rank"]}. Platz · {z["points"]} Punkte'))
     dl = "\n".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in felder if b)
     links = [f'<a href="seiten/live.html#{e(m["slug"])}">Liveticker am Spieltag</a>']
     if standings:
@@ -141,7 +150,8 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     reiter = [("spielinfo", "Spielinfo", info, ""),
               ("tabelle", "Tabelle", tabelle_html(standings, hervor), ""),
               ("vorbericht", "Vorbericht", sb.vorbericht_html(vb), "")]
-    paar = f"SCH gegen {gegner}" if heim else f"{gegner} gegen SCH"
+    wir = "SCH II" if team == "m2" else "SCH"
+    paar = f"{wir} gegen {gegner}" if heim else f"{gegner} gegen {wir}"
     titel = f"Spielinfo: {paar}"
     beschreibung = f'{paar} am {sb.datum_tag(sp["spieldatum"])}, {sp["anstoss"]} Uhr' + (f' – {sp["wettbewerb"]}' if sp["wettbewerb"] else "")
     return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, TITELBILD, tafel, reiter, "spielinfo")
@@ -173,6 +183,7 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
                 runde = d.get("round") or {}
                 liste_fuer_redaktion.append({
                     "slug": m["slug"], "anstoss": m["kickoff"], "heim": heim,
+                    "mannschaft": sb.MANNSCHAFTEN.get(team_von(m), ""),
                     "gegner": fupa_ticker._teamname(m["awayTeam"] if heim else m["homeTeam"]),
                     "wettbewerb": (runde.get("competitionSeason") or {}).get("middleName") or "",
                     "seite": "seiten/" + seitenname(m)})
@@ -180,6 +191,7 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
                 print(f"  Spielinfo {m.get('slug')}: {fehler}")
     print(f"{len(links)} Spielinfo-Seiten gebaut.")
     # Für die Redaktion: Auswahl „Zu welchem Spiel?“ beim Vorbericht
+    liste_fuer_redaktion.sort(key=lambda x: x["anstoss"])
     with open(os.path.join(ziel, "assets", "kommende-spiele.json"), "w", encoding="utf-8") as f:
         json.dump(liste_fuer_redaktion, f, ensure_ascii=False, indent=1)
     return links
