@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SCH Leinwand</title>
+<!--
+  Leinwand für OBS (Browser-Quelle, 1920 × 1080). Daten: FuPa-Liveticker über ticker.json (wie live.js).
+  Adressen:
+    leinwand.html                    Vollbild-Tafel: Spielstand, Minute, letzte Ereignisse, vor Anpfiff Aufstellungen
+    leinwand.html?modus=einblendung  durchsichtig: kleine Spielstand-Ecke + Einblendungen, über dem Kamerabild
+  Zusätze (mit & anhängen):
+    test=1        Probespiel ohne echtes Spiel (zum Einrichten in OBS)
+    alle=1        auch Auswärtsspiele zeigen (sonst nur Heimspiele des SCH)
+    spiel=<slug>  genau dieses FuPa-Spiel
+    popups=0      keine Einblendungen bei Toren, Wechseln, Karten
+-->
+<style>
+@font-face{font-family:"SCH Barlow";src:url(sch-startseite/assets/barlow.woff) format("woff");font-weight:700;font-display:block}
+@font-face{font-family:"SCH Barlow";src:url(assets/fonts/barlow-latin-500-normal.woff2) format("woff2");font-weight:500;font-display:block}
+:root{--navy:#1b2d4f;--tief:#0f1d35;--hell:#aac7ed;--rot:#e0322a;--gelb:#f2c230;--gruen:#2fb36b;--weiss:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent;color:var(--weiss);
+  font-family:"SCH Barlow","Arial Narrow",Arial,sans-serif}
+body.tafel{background:var(--tief)}
+#buehne{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden}
+.tafel #buehne{background:radial-gradient(ellipse 120% 90% at 50% 0%,#2a4370 0%,var(--navy) 45%,var(--tief) 100%)}
+img{display:block}
+.gross{text-transform:uppercase;font-weight:700;letter-spacing:.02em}
+
+/* ---------- Warten (kein Spiel) ---------- */
+.warten{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:36px;text-align:center}
+.warten img{width:300px;height:auto;filter:drop-shadow(0 20px 40px #0008)}
+.warten h1{font-size:92px;line-height:1}
+.warten p{font-size:44px;font-weight:500;color:var(--hell)}
+
+/* ---------- Vollbild-Tafel ---------- */
+.kopf{position:absolute;top:56px;left:0;right:0;text-align:center;font-size:40px;color:var(--hell);letter-spacing:.12em}
+.paar{position:absolute;top:150px;left:80px;right:80px;display:grid;grid-template-columns:1fr 640px 1fr;align-items:center}
+.team{display:grid;justify-items:center;gap:30px;text-align:center}
+.team img{width:290px;height:290px;object-fit:contain;filter:drop-shadow(0 16px 30px #0007)}
+.team span{font-size:62px;line-height:1.05;max-width:560px}
+.mitte{display:grid;justify-items:center;gap:22px}
+.stand{font-size:250px;line-height:.9;font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.zustand{display:inline-flex;align-items:center;gap:16px;font-size:52px;padding:10px 30px;border-radius:12px;background:#ffffff1c}
+.zustand.live{background:var(--rot)}
+.punkt{width:22px;height:22px;border-radius:50%;background:#fff;animation:puls 1.4s infinite}
+@keyframes puls{50%{opacity:.25}}
+.liste{position:absolute;left:150px;right:150px;bottom:60px;display:grid;gap:14px}
+.zeile{display:grid;grid-template-columns:120px 70px 1fr auto;align-items:center;gap:22px;padding:16px 30px;border-radius:14px;
+  background:#ffffff14;font-size:42px}
+.zeile .min{font-weight:700;color:var(--hell);text-align:right}
+.zeile .was{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.zeile .was b{font-weight:700}
+.zeile .st{font-weight:700;font-size:44px}
+.sym{display:grid;place-items:center;font-size:44px}
+.karte{display:inline-block;width:34px;height:46px;border-radius:5px;background:var(--rot)}
+.karte.gelb{background:var(--gelb)}
+.pfeil{color:var(--gruen);font-weight:700}
+
+/* Aufstellung vor Anpfiff */
+.elfen{position:absolute;left:110px;right:110px;bottom:46px;top:640px;display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.elf h2{font-size:38px;color:var(--hell);margin-bottom:12px;letter-spacing:.1em}
+.elf ol{list-style:none;columns:2;column-gap:40px}
+.elf li{font-size:30px;font-weight:500;line-height:1.45;break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.elf li i{font-style:normal;font-weight:700;display:inline-block;min-width:46px;color:var(--hell)}
+.ohne-elf .paar{top:220px}
+.mit-elf .paar{top:120px}
+.mit-elf .team img{width:220px;height:220px}
+.mit-elf .stand{font-size:200px}
+
+/* ---------- Einblendung (durchsichtig) ---------- */
+.ecke{position:absolute;left:60px;top:50px;display:flex;align-items:stretch;height:84px;border-radius:12px;overflow:hidden;
+  box-shadow:0 10px 30px #0006;font-size:44px}
+.ecke>*{display:flex;align-items:center;gap:14px;padding:0 22px}
+.ecke .t{background:var(--navy)}
+.ecke .t img{width:54px;height:54px;object-fit:contain}
+.ecke .s{background:#fff;color:var(--navy);font-size:54px;font-weight:700;font-variant-numeric:tabular-nums;padding:0 26px}
+.ecke .m{background:var(--rot);font-size:38px;min-width:120px;justify-content:center}
+.ecke .m.aus{background:var(--tief)}
+
+/* ---------- Einblendung bei Ereignissen ---------- */
+.pop{position:absolute;left:50%;bottom:90px;width:1500px;margin-left:-750px;display:grid;grid-template-columns:200px 1fr auto;align-items:center;
+  border-radius:20px;overflow:hidden;background:var(--navy);box-shadow:0 24px 60px #000a;
+  opacity:0;transform:translateY(160%);transition:transform .7s cubic-bezier(.2,.9,.25,1.1),opacity .5s}
+.pop.da{transform:none;opacity:1}
+.pop .sym{height:100%;min-height:190px;background:var(--rot);font-size:110px}
+.pop.wechsel .sym{background:var(--gruen)}
+.pop.karte .sym,.pop.gelb .sym,.pop.pfiff .sym{background:var(--tief)}
+.pop .karte{width:70px;height:96px;border-radius:8px}
+.pop .text{padding:26px 44px;display:grid;gap:8px;min-width:0}
+.pop .text b{font-size:76px;line-height:1;text-transform:uppercase}
+.pop .text span{font-size:46px;font-weight:500;color:var(--hell);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pop .st{font-size:110px;font-weight:700;padding:0 54px;background:#fff;color:var(--navy);height:100%;display:grid;place-items:center}
+.pop.tor{width:1640px;margin-left:-820px}
+.pop.tor .text b{font-size:110px;letter-spacing:.04em}
+.tafel .pop{bottom:auto;top:50%;margin-top:-140px;transform:scale(.8)}
+.tafel .pop.da{transform:none}
+.tafel .pop.da~*{filter:blur(6px)}
+@media (prefers-reduced-motion:reduce){.pop{transition:none}.punkt{animation:none}}
+</style>
+</head>
+<body>
+<div id="buehne"><div id="inhalt"></div><div id="pop" class="pop" aria-live="assertive"></div></div>
+<script>
+(function () {
+  var Q = new URLSearchParams(location.search);
+  var EINBLENDUNG = Q.get('modus') === 'einblendung';
+  var TEST = Q.get('test') === '1';
+  var ALLE = Q.get('alle') === '1';
+  var SPIEL = Q.get('spiel') || '';
+  var POPUPS = Q.get('popups') !== '0';
+  var testStart = Date.now();
+  document.body.className = EINBLENDUNG ? 'einblendung' : 'tafel';
+
+  var API = 'https://api.github.com/repos/Tecko1985/sch-website/contents/ticker.json?ref=live';
+  var ROH = 'https://raw.githubusercontent.com/Tecko1985/sch-website/live/ticker.json';
+  // Alle 20 Sekunden fragen; mit cache:'no-cache' fragt der Browser „hat sich etwas geändert?“ –
+  // unveränderte Antworten (304) zählen bei GitHub nicht gegen die Abruf-Grenze.
+  var TAKT = 20000;
+  var buehne = document.getElementById('buehne'), inhalt = document.getElementById('inhalt'), pop = document.getElementById('pop');
+
+  // 1920 × 1080 auf jede Fenstergröße einpassen
+  function passen() {
+    var f = Math.min(innerWidth / 1920, innerHeight / 1080);
+    buehne.style.transform = 'translate(' + (innerWidth - 1920 * f) / 2 + 'px,' + (innerHeight - 1080 * f) / 2 + 'px) scale(' + f + ')';
+  }
+  addEventListener('resize', passen); passen();
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function uhr(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+  }
+  function stand(sp) { return sp.tore && sp.tore[0] != null && sp.tore[1] != null ? sp.tore[0] + ':' + sp.tore[1] : '0:0'; }
+  function wappen(t, gr) { return '<img src="' + esc(t.wappen) + '" alt=""' + (gr ? ' width="' + gr + '" height="' + gr + '"' : '') + '>'; }
+  function zustand(sp) {
+    if (sp.status === 'ende') return 'Abpfiff';
+    if (sp.status === 'vor') return 'Anpfiff ' + uhr(sp.anstoss) + ' Uhr';
+    var p = (sp.ereignisse || []).filter(function (e) { return e.art === 'pfiff'; })[0];
+    if (p && /halbzeit|pause/i.test(p.kopf) && !/beginn|anpfiff|zweite/i.test(p.kopf)) return 'Halbzeit';
+    return sp.minute ? sp.minute + '\'' : 'Live';
+  }
+
+  // ------------------------------------------------------------ Daten
+  function holen() {
+    if (TEST) return Promise.resolve(testDaten());
+    var roh = function () { return fetch(ROH, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw r.status; return r.json(); }); };
+    return fetch(API, { cache: 'no-cache', headers: { Accept: 'application/vnd.github.raw' } }).then(function (r) {
+      if (r.status === 404) return null;
+      if (!r.ok) return roh();
+      return r.json();
+    }).catch(function () { return roh().catch(function () { return undefined; }); });
+  }
+
+  function waehlen(d) {
+    if (!d || !d.spiele) return null;
+    var jetzt = Date.now(), alt = jetzt - new Date(d.aktualisiert).getTime();
+    var liste = d.spiele.filter(function (sp) {
+      if (SPIEL) return sp.slug === SPIEL;
+      if (!ALLE && !(sp.heim && sp.heim.sch)) return false;
+      var a = new Date(sp.anstoss).getTime();
+      if (sp.status === 'live') return alt < 30 * 60000;
+      if (sp.status === 'vor') return a - jetzt < 120 * 60000 && jetzt - a < 150 * 60000;
+      return alt < 60 * 60000;
+    });
+    // laufendes Spiel vor allem anderen, dann 1. Mannschaft (ticker.json ist schon so sortiert)
+    return liste.filter(function (sp) { return sp.status === 'live'; })[0] || liste[0] || null;
+  }
+
+  // ------------------------------------------------------------ Anzeige
+  var WICHTIG = { tor: 1, wechsel: 1, karte: 1, gelb: 1 };
+  function symbol(e) {
+    if (e.art === 'tor') return '⚽';
+    if (e.art === 'wechsel') return '<span class="pfeil">⇄</span>';
+    if (e.art === 'karte') return '<span class="karte"></span>';
+    if (e.art === 'gelb') return '<span class="karte gelb"></span>';
+    return '<span>◷</span>';
+  }
+
+  function zeigen(sp) {
+    if (!sp) {
+      inhalt.innerHTML = EINBLENDUNG ? '' : '<div class="warten"><img src="assets/logo.png" alt=""><h1 class="gross">1. SC 1911 Heiligenstadt</h1>' +
+        '<p>Herzlich willkommen im Gesundbrunnen</p></div>';
+      return;
+    }
+    if (EINBLENDUNG) {
+      inhalt.innerHTML = '<div class="ecke gross"><div class="t">' + wappen(sp.heim) + esc(kurz(sp.heim)) + '</div>' +
+        '<div class="s">' + stand(sp) + '</div><div class="t">' + esc(kurz(sp.gast)) + wappen(sp.gast) + '</div>' +
+        '<div class="m' + (sp.status === 'live' ? '' : ' aus') + '">' + esc(sp.status === 'vor' ? uhr(sp.anstoss) : zustand(sp)) + '</div></div>';
+      return;
+    }
+    var auf = sp.status === 'vor' && sp.aufstellung && sp.aufstellung.heim && (sp.aufstellung.heim.start || []).length;
+    var html = '<div class="' + (auf ? 'mit-elf' : 'ohne-elf') + '">' +
+      '<p class="kopf gross">' + esc(sp.mannschaft) + (sp.wettbewerb ? ' · ' + esc(sp.wettbewerb) : '') + '</p>' +
+      '<div class="paar"><div class="team">' + wappen(sp.heim) + '<span class="gross">' + esc(sp.heim.name) + '</span></div>' +
+      '<div class="mitte"><div class="stand">' + (sp.status === 'vor' ? '–:–' : stand(sp)) + '</div>' +
+      '<div class="zustand gross' + (sp.status === 'live' ? ' live' : '') + '">' + (sp.status === 'live' ? '<span class="punkt"></span>' : '') +
+      esc(zustand(sp)) + '</div></div>' +
+      '<div class="team">' + wappen(sp.gast) + '<span class="gross">' + esc(sp.gast.name) + '</span></div></div>';
+    if (auf) {
+      html += '<div class="elfen">' + [[sp.heim, sp.aufstellung.heim], [sp.gast, sp.aufstellung.gast]].map(function (x) {
+        if (!x[1] || !(x[1].start || []).length) return '<div></div>';
+        return '<div class="elf"><h2 class="gross">' + esc(kurz(x[0])) + '</h2><ol>' + x[1].start.map(function (p) {
+          return '<li><i>' + esc(p.nr || '') + '</i>' + esc(p.name) + (p.kap ? ' (C)' : '') + '</li>';
+        }).join('') + '</ol></div>';
+      }).join('') + '</div>';
+    } else {
+      var ev = (sp.ereignisse || []).filter(function (e) { return WICHTIG[e.art]; }).slice(0, 4);
+      if (ev.length) {
+        html += '<div class="liste">' + ev.map(function (e) {
+          return '<div class="zeile"><span class="min">' + esc(e.min) + '\'</span><span class="sym">' + symbol(e) + '</span>' +
+            '<span class="was"><b>' + esc(e.kopf) + '</b>' + (e.text ? ' · ' + esc(e.text.replace(/\.$/, '')) : '') + '</span>' +
+            '<span class="st">' + esc(e.stand || '') + '</span></div>';
+        }).join('') + '</div>';
+      }
+    }
+    inhalt.innerHTML = html + '</div>';
+  }
+  function kurz(t) { return t.sch ? 'SCH' : (t.kurz || t.name || ''); }
+
+  // ------------------------------------------------------------ Einblendungen bei neuen Ereignissen
+  var gesehen = null, warteschlange = [], laeuft = false;
+  function schluessel(sp, e) { return sp.slug + '|' + e.min + '|' + e.art + '|' + e.kopf + '|' + e.text; }
+  function neueEreignisse(sp) {
+    if (!sp) return;
+    var ev = (sp.ereignisse || []).slice().reverse(); // älteste zuerst
+    if (!gesehen) { // beim Start nichts nachholen
+      gesehen = {};
+      ev.forEach(function (e) { gesehen[schluessel(sp, e)] = 1; });
+      return;
+    }
+    ev.forEach(function (e) {
+      var k = schluessel(sp, e);
+      if (gesehen[k]) return;
+      gesehen[k] = 1;
+      var pfiff = e.art === 'pfiff' && /anpfiff|halbzeit|abpfiff|spielende/i.test(e.kopf);
+      if (POPUPS && (WICHTIG[e.art] || pfiff)) warteschlange.push({ e: e, sp: sp });
+    });
+    // Kommt viel auf einmal (z. B. nachgetragen), nur die letzten drei zeigen
+    if (warteschlange.length > 3) warteschlange = warteschlange.slice(-3);
+    weiter();
+  }
+  function weiter() {
+    if (laeuft || !warteschlange.length) return;
+    laeuft = true;
+    var x = warteschlange.shift(), e = x.e, sp = x.sp;
+    var titel = e.art === 'tor' ? (/SCH$|Heiligenstadt/.test(e.kopf) ? 'Tor für den SCH!' : 'Tor') :
+      e.art === 'wechsel' ? e.kopf : e.art === 'pfiff' ? e.kopf : e.kopf;
+    var unter = e.art === 'tor' ? e.text.replace(/\.$/, '') + ' · ' + e.min + '\'' :
+      e.art === 'pfiff' ? kurz(sp.heim) + ' ' + stand(sp) + ' ' + kurz(sp.gast) : (e.text || '').replace(/\.$/, '') + ' · ' + e.min + '\'';
+    pop.className = 'pop ' + e.art;
+    pop.innerHTML = '<div class="sym">' + symbol(e) + '</div><div class="text"><b>' + esc(titel) + '</b><span>' + esc(unter) + '</span></div>' +
+      (e.art === 'tor' && e.stand ? '<div class="st">' + esc(e.stand) + '</div>' : '');
+    // Für die Vollbild-Tafel liegt die Einblendung vorne; der Inhalt dahinter wird unscharf
+    buehne.insertBefore(pop, inhalt);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { pop.classList.add('da'); }); });
+    setTimeout(function () {
+      pop.classList.remove('da');
+      setTimeout(function () { laeuft = false; weiter(); }, 900);
+    }, e.art === 'tor' ? 15000 : 9000);
+  }
+
+  // ------------------------------------------------------------ Ablauf
+  var letzte = null;
+  function runde() {
+    holen().then(function (d) {
+      if (d === undefined) return; // Netz weg: letzten Stand stehen lassen
+      var sp = waehlen(d);
+      var neu = JSON.stringify(sp);
+      if (neu !== letzte) { letzte = neu; zeigen(sp); }
+      neueEreignisse(sp);
+    }).finally(function () { setTimeout(runde, TEST ? 4000 : TAKT); });
+  }
+  runde();
+
+  // ------------------------------------------------------------ Probespiel (?test=1)
+  function testDaten() {
+    var t = Math.floor((Date.now() - testStart) / 4000); // alle 4 Sekunden ein Schritt
+    var alle = [
+      { min: '0', art: 'pfiff', kopf: 'Anpfiff', text: '', stand: '' },
+      { min: '12', art: 'gelb', kopf: 'Gelbe Karte für Paul Gastmann', text: 'FC Gast.', stand: '' },
+      { min: '23', art: 'tor', kopf: 'Tor für SCH', text: 'Max Mustermann (Kopfball), Vorlage Tim Beispiel.', stand: '1:0' },
+      { min: '45+1', art: 'pfiff', kopf: 'Halbzeit', text: '', stand: '1:0' },
+      { min: '46', art: 'pfiff', kopf: 'Beginn 2. Halbzeit', text: '', stand: '' },
+      { min: '58', art: 'wechsel', kopf: 'Wechsel bei SCH', text: 'Jonas Neu kommt für Tim Beispiel.', stand: '' },
+      { min: '67', art: 'tor', kopf: 'Tor für FC Gast', text: 'Erik Gegner.', stand: '1:1' },
+      { min: '81', art: 'tor', kopf: 'Tor für SCH', text: 'Jonas Neu (Strafstoß).', stand: '2:1' },
+      { min: '90+3', art: 'pfiff', kopf: 'Abpfiff', text: '', stand: '2:1' }
+    ];
+    var n = Math.min(alle.length, Math.max(0, t - 3)); // erst 3 Schritte vor Anpfiff (mit Aufstellung)
+    var ev = alle.slice(0, n).reverse();
+    var tore = ev.filter(function (e) { return e.stand; })[0];
+    var st = tore ? tore.stand.split(':').map(Number) : [0, 0];
+    var elf = function (vor, nr0) {
+      return { start: ['Torwart', 'Abwehr', 'Abwehr', 'Abwehr', 'Abwehr', 'Mitte', 'Mitte', 'Mitte', 'Mitte', 'Sturm', 'Sturm'].map(function (p, i) {
+        return { name: vor + ' ' + p + (i + 1), nr: String(nr0 + i), kap: i === 4 };
+      }), bank: [] };
+    };
+    return { aktualisiert: new Date().toISOString(), spiele: [{
+      slug: 'test', mannschaft: '1. Mannschaft', wettbewerb: 'Verbandsliga', anstoss: new Date(testStart + 12000).toISOString(),
+      status: n === 0 ? 'vor' : n === alle.length ? 'ende' : 'live', minute: ev[0] ? ev[0].min : '',
+      heim: { name: '1. SC 1911 Heiligenstadt', kurz: 'SCH', sch: true, wappen: 'assets/logo.png' },
+      gast: { name: 'FC Gast', kurz: 'FC Gast', sch: false, wappen: 'assets/logo.png' },
+      tore: st, ereignisse: ev, aufstellung: { heim: elf('Max', 1), gast: elf('Gerd', 1) } }] };
+  }
+})();
+</script>
+</body>
+</html>
