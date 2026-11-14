@@ -88,6 +88,38 @@
   };
   var KLASSE = { tor: 'tor', pfiff: 'pfiff', wechsel: 'wechsel', karte: 'karte', gelb: 'karte' };
 
+  // Aufstellungen (von FuPa, mit Toren, Karten und Wechseln aus dem Ticker)
+  function spielerZeile(x, bank) {
+    var zeichen = '';
+    if (x.tore) zeichen += '<span class="lv-ball" title="Tor" aria-label="' + x.tore + (x.tore > 1 ? ' Tore' : ' Tor') + '">⚽' +
+      (x.tore > 1 ? '<sub>' + x.tore + '</sub>' : '') + '</span>';
+    if (x.karte) zeichen += '<span class="sb-karte' + (x.karte === 'gelb' ? ' gelb' : '') + '" aria-label="' +
+      ({ gelb: 'Gelbe Karte', gelbrot: 'Gelb-Rote Karte', rot: 'Rote Karte' }[x.karte] || 'Karte') + '"></span>';
+    var wechsel = '';
+    if (x.ein) wechsel += '<span class="sb-wechsel" aria-label="eingewechselt">⇄</span> ' + esc(x.ein) + '\'';
+    if (x.aus) wechsel += (wechsel ? ' · ' : '') + '<span class="lv-raus" aria-label="ausgewechselt">⇄</span> ' + esc(x.aus) + '\'';
+    return '<li' + (bank && !x.ein ? ' class="lv-ungenutzt"' : '') + '><span>' +
+      (x.nr ? '<i class="lv-nr">' + esc(x.nr) + '</i>' : '') + esc(x.name) +
+      (x.kap ? ' <abbr class="lv-zusatz" title="Kapitän">(C)</abbr>' : '') +
+      (x.tw ? ' <abbr class="lv-zusatz" title="Torwart">(TW)</abbr>' : '') + zeichen + '</span>' +
+      '<small>' + wechsel + '</small></li>';
+  }
+  function elf(t, s) {
+    if (!s || !(s.start || []).length) return '';
+    return '<section class="sb-elf"><header>' + wappen(t) + '<h3 class="stitel">' + esc(t.kurz || t.name) + '</h3></header>' +
+      '<ol>' + s.start.map(function (x) { return spielerZeile(x, false); }).join('') + '</ol>' +
+      ((s.bank || []).length ? '<p class="lv-bank">Auf der Bank</p><ol>' +
+        s.bank.map(function (x) { return spielerZeile(x, true); }).join('') + '</ol>' : '') + '</section>';
+  }
+  function aufstellung(sp) {
+    var a = sp.aufstellung;
+    if (!a) return '';
+    var bloecke = elf(sp.heim, a.heim) + elf(sp.gast, a.gast);
+    return bloecke ? '<div class="lv-aufstellung" id="aufstellung"><h2 class="sb-h2 stitel">Aufstellungen</h2>' +
+      '<div class="sb-aufstellung">' + bloecke + '</div>' +
+      '<p class="sb-hinweis">Aufstellungen von FuPa. Tore, Karten und Wechsel kommen aus dem Liveticker.</p></div>' : '';
+  }
+
   function zeigeSeite(d) {
     var alle = relevant(d);
     if (!alle.length && d && d.spiele) {
@@ -121,11 +153,15 @@
     var kopfzeile = sp.status === 'ende' ? '<b>Abpfiff</b><span>Endstand ' + stand(sp) + '</span>'
       : sp.status === 'live' ? '<b>Liveticker</b><span>' + zustand(sp) + '</span>'
       : '<b>Liveticker</b><span>Anpfiff ' + esc(uhr(sp.anstoss)) + ' Uhr</span>';
-    seite.innerHTML = wahl + tafel +
+    var elfen = aufstellung(sp);
+    var sprung = elfen && sp.status !== 'vor' ? '<p class="lv-sprung"><a href="#aufstellung" data-lv-sprung>Zu den Aufstellungen <span aria-hidden="true">↓</span></a></p>' : '';
+    // Vor dem Anpfiff ist die Aufstellung das Spannendste: dann steht sie über dem Ticker
+    seite.innerHTML = wahl + tafel + (sp.status === 'vor' ? elfen : sprung) +
       '<div class="sb-ticker"><div class="sb-tickerkopf">' + kopfzeile + '</div>' +
       (li ? '<ol class="sb-ereignisse">' + li + '</ol>' : '<p class="lv-noch-nichts">Noch keine Einträge – der Ticker startet in Kürze.</p>') +
       '<p class="sb-quelle">Liveticker von FuPa, aktualisiert ' + esc(uhr(d.aktualisiert)) + ' Uhr. Die Seite lädt sich jede Minute selbst neu. ' +
-      '<a href="' + esc(sp.fupa) + '" rel="noopener">Spiel bei FuPa</a></p></div>';
+      '<a href="' + esc(sp.fupa) + '" rel="noopener">Spiel bei FuPa</a></p></div>' +
+      (sp.status === 'vor' ? '' : elfen);
     return alle.some(function (x) { return x.status !== 'ende'; });
   }
 
@@ -140,6 +176,14 @@
     });
   }
   if (seite) {
+    // Der Sprung zur Aufstellung darf den gewählten Spiel-Reiter (#slug) nicht ändern
+    seite.addEventListener('click', function (ev) {
+      var a = ev.target.closest && ev.target.closest('[data-lv-sprung]');
+      if (!a) return;
+      ev.preventDefault();
+      var ziel = document.getElementById('aufstellung');
+      if (ziel) ziel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     window.addEventListener('hashchange', function () {
       gewaehlt = decodeURIComponent(location.hash.slice(1));
       if (daten) zeigeSeite(daten);

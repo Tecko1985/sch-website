@@ -52,3 +52,19 @@
 .lv-leer h2{font-size:clamp(24px,4vw,34px);margin-bottom:12px}
 .lv-leer p{color:#56627a;max-width:560px;margin:0 auto 18px}
 .lv-knopf{display:inline-block;padding:12px 22px;border-radius:999px;background:var(--lv-navy);color:#fff!important;font-weight:700;text-decoration:none}
+
+/* Aufstellungen im Liveticker (Grundlage: .sb-aufstellung/.sb-elf aus spielbericht.css) */
+.lv-aufstellung{margin:28px 0;scroll-margin-top:16px}
+.lv-aufstellung .sb-h2{margin-bottom:16px}
+.lv-aufstellung .sb-elf header img{width:44px;height:44px}
+.lv-aufstellung .sb-elf li>span{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;min-width:0}
+.lv-nr{font-style:normal;display:inline-grid;place-items:center;min-width:26px;height:22px;padding:0 4px;border-radius:5px;
+  background:var(--lv-navy);color:#fff;font:700 13px/1 "SCH Barlow","Arial Narrow",Impact,sans-serif}
+.lv-zusatz{text-decoration:none;font-weight:400;font-size:13px;color:#56627a}
+.lv-ball{font-size:14px;line-height:1}
+.lv-ball sub{font-size:11px;font-weight:700}
+.lv-raus{color:#c0392b;font-weight:700}
+.lv-bank{margin:18px 0 4px!important;font:700 14px/1 "SCH Barlow","Arial Narrow",Impact,sans-serif;text-transform:uppercase;letter-spacing:.6px;color:#56627a}
+.lv-ungenutzt{opacity:.62}
+.lv-sprung{margin:-8px 0 16px!important;text-align:right;font-weight:700;font-size:14px}
+.lv-sprung a{color:var(--lv-navy)}

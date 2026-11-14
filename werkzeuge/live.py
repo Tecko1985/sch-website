@@ -69,6 +69,21 @@ def mit_ticker(m):
     return bool(m.get("tickerType")) or "ticker" in (m.get("flags") or [])
 
 
+_AUFSTELLUNG = {}  # slug -> (Zeitpunkt, Aufstellung oder None)
+
+
+def aufstellung(slug, m):
+    """Aufstellung höchstens alle 5 Minuten neu bei FuPa holen (vor Anpfiff kann sie sich noch ändern)."""
+    zeit, auf = _AUFSTELLUNG.get(slug, (None, None))
+    if zeit is None or jetzt() - zeit > datetime.timedelta(minutes=5):
+        try:
+            auf = fupa_ticker.aufstellung(slug, m) or auf
+        except Exception as fehler:
+            print(f"  {slug}: Aufstellung nicht geladen ({fehler})", file=sys.stderr)
+        _AUFSTELLUNG[slug] = (jetzt(), auf)
+    return auf
+
+
 def lage(slug, kuerzel):
     m = fupa_ticker.spiel(slug)
     if not mit_ticker(m):
@@ -81,6 +96,7 @@ def lage(slug, kuerzel):
     angepfiffen = any(e["art"] == "pfiff" for e in ev) or m.get("section") == "LIVE"
     status = "ende" if abpfiff or m.get("section") == "POST" else "live" if angepfiffen else "vor"
     minute = next((e["min"] for e in ev if e["sort"] > 0), "") if status == "live" else ""
+    auf = fupa_ticker.mit_ereignissen(aufstellung(slug, m), ev)
     return {
         "slug": slug, "fupa": f"https://www.fupa.net/match/{slug}", "mannschaft": mannschaft(kuerzel),
         "wettbewerb": spiele.wettbewerb((m.get("competition") or {}).get("middleName") or (m.get("competition") or {}).get("name")),
@@ -88,6 +104,7 @@ def lage(slug, kuerzel):
         "heim": team(m.get("homeTeam") or {}), "gast": team(m.get("awayTeam") or {}),
         "tore": [m.get("homeGoal"), m.get("awayGoal")],
         "ereignisse": [{k: e[k] for k in ("min", "art", "kopf", "text", "stand")} for e in ev],
+        **({"aufstellung": auf} if auf else {}),
     }
 
 
