@@ -1,12 +1,12 @@
 {
   "titel": "TEST zum planen",
-  "datum": "2026-11-15",
-  "zeit": "06:30",
+  "datum": "2026-11-14",
+  "zeit": "16:40",
   "rubrik": "Vorbericht",
   "teaser": "[Worum geht es am Wochenende?]",
   "bild": "",
   "text": "<h2>Die Ausgangslage</h2><p>TEST</p><h2>Personal</h2><p>[Wer fehlt, wer kommt zurück?]</p><h2>Anpfiff</h2><ul><li><b>Wann:</b> [Tag, Datum, Uhrzeit]</li><li><b>Wo:</b> [Sportplatz, Ort]</li><li><b>Eintritt:</b> [Preis]</li></ul><p>[Aufruf an die Fans]</p>",
   "galerie": [],
   "entwurf": false,
-  "geplant": "2026-11-15T06:30"
+  "geplant": "2026-11-14T16:40"
 }
