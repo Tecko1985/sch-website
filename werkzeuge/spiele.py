@@ -230,7 +230,7 @@ def bekannte_kuerzel(block):
 def bekannte_links(block):
     """Bisherige Spielbericht-Links: Datum -> href (nur eigene Seiten, nicht FuPa)."""
     return {d[:10]: h for h, d in re.findall(
-        r'<a class="sch-game[^"]*" href="((?!https?:)[^"]+|https://www\.sc1911-heiligenstadt\.de/[^"]+)">.*?datetime="([^"]+)"', block, re.S)}
+        r'<a class="sch-game[^"]*" href="((?!https?:)[^"]+|https://www\.sc1911-heiligenstadt\.de/[^"]+)"[^>]*>.*?datetime="([^"]+)"', block, re.S)}
 
 
 def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute, berichte=()):
@@ -351,7 +351,7 @@ def verlinke_berichte(t, beitraege):
                 k = re.sub(r'<strong class="sch-result">[^<]*</strong>', f'<strong class="sch-result">{h} : {g}</strong>', k)
             return k
 
-        t = re.sub(r'<a class="sch-game[^"]*" href="[^"]*">.*?</a>', ersetze, t, flags=re.S)
+        t = re.sub(r'<a class="sch-game[^"]*" href="[^"]*"[^>]*>.*?</a>', ersetze, t, flags=re.S)
     return t
 
 
