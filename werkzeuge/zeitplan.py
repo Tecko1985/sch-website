@@ -2,7 +2,8 @@
 
 GitHubs zeitgesteuerte Abläufe (cron) starten oft stark verspätet oder gar nicht. Deshalb wartet dieser
 Wächter selbst bis zum nächsten Termin und stößt dann den passenden Ablauf an:
-- geplanter Redaktionsbeitrag ("geplant") erreicht  -> "Seite bauen"
+- 25 Minuten vor einem geplanten Redaktionsbeitrag -> "Seite bauen" (Vorab-Bau; der Beitrag schaltet sich
+  zur Sekunde selbst frei) und zum Termin noch einmal -> "Seite bauen"
 - SCH-Spiel beginnt in 45 Minuten (alle Mannschaften) -> "Live-Ticker" (wartet selbst auf den FuPa-Ticker)
 
 Der Wächter startet bei jedem Push auf main neu (der neue ersetzt den alten, siehe concurrency) und
@@ -29,6 +30,7 @@ except Exception:  # pragma: no cover
     BERLIN = datetime.timezone(datetime.timedelta(hours=1))
 
 VORLAUF = datetime.timedelta(minutes=45)       # Live-Ticker so lange vor Anpfiff starten
+VORAB = datetime.timedelta(minutes=25)         # geplante Beiträge so lange vorher schon (versteckt) bauen
 SPIELFENSTER = datetime.timedelta(minutes=180)  # bis so lange nach Anpfiff gilt ein Spiel als laufend
 LAUFZEIT = datetime.timedelta(hours=5, minutes=30)  # danach neu starten (GitHub: höchstens 6 Stunden je Job)
 
@@ -103,7 +105,8 @@ def main():
     erledigt = set()
     while True:
         t = jetzt()
-        termine = [(g, "seite.yml") for g in geplante_termine() if g > t]
+        # Vorab-Bau 25 Min. vorher (Beitrag schaltet sich zur Sekunde selbst frei), Hauptbau zum Termin
+        termine = [(x, "seite.yml") for g in geplante_termine() for x in (g - VORAB, g) if x > t]
         termine += [(a - VORLAUF, "live.yml") for a in spiel_zeiten if a - VORLAUF > t]
         termine = sorted(x for x in termine if x not in erledigt)
         ende = start + LAUFZEIT

@@ -130,14 +130,68 @@ def masse(ziel, pfad):
         return ""
 
 
-def jetzt_berlin():
-    """Aktuelle deutsche Zeit als "JJJJ-MM-TTTHH:MM" (der Bau läuft bei GitHub in UTC)."""
+VORAB_MINUTEN = 40  # so lange vor dem geplanten Termin wird ein Beitrag schon (versteckt) gebaut
+
+
+def _berlin():
     try:
         from zoneinfo import ZoneInfo
-        jetzt = datetime.datetime.now(ZoneInfo("Europe/Berlin"))
+        return ZoneInfo("Europe/Berlin")
     except Exception:  # ohne Zeitzonendaten: Winterzeit annehmen
-        jetzt = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+        return datetime.timezone(datetime.timedelta(hours=1))
+
+
+def jetzt_berlin(plus_minuten=0):
+    """Aktuelle deutsche Zeit (+ Minuten) als "JJJJ-MM-TTTHH:MM" (der Bau läuft bei GitHub in UTC)."""
+    jetzt = datetime.datetime.now(_berlin()) + datetime.timedelta(minutes=plus_minuten)
     return jetzt.strftime("%Y-%m-%dT%H:%M")
+
+
+def ab_zeit(geplant):
+    """ "JJJJ-MM-TTTHH:MM" (deutsche Zeit) -> ISO mit Zeitzone für den Browser"""
+    return datetime.datetime.strptime(geplant, "%Y-%m-%dT%H:%M").replace(tzinfo=_berlin()).isoformat()
+
+
+def vorab_sperre(seite, ab, geplant):
+    """Beitragsseite, die sich erst zum geplanten Zeitpunkt selbst zeigt (vorher nur ein Hinweis)."""
+    tag, uhr = geplant[8:10] + "." + geplant[5:7] + ".", geplant[11:16]
+    kopf = (f'<style>html.vorab-wartet main>*{{display:none!important}}'
+            f'html.vorab-wartet main::before{{content:"Dieser Beitrag erscheint am {tag} um {uhr} Uhr.";display:block;'
+            f'padding:140px 24px;text-align:center;font:700 22px/1.4 Arial,sans-serif;color:#1b2d4f}}</style>'
+            f'<script>(function(){{var ab=Date.parse("{ab}"),h=document.documentElement;if(Date.now()<ab){{h.classList.add("vorab-wartet");'
+            f'setTimeout(function(){{h.classList.remove("vorab-wartet")}},ab-Date.now()+50)}}}})();</script>')
+    return seite.replace("</head>", kopf + "</head>", 1)
+
+
+ZUSTAND_SKRIPT = ('<script>(function(){function z(){var n=Date.now(),w=Infinity;'
+                  'document.querySelectorAll("[data-ab],[data-bis]").forEach(function(e){'
+                  'var a=e.dataset.ab?Date.parse(e.dataset.ab):-Infinity,b=e.dataset.bis?Date.parse(e.dataset.bis):Infinity;'
+                  'e.hidden=!(n>=a&&n<b);if(a>n)w=Math.min(w,a);if(b>n)w=Math.min(w,b);});'
+                  'if(w<Infinity)setTimeout(z,Math.min(w-n+50,2e9));}z();})();</script>')
+
+
+def zustand_einbauen(seite):
+    """Stil (im Kopf, gegen Aufblitzen) und Skript für Karten mit data-ab/data-bis."""
+    stil = "<style>[data-ab][hidden],[data-bis][hidden]{display:none!important}</style>"
+    return seite.replace("</head>", stil + "</head>", 1).replace("</body>", ZUSTAND_SKRIPT + "</body>", 1)
+
+
+def zustaende(liste):
+    """[(ab, bis, liste)]: Kartenliste vor und nach jedem geplanten Freischalt-Zeitpunkt (sonst nur eine)."""
+    zeiten = sorted({k["ab"] for k in liste if k.get("ab")})
+    if not zeiten:
+        return [("", "", liste)]
+    grenzen = [""] + zeiten + [""]
+    return [(grenzen[i], grenzen[i + 1], [k for k in liste if not k.get("ab") or (grenzen[i] and k["ab"] <= grenzen[i])])
+            for i in range(len(zeiten) + 1)]
+
+
+def markiere(karten_html, ab, bis):
+    """Karten (oberste <a>/<li>) bekommen data-ab/data-bis; ab in der Zukunft = zunächst versteckt."""
+    if not ab and not bis:
+        return karten_html
+    zusatz = (f' data-ab="{ab}" hidden' if ab else "") + (f' data-bis="{bis}"' if bis else "")
+    return re.sub(r'(<a class="(?:sch-post|sch-morecard|sp-karte)"|<li)(?=[ >])', lambda m: m.group(1) + zusatz, karten_html)
 
 
 def lade_beitraege():
@@ -150,10 +204,16 @@ def lade_beitraege():
             continue
         if d.get("entwurf"):
             continue
-        # Geplant: erst ab dem Termin zeigen (deutsche Zeit, "JJJJ-MM-TTTHH:MM")
+        # Geplant: erst ab dem Termin zeigen (deutsche Zeit, "JJJJ-MM-TTTHH:MM"). Liegt der Termin höchstens
+        # VORAB_MINUTEN voraus, wird der Beitrag schon gebaut, schaltet sich aber erst zur Sekunde selbst frei
+        # (Seite und Karten, siehe vorab_sperre/zustaende) – so wartet niemand auf GitHub.
+        d["ab"] = ""
         if d.get("geplant") and str(d["geplant"]) > jetzt_berlin():
-            print(f"{os.path.basename(pfad)}: geplant für {d['geplant']}, noch nicht gezeigt")
-            continue
+            if str(d["geplant"]) > jetzt_berlin(VORAB_MINUTEN):
+                print(f"{os.path.basename(pfad)}: geplant für {d['geplant']}, noch nicht gezeigt")
+                continue
+            d["ab"] = ab_zeit(str(d["geplant"]))
+            print(f"{os.path.basename(pfad)}: geplant für {d['geplant']}, vorab gebaut (schaltet sich selbst frei)")
         slug = os.path.basename(pfad)[:-5]
         if not re.match(r"^[a-z0-9-]+$", slug) or not re.match(r"^\d{4}-\d{2}-\d{2}$", d.get("datum", "")):
             print(f"::warning::{slug}: ungültiger Name oder Datum, übersprungen")
@@ -198,6 +258,8 @@ def baue_seite(ziel, d, vorlage, zusatz=""):
         inhalt += '\n<div class="sp-galerie">' + "".join(f'<img src="../{g}" alt="" loading="lazy">' for g in d["galerie"]) + "</div>"
     main = f'<main class="sch-report sp-seite">{held}<article class="sp-inhalt">\n{inhalt}\n</article>'
     t = re.sub(r'<main class="sch-report sp-seite">.*?</article>', lambda m: main, t, count=1, flags=re.S)
+    if d.get("ab"):
+        t = vorab_sperre(t, d["ab"], d["geplant"])
     open(os.path.join(ziel, "seiten", d["seite"]), "w", encoding="utf-8").write(t)
 
 
@@ -238,7 +300,7 @@ def alle_eintraege(news, beitraege):
     for d in beitraege:
         liste.append({"seite": d["seite"], "bild": d["bild"] or "assets/hero.jpg", "datum": d["datum"],
                       "titel_html": html.escape(d["titel"], quote=False), "teaser_html": html.escape(d["teaser"], quote=False),
-                      "zeit": d.get("zeit") or ""})
+                      "zeit": d.get("zeit") or "", "ab": d.get("ab") or ""})
     for k in liste:
         k["teaser_html"] = teaser_putzen(k["teaser_html"])
     # Neueste zuerst; bei gleichem Datum neue Redaktionsbeiträge vor alten Einträgen
@@ -271,20 +333,24 @@ def block_ende(text, start):
 
 def schreibe_news(ziel, news, liste):
     news = re.sub(r'<p class="sp-knoepfe"><a [^>]*>Ältere Beiträge auf der Vereinsseite</a></p>\s*', "", news)
-    neu = ersetze_block(news, '<div class="sp-karten"', baue_karten(liste[:NEWS_ANZAHL]))
+    neu = ersetze_block(news, '<div class="sp-karten"', "".join(markiere(baue_karten(l[:NEWS_ANZAHL]), a, b) for a, b, l in zustaende(liste)))
     if len(liste) > NEWS_ANZAHL:
         e = block_ende(neu, '<div class="sp-karten"')
         link = (f'<p class="sp-archivlink"><a href="archiv.html">Alle {len(liste)} Beiträge im Archiv</a></p>')
         neu = neu[:e] + link + neu[e:]
+    if any(k.get("ab") for k in liste):
+        neu = zustand_einbauen(neu)
     open(os.path.join(ziel, "seiten/news.html"), "w", encoding="utf-8").write(neu)
     # Archiv: gleiche Seite, aber mit allen Beiträgen
-    arch = ersetze_block(news, '<div class="sp-karten"', baue_karten(liste))
+    arch = ersetze_block(news, '<div class="sp-karten"', "".join(markiere(baue_karten(l), a, b) for a, b, l in zustaende(liste)))
     e = block_ende(arch, '<div class="sp-karten"')
     arch = arch[:e] + '<p class="sp-archivlink"><a href="news.html">← Zurück zu den aktuellen News</a></p>' + arch[e:]
     arch = arch.replace("<title>News · ", "<title>Archiv · ")
     arch = arch.replace('<span>Aktuelles</span><h1>News</h1>', '<span>News</span><h1>Archiv</h1>')
     arch = arch.replace('content="News · 1. SC', 'content="Archiv · 1. SC')
     arch = arch.replace("seiten/news.html", "seiten/archiv.html")
+    if any(k.get("ab") for k in liste):
+        arch = zustand_einbauen(arch)
     open(os.path.join(ziel, "seiten/archiv.html"), "w", encoding="utf-8").write(arch)
 
 
@@ -306,6 +372,18 @@ def ersetze_block(text, start, inneres):
 def schreibe_start(ziel, liste):
     p = os.path.join(ziel, "index.html")
     s = open(p, encoding="utf-8").read()
+    oben, weiter = "", ""
+    for a, b, l in zustaende(liste):
+        o, w = karten_start(ziel, l)
+        oben, weiter = oben + markiere(o, a, b), weiter + markiere(w, a, b)
+    s = ersetze_block(s, '<div class="sch-latest"', oben)
+    s = ersetze_block(s, '<div class="sch-moregrid"', weiter)
+    if any(k.get("ab") for k in liste):
+        s = zustand_einbauen(s)
+    open(p, "w", encoding="utf-8").write(s)
+
+
+def karten_start(ziel, liste):
     oben = "".join(
         f'<a class="sch-post" href="seiten/{k["seite"]}"><div class="sch-postimage"><img src="{k["bild"]}" alt="" loading="lazy"{masse(ziel, k["bild"])}></div>'
         f'<div class="sch-postcopy"><time datetime="{k["datum"]}">{datum_de(k["datum"])}</time><h2>{k["titel_html"]}</h2>'
@@ -316,9 +394,7 @@ def schreibe_start(ziel, liste):
         f'<div class="sch-morecopy"><time datetime="{k["datum"]}">{datum_de(k["datum"])}</time><h3>{k["titel_html"]}</h3>'
         f'<p>{k["teaser_html"]}</p><span>Beitrag lesen</span></div></a>'
         for k in liste[3:11])
-    s = ersetze_block(s, '<div class="sch-latest"', oben)
-    s = ersetze_block(s, '<div class="sch-moregrid"', weiter)
-    open(p, "w", encoding="utf-8").write(s)
+    return oben, weiter
 
 
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
@@ -330,6 +406,16 @@ def schreibe_neu_start(ziel, liste):
         return
     s = open(p, encoding="utf-8").read()
     eintraege = []
+    for a, b, l in zustaende(liste):
+        eintraege += [markiere(x, a, b) for x in neu_karten(ziel, l)]
+    s = re.sub(r'(<ul class="schiene" data-schiene-spur>).*?(\s*</ul>)', lambda mm: mm.group(1) + "\n" + "\n".join(eintraege) + mm.group(2), s, count=1, flags=re.S)
+    if any(k.get("ab") for k in liste):
+        s = zustand_einbauen(s)
+    open(p, "w", encoding="utf-8").write(s)
+
+
+def neu_karten(ziel, liste):
+    eintraege = []
     for k in liste[:8]:
         j, m, t = k["datum"].split("-")
         eintraege.append(
@@ -339,8 +425,7 @@ def schreibe_neu_start(ziel, liste):
             f'        <h3>{k["titel_html"]}</h3>\n'
             f'        <p>{html.escape(kurz(k["teaser_html"], 140), quote=False)}</p>\n'
             f'      </a></li>')
-    s = re.sub(r'(<ul class="schiene" data-schiene-spur>).*?(\s*</ul>)', lambda mm: mm.group(1) + "\n" + "\n".join(eintraege) + mm.group(2), s, count=1, flags=re.S)
-    open(p, "w", encoding="utf-8").write(s)
+    return eintraege
 
 
 # ---------------------------------------------------------------- Ablauf
@@ -349,6 +434,7 @@ def main():
         sys.exit("Aufruf: python3 werkzeuge/beitraege.py ZIELORDNER")
     ziel = os.path.abspath(sys.argv[1])
     beitraege = lade_beitraege()
+    sichtbar = [d for d in beitraege if not d.get("ab")]  # vorab gebaute erscheinen nicht in fremden Seiten
     vorlage = open(os.path.join(REPO, VORLAGE), encoding="utf-8").read()
     sb_vorlage = open(os.path.join(REPO, SB_VORLAGE), encoding="utf-8").read()
     # Spielberichte im Erfurt-Aufbau; dabei merken, welcher Vorbericht zu welchem Spielbericht gehört
@@ -357,9 +443,11 @@ def main():
     open(os.path.join(ziel, "seiten", "live.html"), "w", encoding="utf-8").write(spielbericht.live_seite(sb_vorlage, ADRESSE))
     for d in beitraege:
         if d.get("rubrik") == "Spielbericht":
-            seite, vb = spielbericht.baue(d, sb_vorlage, beitraege, ADRESSE)
+            seite, vb = spielbericht.baue(d, sb_vorlage, sichtbar, ADRESSE)
+            if d.get("ab"):
+                seite = vorab_sperre(seite, d["ab"], d["geplant"])
             open(os.path.join(ziel, "seiten", d["seite"]), "w", encoding="utf-8").write(seite)
-            if vb and vb["slug"] not in zum_bericht:
+            if vb and vb["slug"] not in zum_bericht and not d.get("ab"):
                 zum_bericht[vb["slug"]] = d
     for d in beitraege:
         if d.get("rubrik") == "Spielbericht":
@@ -376,10 +464,10 @@ def main():
     p = os.path.join(ziel, "index.html")
     start = open(p, encoding="utf-8").read()
     # Kommende Spiele der 1. Mannschaft: eigene Spielinfo-Seite, die Spielkarte verlinkt darauf
-    spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, beitraege)
+    spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, sichtbar)
     spielvorschau.vereinsspiele(ziel)  # für die Redaktion: Mannschaft aus Spieltag und Gegner erkennen
     start = spielvorschau.verlinke_karten(start, spielinfo)
-    open(p, "w", encoding="utf-8").write(spiele.verlinke_berichte(start, beitraege))
+    open(p, "w", encoding="utf-8").write(spiele.verlinke_berichte(start, sichtbar))
     print(f"{len(beitraege)} Redaktionsbeiträge eingebaut, {len(liste)} Beiträge in der Liste.")
 
 
