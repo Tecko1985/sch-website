@@ -125,3 +125,20 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
 /* ---------- Startseite 14.11.: Titelbild Mannschaft im Kreis – Bildausschnitt auf die Köpfe/Rückennummern ---------- */
 :is(#top,body) .sch-home .sch-backdrop{object-position:50% 24%}
 @media(max-width:767px){:is(#top,body) .sch-home .sch-backdrop{object-position:50% 0%}}
+
+/* ---------- „Was läuft weiter beim SCH?“ 14.11.: breiter, größere Überschrift und Karten (ab 1100 px) ---------- */
+@media(min-width:1100px){
+  :is(#top,body) .sch-more{padding:100px 0 110px}
+  :is(#top,body) .sch-more .sch-sectioninner{width:calc(100% - 2 * clamp(16px,4vw,64px));max-width:1640px}
+  :is(#top,body) .sch-more .sch-sectionhead{margin-bottom:48px}
+  :is(#top,body) .sch-more .sch-sectionhead h2{font-size:clamp(54px,4.6vw,78px);letter-spacing:-.5px}
+  :is(#top,body) .sch-more .sch-sectionhead a{font-size:17px;font-weight:700;letter-spacing:.4px}
+  :is(#top,body) .sch-more .sch-moregrid{gap:16px}
+  :is(#top,body) .sch-more .sch-morecard{border-radius:8px}
+  :is(#top,body) .sch-more .sch-morecopy{padding:26px 26px 30px}
+  :is(#top,body) .sch-more .sch-morecopy time{font-size:14px}
+  :is(#top,body) .sch-more .sch-morecopy h3{font-size:clamp(25px,2vw,33px);line-height:1.12;margin:12px 0 16px}
+  :is(#top,body) .sch-more .sch-morecopy p{font-size:17px;line-height:1.6}
+  :is(#top,body) .sch-more .sch-morecopy>span{font-size:14px}
+  :is(#top,body) .sch-more .sch-morecard:first-child .sch-morecopy h3{font-size:clamp(30px,2.8vw,46px)}
+}
