@@ -103,3 +103,21 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-gamepair .sch-matchteam b{font-size:25px}
   :is(#top,body) .sch-gamepair .sch-result{font-size:40px;line-height:50px}
 }
+
+/* ---------- Aktuelle Spiele 14.11.: ganzer Abschnitt größer, bündig mit den News-Karten (ab 1100 px) ---------- */
+@media(min-width:1100px){
+  :is(#top,body) .sch-matches{width:calc(100% - 2 * clamp(16px,4vw,64px));max-width:1640px;padding:96px 0 100px}
+  :is(#top,body) .sch-matches h2{font-size:clamp(54px,4.6vw,78px);letter-spacing:-.5px;margin-bottom:40px}
+  :is(#top,body) .sch-matchtabs{gap:40px}
+  :is(#top,body) .sch-matchtabs button{font-size:19px;letter-spacing:.4px;padding:18px 4px 20px}
+  :is(#top,body) .sch-allgames{font-size:17px;letter-spacing:.4px}
+  :is(#top,body) .sch-matchbar{margin-bottom:34px}
+  :is(#top,body) .sch-matchpanelhead{margin-bottom:28px}
+  :is(#top,body) .sch-matchpanelhead p{font-size:16px}
+  :is(#top,body) .sch-gametrack{gap:16px}
+  :is(#top,body) .sch-game{flex-basis:calc((100% - 32px)/3);min-height:330px;padding:38px 28px 34px;border-radius:8px}
+  :is(#top,body) .sch-matchmeta{font-size:14px;margin-bottom:10px}
+  :is(#top,body) .sch-game time{font-size:19px}
+  :is(#top,body) .sch-matchlink{font-size:16px;letter-spacing:.4px;padding-top:22px}
+  :is(#top,body) .sch-matchsource{font-size:13px;margin-top:20px}
+}
