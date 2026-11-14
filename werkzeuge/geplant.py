@@ -18,7 +18,8 @@ from beitraege import ADRESSE, REPO, jetzt_berlin  # noqa: E402
 
 
 def ist_live(seite):
-    url = f"{ADRESSE}seiten/{seite}"
+    # Mit wechselndem Anhang: sonst liefert der Zwischenspeicher von GitHub Pages bis zu 10 Minuten ein altes „404“
+    url = f"{ADRESSE}seiten/{seite}?pruefung={int(datetime.datetime.now().timestamp())}"
     try:
         req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "SCH-Webseite (geplante Beitraege)"})
         with urllib.request.urlopen(req, timeout=30) as r:

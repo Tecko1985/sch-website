@@ -223,7 +223,8 @@
     Promise.all(offen.map(function (li) {
       var b = beitraege.filter(function (x) { return x.slug === li.dataset.pruefen; })[0];
       if (!b) return Promise.resolve(true);
-      return fetch(SEITE + 'seiten/beitrag-' + b.slug + '.html', { cache: 'no-store' }).then(function (r) {
+      // Anhang ?pruefung=…: am Zwischenspeicher von GitHub Pages vorbei (sonst bis zu 10 Minuten alter Stand)
+      return fetch(SEITE + 'seiten/beitrag-' + b.slug + '.html?pruefung=' + Date.now(), { cache: 'no-store' }).then(function (r) {
         if (r.status === 404) return null;
         if (!r.ok) throw new Error(r.status);
         return r.text();
