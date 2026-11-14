@@ -65,3 +65,11 @@ body{font-size:17px}
 
 /* ---------- Fokus (Tastatur) ---------- */
 a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
+
+/* ---------- Startseite 14.11.: größerer Bildkopf, breitere News-Karten mit höheren Bildern (ab Tablet) ---------- */
+@media(min-width:768px) and (min-height:501px){
+  :is(#top,body) .sch-home .sch-scene{height:min(980px,89svh);min-height:600px}
+  /* Kartenreihe bündig mit der Leiste links und den Werkzeugen rechts, Karten etwas tiefer */
+  :is(#top,body) .sch-home .sch-latest{width:calc(100% - 2 * clamp(16px,4vw,64px));max-width:1640px;gap:14px;margin-top:-92px}
+  :is(#top,body) .sch-home .sch-postimage{aspect-ratio:3/2}
+}
