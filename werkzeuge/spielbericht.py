@@ -555,7 +555,6 @@ def baue(d, vorlage, alle_beitraege, adresse):
                       f"{s.gegner and ('SCH gegen ' + s.gegner) or titel} (Foto: SCH)", spieldaten(s),
                       kicker=(sp.get("kurztitel") or "").strip())
     reiter = [
-        ("vorbericht", "Vorbericht", vorbericht_html(vb), ""),
         ("spielinfo", "Spielinfo", spielinfo(s), ""),
         ("spielbericht", "Spielbericht", bericht, ""),
         ("galerie", "Galerie", galerie(fuer_galerie, titel), ""),
@@ -563,6 +562,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
         ("stimmen", "Stimmen", stimmen(s), ""),
         ("statistiken", "Statistiken", statistik(s), "grau"),
         ("aufstellung", "Aufstellung", aufstellungen(s), ""),
+        ("vorbericht", "Vorbericht", vorbericht_html(vb), ""),  # Vorbericht als letzter Reiter
     ]
     reiter = [r for r in reiter if r[2]]
     knoepfe = "".join(
