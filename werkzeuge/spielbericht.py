@@ -503,8 +503,8 @@ def vorbericht_html(vb):
     if not vb:
         return ""
     vorspann = vb["teaser"] if vb.get("teaser") and not platzhalter(vb["teaser"]) else ""
-    if vorspann and nur_text(vb["text"]).startswith(vorspann.rstrip(" …")[:80]):
-        vorspann = ""  # Anreißer ist nur der Textanfang
+    if vorspann and vorspann.rstrip(" …")[:60] in nur_text(vb["text"])[:800]:
+        vorspann = ""  # Anreißer steht schon (fast) wörtlich am Textanfang
     schluss = f'<p class="sb-hinweis"><a href="seiten/{vb["seite"]}">Vorbericht als eigene Seite öffnen</a></p>\n'
     return artikel(vb["titel"], vb["datum"], "", vorspann, vb["text"], [], "", schluss, oben_bild=vb.get("bild") or "")
 

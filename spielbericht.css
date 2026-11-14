@@ -222,3 +222,14 @@
 @media(max-width:900px){.sb-tafel-innen{grid-template-columns:1fr}.sb-tafel-innen::after{display:none}}
 @media(max-width:640px){.sb-reiter button{font-size:15px;padding:18px 4px 15px}.sb-stand strong{min-width:96px}}
 @media(min-width:1500px){.sb-tafel-innen{max-width:1640px}.sb-team{white-space:nowrap}.sb-paar{grid-template-columns:auto auto auto auto auto}}
+
+/* ---------- Vorbericht 14.11.: breit wie die Seite, großes Bild in voller Breite, größere Schrift ---------- */
+#sb-vorbericht.sb-bereich{max-width:calc(1460px + 2*var(--rand))}
+#sb-vorbericht .sb-artikel{max-width:1460px}
+#sb-vorbericht .sb-artikel h2.stitel{font-size:clamp(30px,3.2vw,50px);line-height:1.08}
+#sb-vorbericht .sb-autor{margin-bottom:6px!important}
+#sb-vorbericht .sb-artikel figure{margin:34px 0 40px!important}
+#sb-vorbericht .sb-artikel figure img{width:100%;height:auto;max-height:82vh;aspect-ratio:auto;object-fit:contain;background:none;border-radius:4px}
+#sb-vorbericht .sb-artikel p{font-size:clamp(17px,1.25vw,20px);line-height:1.75}
+#sb-vorbericht .sb-artikel p.sb-vorspann{font-size:clamp(18px,1.35vw,21px);font-weight:700}
+#sb-vorbericht .sb-artikel h3.stitel{font-size:clamp(22px,2vw,30px)}
