@@ -135,6 +135,50 @@ def tag_iso(kurzform):
     return f"{m.group(3)}-{MONATE.index(m.group(2)) + 1:02d}-{int(m.group(1)):02d}" if m else ""
 
 
+# Mannschaftsseiten mit Liste „Nächste Spiele“: Seite -> Bezeichnung auf der Termine-Seite
+MANNSCHAFTSSEITEN = {"seiten/erste-mannschaft.html": "1. Mannschaft", "seiten/zweite-mannschaft.html": "2. Mannschaft"}
+KURZTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+
+
+def naechste_spiele_liste(spiele, label, anzahl=6):
+    e = lambda s: html.escape(s, quote=True)
+    teile = []
+    for z in [z for z in spiele if z["label"] == label and not z.get("abgesetzt")][:anzahl]:
+        d = datetime.date.fromisoformat(z["datum"])
+        heim = ist_sch(z["heim"])
+        marke = '<em class="tm-marke">Heimspiel</em>' if heim else '<em class="tm-marke aus">Auswärts</em>'
+        link = (f'<a href="{e(z["spiel"])}">Zum Spiel<span class="tm-sr"> {e(z["heim"])} gegen {e(z["gast"])}</span></a>'
+                if z["spiel"] else "")
+        teile.append(f'<li class="tm-spiel{" heim" if heim else ""}"><span class="tm-zeit">{z["zeit"]}</span>'
+                     f'<span class="tm-team"><b>{KURZTAGE[d.weekday()]}, {d.day:02d}.{d.month:02d}.</b><small>{e(z["wettbewerb"])}</small></span>'
+                     f'<span class="tm-paar"><span class="tm-gegner"><span>{e(z["heim"])}</span><i aria-hidden="true">:</i>'
+                     f'<span>{e(z["gast"])}</span></span></span><span class="tm-info">{marke}{link}</span></li>')
+    return '<ul class="tm-liste">' + "".join(teile) + "</ul>"
+
+
+def aktualisiere_mannschaftsseiten(spiele):
+    """„Nächste Spiele“ auf den Mannschaftsseiten aus den Terminen erneuern. Gibt die geänderten Dateien zurück."""
+    geaendert = []
+    for datei, label in MANNSCHAFTSSEITEN.items():
+        pfad = os.path.join(REPO, datei)
+        if not os.path.exists(pfad):
+            continue
+        t = open(pfad, encoding="utf-8").read()
+        k = t.find("<h2>Nächste Spiele</h2>")
+        a = t.find('<ul class="tm-liste">', k)
+        b = t.find("</ul>", a)
+        if k < 0 or a < 0 or b < 0:
+            continue
+        liste = naechste_spiele_liste(spiele, label)
+        if liste == '<ul class="tm-liste"></ul>':
+            continue  # nichts gefunden: alte Liste lieber stehen lassen
+        neu = t[:a] + liste + t[b + 5:]
+        if neu != t:
+            open(pfad, "w", encoding="utf-8").write(neu)
+            geaendert.append(datei)
+    return geaendert
+
+
 def baue(heute=None):
     heute = heute or datetime.date.today().isoformat()
     alt = open(SEITE, encoding="utf-8").read()
@@ -206,8 +250,14 @@ def baue(heute=None):
     weg_k = [vorher[k] for k in vorher if k not in nachher and tag_iso(vorher[k]) >= heute]
     vorbei = [k for k in vorher if k not in nachher and tag_iso(vorher[k]) < heute]
     anders = [f"{vorher[k]}  →  {nachher[k]}" for k in nachher if k in vorher and vorher[k] != nachher[k]]
+    seiten = aktualisiere_mannschaftsseiten(spiele)
+    if seiten:
+        print("„Nächste Spiele“ erneuert: " + ", ".join(seiten))
     if neu_liste == alt[a:b]:
         print("Keine Änderungen an den Terminen.")
+        if seiten and os.environ.get("TERMINE_BERICHT"):
+            open(os.environ["TERMINE_BERICHT"], "w", encoding="utf-8").write(
+                "Naechste Spiele auf den Mannschaftsseiten aktualisiert\n\n" + "\n".join(seiten) + "\n")
         return []
     bericht = [f"{len(neu_k)} neu, {len(anders)} geändert, {len(weg_k)} gestrichen, {len(vorbei)} vorbei"]
     bericht += [f"+ {x}" for x in neu_k] + [f"~ {x}" for x in anders] + [f"- {x}" for x in weg_k]
