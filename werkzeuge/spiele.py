@@ -185,6 +185,40 @@ def sch_team(m):
     return None, None
 
 
+# ---------------------------------------------------------------- Spielberichte auf der Vereinsseite
+VEREINSSEITE = "https://www.sc1911-heiligenstadt.de"
+KEIN_BERICHT = re.compile(r"matchday|alle unsere spiele|save the date|einladung|vorschau|vorbericht", re.I)
+
+
+def berichte_vereinsseite(ab):
+    """Beiträge der Vereinsseite seit `ab` (JJJJ-MM-TT): Liste (datum, link, text). Leer, wenn nicht erreichbar."""
+    try:
+        roh = json.loads(hole(f"{VEREINSSEITE}/wp-json/wp/v2/posts?after={ab}T00:00:00&per_page=100&_fields=date,link,title,content"))
+    except Exception as fehler:
+        print(f"  Vereinsseite nicht erreichbar ({fehler})", file=sys.stderr)
+        return []
+    aus = []
+    for p in roh if isinstance(roh, list) else []:
+        titel = html.unescape(re.sub(r"<[^>]+>", " ", (p.get("title") or {}).get("rendered", "")))
+        if KEIN_BERICHT.search(titel) or not str(p.get("link", "")).startswith(VEREINSSEITE + "/"):
+            continue
+        text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", (p.get("content") or {}).get("rendered", ""))))
+        aus.append((p["date"][:10], p["link"], text))
+    return aus
+
+
+def finde_bericht(berichte, kickoff, gegner, tore):
+    """Bericht am Spieltag oder bis 2 Tage danach, der den Gegner nennt und das Ergebnis enthält."""
+    tag = datetime.date.fromisoformat(kickoff[:10])
+    woerter = [w for w in re.split(r"[\s/\-]+", gegner) if len(w) > 3 and w.lower() not in VORSILBEN and not w.isdigit()]
+    h, g = tore
+    for datum, link, text in berichte:
+        abstand = (datetime.date.fromisoformat(datum) - tag).days
+        if 0 <= abstand <= 2 and any(w in text for w in woerter) and (f"{h}:{g}" in text or f"{g}:{h}" in text):
+            return link
+    return None
+
+
 # ---------------------------------------------------------------- Startseite neu bauen
 def bekannte_kuerzel(block):
     return {html.unescape(n): k for k, n in re.findall(
@@ -193,10 +227,11 @@ def bekannte_kuerzel(block):
 
 def bekannte_links(block):
     """Bisherige Spielbericht-Links: Datum -> href (nur eigene Seiten, nicht FuPa)."""
-    return {d[:10]: h for h, d in re.findall(r'<a class="sch-game[^"]*" href="((?!https?:)[^"]+)">.*?datetime="([^"]+)"', block, re.S)}
+    return {d[:10]: h for h, d in re.findall(
+        r'<a class="sch-game[^"]*" href="((?!https?:)[^"]+|https://www\.sc1911-heiligenstadt\.de/[^"]+)">.*?datetime="([^"]+)"', block, re.S)}
 
 
-def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute):
+def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute, berichte=()):
     karten_daten = []
     for m in spiele:
         seite, team = sch_team(m)
@@ -217,6 +252,12 @@ def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute):
         else:
             gast = sch_name
         eigener = links.get(m["kickoff"][:10]) if reiter_id != "sch-fixtures-youth" else None
+        if eigener and eigener.startswith("http") and gespielt:
+            eigener = None  # Link der Vereinsseite unten neu prüfen (eigener Redaktionsbericht hat Vorrang)
+        if not eigener and gespielt and reiter_id != "sch-fixtures-youth":
+            gegner_name = teamname(m["awayTeam"] if seite == "homeTeam" else m["homeTeam"])
+            eigener = finde_bericht(berichte, m["kickoff"], gegner_name, (m["homeGoal"], m["awayGoal"])) \
+                or links.get(m["kickoff"][:10])
         gegner_team = m["awayTeam"] if seite == "homeTeam" else m["homeTeam"]
         karten_daten.append({
             "kickoff": m["kickoff"], "meta": meta, "heim": heim, "gast": gast, "heim_sch": seite == "homeTeam",
@@ -250,8 +291,10 @@ def aktualisiere_startseite(pfad=None):
     os.makedirs(os.path.dirname(WAPPEN_NAMEN), exist_ok=True)
     json.dump(dict(sorted(NAMEN.items())), open(WAPPEN_NAMEN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     neu = block
+    erstes = min((m["kickoff"][:10] for m in spiele), default=heute)
+    berichte = berichte_vereinsseite((datetime.date.fromisoformat(erstes) - datetime.timedelta(days=1)).isoformat())
     for reiter_id, regel in REITER.items():
-        karten, start = baue_reiter(spiele, reiter_id, regel, bekannt, links, heute)
+        karten, start = baue_reiter(spiele, reiter_id, regel, bekannt, links, heute, berichte)
         if not karten:
             print(f"  {reiter_id}: keine Spiele gefunden, bleibt wie es ist", file=sys.stderr)
             continue
