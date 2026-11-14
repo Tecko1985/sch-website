@@ -239,3 +239,18 @@
 .sb-ereignisse .pfiff .sb-minute{background:var(--tief);color:#fff}
 .sb-ereignisse .karte h3,.sb-ereignisse .wechsel h3{font-size:18px}
 .sb-ereignisse li > div > p:only-child{font-size:16px;color:inherit;padding-top:6px}
+
+/* Tabelle (Spielinfo kommender Spiele) */
+.sb-tabelle-rahmen{overflow-x:auto;border:1px solid var(--linie);border-radius:10px}
+.sb-tabelle{width:100%;border-collapse:collapse;font-size:15px;white-space:nowrap}
+.sb-tabelle th{padding:12px 10px;background:var(--tief);color:#fff;font:700 13px/1 "SCH Barlow","Arial Narrow",Impact,sans-serif;text-transform:uppercase;letter-spacing:.5px;text-align:center}
+.sb-tabelle td{padding:9px 10px;border-top:1px solid var(--linie);text-align:center}
+.sb-tabelle .sb-verein{text-align:left;width:100%}
+.sb-tabelle td.sb-verein{display:flex;align-items:center;gap:10px;font-weight:700}
+.sb-tabelle td.sb-verein img{width:28px;height:28px;object-fit:contain;flex:none}
+.sb-tabelle td.sb-verein span{white-space:normal;line-height:1.2}
+.sb-tabelle .sb-platz{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:18px}
+.sb-tabelle .sb-punkte{font-family:"SCH Barlow","Arial Narrow",Impact,sans-serif;font-weight:700;font-size:18px}
+.sb-tabelle tr.sb-wir td{background:var(--navy);color:#fff}
+.sb-tabelle tr.sb-gegner td{background:#dfe9f7}
+@media (max-width:600px){.sb-tabelle .sb-breit{display:none}.sb-tabelle{font-size:14px}.sb-tabelle td,.sb-tabelle th{padding:8px 6px}}

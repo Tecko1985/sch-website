@@ -660,3 +660,34 @@ def live_seite(vorlage, adresse):
             '<div id="sch-live-seite"><noscript><p>Der Liveticker braucht JavaScript.</p></noscript></div>\n'
             '<script src="live.js?v=3" data-basis="../" defer></script>\n</main>')
     return pfade_fuer_seiten(kopf + main + fuss)
+
+
+def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, reiter, start):
+    """Seite im Spielbericht-Aufbau (Bildkopf, Tafel, Reiter) – z. B. für die Spielinfo kommender Spiele.
+    reiter: [(name, beschriftung, inhalt, zusatzklasse)], start: Name des zuerst offenen Reiters."""
+    reiter = [r for r in reiter if r[2]]
+    if not any(n == start for n, _, _, _ in reiter):
+        start = reiter[0][0]
+    knoepfe = "".join(
+        f'<button type="button" role="tab" id="sb-tab-{n}" data-name="{n}" aria-controls="sb-{n}" '
+        f'aria-selected="{"true" if n == start else "false"}" tabindex="{0 if n == start else -1}">{l}</button>'
+        for n, l, _, _ in reiter)
+    bereiche = "\n\n".join(
+        f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
+        f'{"" if n == start else " hidden"}>\n{inhalt}\n</section>'
+        for n, _, inhalt, k in reiter)
+    erster = next(l for n, l, _, _ in reiter if n == start)
+    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz">'
+            f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high"><h1 class="stitel" data-sb-titel>{e(erster)}</h1></header>\n\n'
+            f'{tafel_html}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche der Seite">{knoepfe}</div></div>\n\n'
+            f"{bereiche}\n</main>")
+    kopf = vorlage[:vorlage.find('<main class="sb">')]
+    fuss = vorlage[vorlage.find("</main>") + len("</main>"):]
+    voll_titel = f"{e(titel)} · 1. SC 1911 Heiligenstadt"
+    kopf = re.sub(r"<title>.*?</title>", f"<title>{voll_titel}</title>", kopf, count=1, flags=re.S)
+    kopf = re.sub(r'(<meta name="description" content=")[^"]*', lambda m: m.group(1) + e(beschreibung), kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:title" content=")[^"]*', lambda m: m.group(1) + voll_titel, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:description" content=")[^"]*', lambda m: m.group(1) + e(beschreibung), kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:url" content=")[^"]*', lambda m: m.group(1) + adresse + "seiten/" + seite, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda m: m.group(1) + adresse + titelbild, kopf, count=1)
+    return pfade_fuer_seiten(kopf + main + fuss)

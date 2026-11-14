@@ -26,6 +26,7 @@ from html.parser import HTMLParser
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import spielbericht  # noqa: E402  Spielbericht-Seiten im Aufbau von spielbericht-erfurt.html
 import spiele  # noqa: E402  „Aktuelle Spiele“ auf der Startseite
+import spielvorschau  # noqa: E402  Spielinfo-Seiten für kommende Spiele
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VORLAGE = "seiten/beitrag-serie-haelt-weiter.html"
@@ -374,6 +375,9 @@ def main():
     # „Aktuelle Spiele“: Karte zum Spielbericht bekommt Ergebnis und Link
     p = os.path.join(ziel, "index.html")
     start = open(p, encoding="utf-8").read()
+    # Kommende Spiele der 1. Mannschaft: eigene Spielinfo-Seite, die Spielkarte verlinkt darauf
+    spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, beitraege)
+    start = spielvorschau.verlinke_karten(start, spielinfo)
     open(p, "w", encoding="utf-8").write(spiele.verlinke_berichte(start, beitraege))
     print(f"{len(beitraege)} Redaktionsbeiträge eingebaut, {len(liste)} Beiträge in der Liste.")
 

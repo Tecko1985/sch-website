@@ -21,6 +21,12 @@ def hole_json(url, timeout=20):
         return json.loads(r.read().decode("utf-8"))
 
 
+def hole_text(url, timeout=20):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (SCH-Webseite)"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read().decode("utf-8")
+
+
 def slug_aus_link(link):
     """„https://www.fupa.net/match/<slug>“ (auch mit /ticker o. ä. dahinter) -> slug"""
     m = re.search(r"fupa\.net/match/([a-z0-9-]+)", link or "")
