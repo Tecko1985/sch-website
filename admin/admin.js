@@ -185,11 +185,12 @@
       var bild = d.bild ? '<img src="' + rohUrl(d.bild) + '" alt="" loading="lazy">' : '<span class="ohnebild"></span>';
       li.innerHTML = bild + '<div><b></b><small></small></div><div class="liste-aktionen">' +
         '<a class="klein-knopf" href="#bearbeiten/' + b.slug + '" style="display:inline-flex;align-items:center;text-decoration:none">Bearbeiten</a>' +
-        (d.entwurf ? '' : '<a class="klein-knopf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none" href="' + SEITE + 'seiten/beitrag-' + b.slug + '.html">Ansehen</a>') +
+        (d.entwurf || istGeplant(d) ? '' : '<a class="klein-knopf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none" href="' + SEITE + 'seiten/beitrag-' + b.slug + '.html">Ansehen</a>') +
         '</div>';
       $('b', li).textContent = d.titel || 'Ohne Titel';
       $('small', li).textContent = datumDe(d.datum) + ' · ' + (d.rubrik || 'News');
       if (d.entwurf) { var m = document.createElement('span'); m.className = 'marke'; m.textContent = 'Entwurf'; $('b', li).appendChild(m); }
+      else if (istGeplant(d)) { var g = document.createElement('span'); g.className = 'marke geplant'; g.textContent = 'Geplant ' + planText(d.geplant); $('b', li).appendChild(g); }
       ul.appendChild(li);
     });
   }
@@ -216,6 +217,11 @@
     form.rubrik.value = d.rubrik || 'News';
     form.teaser.value = d.teaser || '';
     form.entwurf.checked = !!d.entwurf;
+    var geplant = istGeplant(d);
+    form.planen.checked = geplant;
+    form.plan_datum.value = geplant ? d.geplant.slice(0, 10) : '';
+    form.plan_zeit.value = geplant ? d.geplant.slice(11, 16) : '18:00';
+    zeigePlanung();
     textfeld.innerHTML = d.text || '';
     titelbild = d.bild || null;
     galerie = (d.galerie || []).slice();
@@ -243,7 +249,8 @@
   var ohneWarnung = false;  // Abmelden hat schon gefragt
   function editorStand() {
     return [form.titel.value, form.teaser.value, textfeld.innerHTML, form.datum.value, form.rubrik.value,
-      form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|'), JSON.stringify(spielFelder())].join('\u0001');
+      form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|'), JSON.stringify(spielFelder()),
+      form.planen.checked ? form.plan_datum.value + 'T' + form.plan_zeit.value : ''].join('\u0001');
   }
   function ungesichert() {
     if (editorHash === null) return false;
@@ -257,8 +264,26 @@
     return !ungesichert() || window.confirm('Der Beitrag hat ungespeicherte Änderungen.\n\nOK = verlassen, die Änderungen gehen verloren.\nAbbrechen = im Beitrag bleiben.');
   }
 
+  // ---------------------------------------------------------------- Veröffentlichung planen
+  // Gespeichert als "geplant": "JJJJ-MM-TTTHH:MM" (deutsche Zeit). Der Seitenbau zeigt den Beitrag erst ab dann;
+  // .github/workflows/geplant.yml stellt die Seite zum Termin neu online.
+  function jetztLokal() { var d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
+  function istGeplant(d) { return !!(d && d.geplant && !d.entwurf && d.geplant > jetztLokal()); }
+  function planText(iso) { return datumDe(iso.slice(0, 10)).slice(0, 6) + ' ' + iso.slice(11, 16) + ' Uhr'; }
+  function zeigePlanung() {
+    $('[data-planenzeit]').hidden = !form.planen.checked;
+    if (form.planen.checked && !form.plan_datum.value) {
+      var morgen = new Date(Date.now() + 864e5);
+      form.plan_datum.value = new Date(morgen - morgen.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    }
+    aktualisiereKnopf();
+  }
+  form.planen.addEventListener('change', zeigePlanung);
+  [form.plan_datum, form.plan_zeit].forEach(function (f) { f.addEventListener('change', aktualisiereKnopf); });
+
   function aktualisiereKnopf() {
-    $('[data-speichern]').textContent = form.entwurf.checked ? 'Entwurf speichern' : (aktuell ? 'Änderungen veröffentlichen' : 'Veröffentlichen');
+    $('[data-speichern]').textContent = form.entwurf.checked ? 'Entwurf speichern'
+      : form.planen.checked ? 'Planen' : (aktuell ? 'Änderungen veröffentlichen' : 'Veröffentlichen');
   }
   form.entwurf.addEventListener('change', aktualisiereKnopf);
 
@@ -849,6 +874,20 @@
         !window.confirm('Im Beitrag stehen noch Platzhalter aus der Vorlage: ' + offen.slice(0, 5).join(', ') + (offen.length > 5 ? ' …' : '') + '\n\nTrotzdem veröffentlichen?')) return;
 
     var neu = !aktuell;
+    // Planung: Termin prüfen; Datum und Uhrzeit des Beitrags werden der geplante Termin
+    var geplant = '';
+    if (form.planen.checked && !form.entwurf.checked) {
+      if (!form.plan_datum.value || !form.plan_zeit.value) { meldung('Bitte Datum und Uhrzeit für die Veröffentlichung eintragen.', 'fehler'); form.plan_datum.focus(); return; }
+      geplant = form.plan_datum.value + 'T' + form.plan_zeit.value;
+      if (geplant <= jetztLokal()) {
+        if (!window.confirm('Der geplante Zeitpunkt liegt schon in der Vergangenheit.\n\nBeitrag jetzt sofort veröffentlichen?')) return;
+        geplant = '';
+        form.planen.checked = false;
+        zeigePlanung();
+      } else {
+        form.datum.value = form.plan_datum.value;
+      }
+    }
     var slug = aktuell ? aktuell.slug : slugAus(titel, form.datum.value);
     var stamm = slugStamm(titel, form.datum.value);
     var geladenSha = aktuell ? aktuell.sha : null;
@@ -856,7 +895,7 @@
     var daten = {
       titel: titel,
       datum: form.datum.value,
-      zeit: vorher.zeit || new Date().toTimeString().slice(0, 5),
+      zeit: geplant ? geplant.slice(11, 16) : (vorher.zeit || new Date().toTimeString().slice(0, 5)),
       rubrik: form.rubrik.value,
       teaser: form.teaser.value.trim(),
       bild: titelbild || '',
@@ -864,6 +903,7 @@
       galerie: galerie.slice(),
       entwurf: form.entwurf.checked
     };
+    if (geplant) daten.geplant = geplant;
     if (istSpiel) daten.spiel = spielFelder();
     var wappenNeu = istSpiel ? (wappen || '') : '';
     var json = textZuBase64(JSON.stringify(daten, null, 2) + '\n');
@@ -901,7 +941,7 @@
     var knopf = $('[data-speichern]');
     knopf.disabled = true;
     meldung('Wird gespeichert …', '');
-    var art = daten.entwurf ? 'Entwurf' : (aktuell ? 'Beitrag geändert' : 'Neuer Beitrag');
+    var art = daten.entwurf ? 'Entwurf' : daten.geplant ? 'Geplant für ' + planText(daten.geplant) : (aktuell ? 'Beitrag geändert' : 'Neuer Beitrag');
     commit(dateien, art + ': ' + titel + ' (Redaktion)').then(function (shas) {
       neueBilder = {};
       var eintrag = { slug: slug, daten: daten, sha: shas[ORDNER + slug + '.json'] };
@@ -910,8 +950,10 @@
       gesichert = standBeimSpeichern;
       editorHash = 'bearbeiten/' + slug;
       $('[data-loeschen]').hidden = false;
-      meldung(daten.entwurf ? 'Entwurf gespeichert.' : 'Gespeichert. Der Beitrag ist in etwa 2 Minuten auf der Seite.', 'ok');
-      if (!daten.entwurf) zeigeLiveHinweis(slug, titel);
+      meldung(daten.entwurf ? 'Entwurf gespeichert.'
+        : daten.geplant ? 'Geplant. Der Beitrag erscheint automatisch am ' + planText(daten.geplant) + ' (höchstens etwa 15 bis 20 Minuten später).'
+        : 'Gespeichert. Der Beitrag ist in etwa 2 Minuten auf der Seite.', 'ok');
+      if (!daten.entwurf && !daten.geplant) zeigeLiveHinweis(slug, titel);
       history.replaceState(null, '', '#bearbeiten/' + slug);
     }).catch(function (err) {
       meldung(err.status === 'konflikt' ? err.message : 'Speichern fehlgeschlagen: ' + err.message, 'fehler');

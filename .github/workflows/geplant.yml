@@ -1,0 +1,46 @@
+# Geplante Beitraege aus der Redaktion zum Termin online stellen.
+# Die Redaktion speichert bei "Veroeffentlichung planen" das Feld "geplant" (deutsche Zeit). Der Seitenbau
+# (werkzeuge/beitraege.py) zeigt solche Beitraege erst ab dem Termin. Dieser Ablauf schaut alle 15 Minuten
+# nach, ob ein Termin erreicht ist und die Beitragsseite noch fehlt -- dann startet er "Seite bauen"
+# (ein von Hand/per Ablauf gestarteter Bau veroeffentlicht immer).
+# Keine Secrets, keine Zusatzpakete; liest nur das Repo und die oeffentliche Website.
+name: Geplante Beitraege
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: geplant
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write   # "Seite bauen" starten
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+
+      - run: pip install --quiet tzdata==2026.4
+
+      - name: Faellige Beitraege suchen
+        id: suchen
+        run: python werkzeuge/geplant.py
+
+      - name: Seite bauen starten
+        if: steps.suchen.outputs.faellig == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run seite.yml --ref main --repo "$GITHUB_REPOSITORY"

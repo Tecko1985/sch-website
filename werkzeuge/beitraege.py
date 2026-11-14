@@ -14,6 +14,7 @@ Die Unterseiten unter neu/ entstehen danach mit werkzeuge/neu_seiten.py.
 
 Das Repo selbst bleibt unverändert: Erzeugt wird nur im Zielordner.
 """
+import datetime
 import glob
 import html
 import json
@@ -128,6 +129,16 @@ def masse(ziel, pfad):
         return ""
 
 
+def jetzt_berlin():
+    """Aktuelle deutsche Zeit als "JJJJ-MM-TTTHH:MM" (der Bau läuft bei GitHub in UTC)."""
+    try:
+        from zoneinfo import ZoneInfo
+        jetzt = datetime.datetime.now(ZoneInfo("Europe/Berlin"))
+    except Exception:  # ohne Zeitzonendaten: Winterzeit annehmen
+        jetzt = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    return jetzt.strftime("%Y-%m-%dT%H:%M")
+
+
 def lade_beitraege():
     beitraege = []
     for pfad in sorted(glob.glob(os.path.join(REPO, "inhalte/beitraege/*.json"))):
@@ -137,6 +148,10 @@ def lade_beitraege():
             print(f"::warning::{os.path.basename(pfad)} übersprungen: {e}")
             continue
         if d.get("entwurf"):
+            continue
+        # Geplant: erst ab dem Termin zeigen (deutsche Zeit, "JJJJ-MM-TTTHH:MM")
+        if d.get("geplant") and str(d["geplant"]) > jetzt_berlin():
+            print(f"{os.path.basename(pfad)}: geplant für {d['geplant']}, noch nicht gezeigt")
             continue
         slug = os.path.basename(pfad)[:-5]
         if not re.match(r"^[a-z0-9-]+$", slug) or not re.match(r"^\d{4}-\d{2}-\d{2}$", d.get("datum", "")):
