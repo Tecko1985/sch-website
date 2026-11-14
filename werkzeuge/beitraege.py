@@ -377,6 +377,7 @@ def main():
     start = open(p, encoding="utf-8").read()
     # Kommende Spiele der 1. Mannschaft: eigene Spielinfo-Seite, die Spielkarte verlinkt darauf
     spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, beitraege)
+    spielvorschau.vereinsspiele(ziel)  # für die Redaktion: Mannschaft aus Spieltag und Gegner erkennen
     start = spielvorschau.verlinke_karten(start, spielinfo)
     open(p, "w", encoding="utf-8").write(spiele.verlinke_berichte(start, beitraege))
     print(f"{len(beitraege)} Redaktionsbeiträge eingebaut, {len(liste)} Beiträge in der Liste.")

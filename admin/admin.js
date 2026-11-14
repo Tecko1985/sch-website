@@ -390,7 +390,9 @@
   function spielSetzen(sp) {
     SPIELFELDER.forEach(function (n) { form['sp_' + n].value = sp[n] || ''; });
     if (!form.sp_ort_art.value) form.sp_ort_art.value = 'heim';
+    form.sp_mannschaft.dataset.hand = sp.mannschaft ? '1' : '';
     if (!form.sp_mannschaft.value) form.sp_mannschaft.value = 'm1';
+    $('[data-mannschafterkannt]').hidden = true;
     zeigeMannschaft();
     wappen = sp.wappen || null;
     vorberichtWahl.dataset.wert = sp.vorbericht || '';
@@ -408,6 +410,63 @@
     $('[data-schlanktipp]').hidden = !(m === 'm2' && form.sp_ort_art.value === 'auswaerts');
   }
   [form.sp_mannschaft, form.sp_ort_art].forEach(function (f) { f.addEventListener('change', zeigeMannschaft); });
+
+  // Mannschaft automatisch erkennen: Spieltag + Gegner gegen die Spiele aller Mannschaften
+  // (assets/vereinsspiele.json aus dem Seitenbau). Ohne Spieltag: Spiel gegen den Gegner bis 9 Tage
+  // vor dem Beitragsdatum (z. B. Nachwuchsbericht am Montag). Von Hand gewählt hat Vorrang.
+  var vereinsspiele = null;
+  var ALLGEMEIN = ['blau', 'weiß', 'weiss', 'gelb', 'grün', 'gruen', 'schwarz', 'rote', 'stein', 'eintracht', 'union',
+    'einheit', 'fortuna', 'germania', 'borussia', 'sportfreunde', 'verein', 'sport', 'stadt', 'preußen', 'preussen',
+    'wacker', 'concordia', 'viktoria', 'victoria', 'rotation', 'motor', 'empor', 'aufbau'];
+  function worte(name) {
+    return (name || '').toLowerCase().split(/[\s\/\-.]+/).filter(function (w) {
+      return w.length > 3 && !/^\d+$/.test(w) && ALLGEMEIN.indexOf(w) < 0;
+    });
+  }
+  function ladeVereinsspiele() {
+    if (vereinsspiele) return Promise.resolve(vereinsspiele);
+    return fetch('../assets/vereinsspiele.json', { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; })
+      .then(function (l) { vereinsspiele = l; return l; });
+  }
+  function erkenneMannschaft() {
+    var hinweis = $('[data-mannschafterkannt]');
+    if (form.rubrik.value !== 'Spielbericht' || form.sp_mannschaft.dataset.hand === '1') return;
+    var gegner = worte(form.sp_gegner.value);
+    if (!gegner.length) { hinweis.hidden = true; return; }
+    ladeVereinsspiele().then(function (liste) {
+      var tag = form.sp_spieldatum.value;
+      var bis = form.datum.value || new Date().toISOString().slice(0, 10);
+      var passend = liste.filter(function (sp) {
+        var name = sp.gegner.toLowerCase(), eigene = worte(sp.gegner);
+        var gleich = gegner.some(function (w) { return name.indexOf(w) >= 0; }) ||
+          eigene.some(function (w) { return form.sp_gegner.value.toLowerCase().indexOf(w) >= 0; });
+        if (!gleich) return false;
+        if (tag) return sp.datum === tag;
+        var tage = (new Date(bis + 'T12:00:00') - new Date(sp.datum + 'T12:00:00')) / 864e5;
+        return tage >= 0 && tage <= 9;
+      }).sort(function (a, b) { return (b.datum + b.anstoss).localeCompare(a.datum + a.anstoss); });
+      if (!passend.length) { hinweis.hidden = true; return; }
+      var sp = passend[0];
+      form.sp_mannschaft.value = sp.team;
+      form.sp_ort_art.value = sp.heim ? 'heim' : 'auswaerts';
+      if (!tag) form.sp_spieldatum.value = sp.datum;
+      if (!form.sp_anstoss.value) form.sp_anstoss.value = sp.anstoss;
+      var datum = sp.datum.slice(8, 10) + '.' + sp.datum.slice(5, 7) + '.';
+      hinweis.textContent = 'Automatisch erkannt: ' + sp.mannschaft + ' – ' + (sp.heim ? 'Heimspiel gegen ' : 'auswärts bei ') + sp.gegner +
+        ' am ' + datum + (passend.length > 1 ? ' (mehrere Spiele passen – bitte prüfen)' : '');
+      hinweis.hidden = false;
+      zeigeMannschaft();
+      zeichneVorberichte();
+      aktualisiereKnopf();
+    });
+  }
+  form.sp_mannschaft.addEventListener('change', function () {
+    form.sp_mannschaft.dataset.hand = '1';
+    $('[data-mannschafterkannt]').hidden = true;
+  });
+  [form.sp_spieldatum, form.sp_gegner].forEach(function (f) { f.addEventListener('change', erkenneMannschaft); });
 
   // Vorbericht: „Zu welchem Spiel?“ – kommende Spiele der 1. Mannschaft aus dem Seitenbau
   // (assets/kommende-spiele.json, werkzeuge/spielvorschau.py). Gespeichert als "spiel_slug" (FuPa-Spiel).
@@ -656,6 +715,7 @@
     if (r.spiel) Object.keys(r.spiel).forEach(function (n) { if (form['sp_' + n]) form['sp_' + n].value = r.spiel[n]; });
     // Spieltag, Liga, Stadion, Zitat aus dem Text nur eintragen, wo noch nichts steht
     Object.keys(r.extra).forEach(function (n) { if (form['sp_' + n] && !form['sp_' + n].value.trim()) form['sp_' + n].value = r.extra[n]; });
+    erkenneMannschaft();
     zeichneVorberichte();
     aktualisiereKnopf();
     var teile = ['Titel', r.kurz && 'Kurzüberschrift', r.teaser && 'Anreißer', 'Text', r.spiel && 'Spieldaten'].filter(Boolean);

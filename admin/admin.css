@@ -130,3 +130,6 @@ input:focus,select:focus,textarea:focus,.text:focus{outline:none;border-color:va
 .planen-zeit input{width:100%;min-height:46px;padding:10px 12px;border:2px solid var(--linie);border-radius:10px;background:#fff;color:var(--navy);font:400 16px "Archivo",Arial,sans-serif}
 .planen-zeit .vorlagen-tipp{grid-column:1/-1;margin:0}
 .marke.geplant{background:#fff4d6;color:#7a5600}
+
+/* Mannschaft automatisch erkannt (Spieldaten) */
+.erkannt{display:block;margin-top:6px;color:#1d7a45;font-weight:600}

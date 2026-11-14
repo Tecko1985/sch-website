@@ -206,3 +206,28 @@ def verlinke_karten(start, links):
             return a
         return re.sub(r'href="[^"]*"', f'href="{links[slug]}"', a, count=1)
     return re.sub(r'<a class="sch-game[^>]*data-spiel="[^"]+"[^>]*>', ersetze, start)
+
+
+def vereinsspiele(ziel):
+    """assets/vereinsspiele.json: Spiele aller Mannschaften (45 Tage zurück bis 60 Tage voraus) –
+    daraus erkennt die Redaktion beim Spielbericht die Mannschaft aus Spieltag und Gegner."""
+    heute = datetime.date.today()
+    von, bis = (heute - datetime.timedelta(days=45)).isoformat(), (heute + datetime.timedelta(days=60)).isoformat()
+    alle = {}
+    for team in sb.MANNSCHAFTEN:
+        for art in ("past&limit=15", "current"):
+            try:
+                liste = fupa_ticker.hole_json(f"{fupa_ticker.API}/v1/teams/{CLUB}-{team}-{saison()}/matches?flavor={art}")
+            except Exception:
+                continue
+            for m in liste if isinstance(liste, list) else []:
+                if not (von <= m.get("kickoff", "")[:10] <= bis) or team_von(m) != team:
+                    continue
+                heim = ist_sch(m["homeTeam"])
+                alle[m["slug"]] = {"slug": m["slug"], "team": team, "mannschaft": sb.MANNSCHAFTEN[team],
+                                   "datum": m["kickoff"][:10], "anstoss": m["kickoff"][11:16], "heim": heim,
+                                   "gegner": fupa_ticker._teamname(m["awayTeam"] if heim else m["homeTeam"])}
+    liste = sorted(alle.values(), key=lambda x: (x["datum"], x["anstoss"]))
+    with open(os.path.join(ziel, "assets", "vereinsspiele.json"), "w", encoding="utf-8") as f:
+        json.dump(liste, f, ensure_ascii=False, indent=1)
+    print(f"{len(liste)} Vereinsspiele für die Redaktion.")
