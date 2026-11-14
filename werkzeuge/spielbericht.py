@@ -412,6 +412,13 @@ def ticker(s, fazit):
             zus = f' ({e(k["zusatz"])})' if k["zusatz"] else ""
             eintraege.append((k["min"] + 0.001, k["label"], "", f'<span class="sb-karte" aria-hidden="true"></span>Rote Karte für {e(k["name"])}',
                               f"Platzverweis{zus}.", ""))
+        # Wechsel aus den Aufstellungen: „Wolanski (73. Opfermann)“ -> 73' Opfermann kommt für Wolanski
+        for team, elf in (("sch", s.elf_sch), ("geg", s.elf_geg)):
+            for x in elf:
+                m = minute(x["wechsel"]) if x["wechsel"] else None
+                if m and m[2]:
+                    eintraege.append((m[0] + 0.002, m[1], "wechsel", f'<span class="sb-wechsel" aria-hidden="true">⇄</span> Wechsel bei {e(s.kurzname(team))}',
+                                      f'{e(m[2])} kommt für {e(x["name"])}.', ""))
         if s.hz:
             eintraege.append((45.5, "45", "", "Halbzeit", "Pause.", s.stand(s.hz).replace(" ", "")))
         if s.end:
