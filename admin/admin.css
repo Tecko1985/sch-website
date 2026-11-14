@@ -135,3 +135,9 @@ input:focus,select:focus,textarea:focus,.text:focus{outline:none;border-color:va
 .erkannt{display:block;margin-top:6px;color:#1d7a45;font-weight:600}
 .klein-knopf.breit{width:100%;min-height:46px;margin-top:-4px;border:2px solid var(--hell)}
 .klein-knopf.breit[hidden]{display:none}
+
+/* Online-Kontrolle in der Beitragsliste */
+.marke.online{background:#dff3e6;color:#1d7a45}
+.marke.unterwegs{background:#fff4d6;color:#7a5600}
+.marke.fehlt{background:#fde3e1;color:#a5281d}
+[data-liste] li:has(.marke.online){box-shadow:inset 4px 0 0 #2e9e5b}

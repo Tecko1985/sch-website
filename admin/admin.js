@@ -191,7 +191,65 @@
       $('small', li).textContent = datumDe(d.datum) + ' · ' + (d.rubrik || 'News');
       if (d.entwurf) { var m = document.createElement('span'); m.className = 'marke'; m.textContent = 'Entwurf'; $('b', li).appendChild(m); }
       else if (istGeplant(d)) { var g = document.createElement('span'); g.className = 'marke geplant'; g.textContent = 'Geplant ' + planText(d.geplant); $('b', li).appendChild(g); }
+      else { li.dataset.pruefen = b.slug; }
       ul.appendChild(li);
+    });
+    pruefeOnline(0);
+  }
+
+  // ---------------------------------------------------------------- Online-Kontrolle
+  // Jeder veröffentlichte Beitrag wird auf der echten Website abgerufen: Seite da und Titel aktuell
+  // = grün „Online“. Noch nicht da (Seite wird gebaut) = gelb, dann alle 20 Sekunden erneut prüfen.
+  var pruefZeit = null;
+  function seitenTitel(html) {
+    var m = html.match(/<title>([\s\S]*?)<\/title>/i);
+    if (!m) return '';
+    var t = document.createElement('textarea');
+    t.innerHTML = m[1];
+    return t.value.replace(/\s+·\s+1\. SC 1911 Heiligenstadt\s*$/, '').trim();
+  }
+  function setzeMarke(li, art, text, hinweis) {
+    var m = li.querySelector('.marke.online, .marke.unterwegs, .marke.fehlt');
+    if (!m) { m = document.createElement('span'); $('b', li).appendChild(m); }
+    m.className = 'marke ' + art;
+    m.textContent = text;
+    m.title = hinweis || '';
+  }
+  function pruefeOnline(runde) {
+    clearTimeout(pruefZeit);
+    var offen = Array.prototype.slice.call(document.querySelectorAll('[data-liste] li[data-pruefen]')).slice(0, 25);
+    if (!offen.length) return;
+    var uhr = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    Promise.all(offen.map(function (li) {
+      var b = beitraege.filter(function (x) { return x.slug === li.dataset.pruefen; })[0];
+      if (!b) return Promise.resolve(true);
+      return fetch(SEITE + 'seiten/beitrag-' + b.slug + '.html', { cache: 'no-store' }).then(function (r) {
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(r.status);
+        return r.text();
+      }).then(function (html) {
+        if (html === null) {
+          setzeMarke(li, 'unterwegs', 'Wird veröffentlicht …', 'Die Seite ist noch nicht online (Seitenbau läuft). Geprüft ' + uhr + ' Uhr.');
+          return false;
+        }
+        if (seitenTitel(html) !== (b.daten.titel || '').trim()) {
+          setzeMarke(li, 'unterwegs', 'Änderung wird veröffentlicht …', 'Online steht noch die vorige Fassung. Geprüft ' + uhr + ' Uhr.');
+          return false;
+        }
+        setzeMarke(li, 'online', '✓ Online', 'Auf der Website geprüft um ' + uhr + ' Uhr.');
+        delete li.dataset.pruefen;
+        return true;
+      }).catch(function () { return true; }); // Website nicht erreichbar (z. B. lokal): keine Marke
+    })).then(function (ergebnisse) {
+      // Was noch fehlt: weiter prüfen (bis etwa 15 Minuten)
+      if (ergebnisse.some(function (x) { return x === false; }) && runde < 45) {
+        pruefZeit = setTimeout(function () { pruefeOnline(runde + 1); }, 20000);
+      } else if (runde >= 45) {
+        document.querySelectorAll('[data-liste] li[data-pruefen] .marke.unterwegs').forEach(function (m) {
+          m.className = 'marke fehlt';
+          m.textContent = 'Nicht online – bitte melden';
+        });
+      }
     });
   }
 
