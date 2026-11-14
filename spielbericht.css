@@ -233,3 +233,9 @@
 #sb-vorbericht .sb-artikel p{font-size:clamp(17px,1.25vw,20px);line-height:1.75}
 #sb-vorbericht .sb-artikel p.sb-vorspann{font-size:clamp(18px,1.35vw,21px);font-weight:700}
 #sb-vorbericht .sb-artikel h3.stitel{font-size:clamp(22px,2vw,30px)}
+
+/* Liveticker: FuPa-Ereignisse (Gelbe Karte, Pfiffe, Wechsel) */
+.sb-karte.gelb{background:var(--gelb)}
+.sb-ereignisse .pfiff .sb-minute{background:var(--tief);color:#fff}
+.sb-ereignisse .karte h3,.sb-ereignisse .wechsel h3{font-size:18px}
+.sb-ereignisse li > div > p:only-child{font-size:16px;color:inherit;padding-top:6px}

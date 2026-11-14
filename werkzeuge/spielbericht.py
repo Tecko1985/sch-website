@@ -376,6 +376,43 @@ def galerie(bilder, titel):
     return f'<h2 class="sb-h2 stitel">Das Spiel in Bildern</h2>\n<div class="sb-galerie">{knoepfe}</div>'
 
 
+FUPA_KLASSE = {"tor": "tor", "pfiff": "pfiff", "wechsel": "wechsel", "karte": "karte", "gelb": "karte"}
+FUPA_ZEICHEN = {"wechsel": '<span class="sb-wechsel" aria-hidden="true">⇄</span> ',
+                "karte": '<span class="sb-karte" aria-hidden="true"></span>',
+                "gelb": '<span class="sb-karte gelb" aria-hidden="true"></span>'}
+_FUPA_SPIELE = {}
+
+
+def fupa_eintraege(s):
+    """FuPa-Ticker zum Spiel: über den Ticker-Link aus der Redaktion, sonst über Datum und Gegner
+    in den Spielen der 1. und 2. Mannschaft. Ohne Netz oder ohne Treffer: leere Liste."""
+    try:
+        import fupa_ticker
+    except ImportError:
+        return [], ""
+    slug = fupa_ticker.slug_aus_link(s.sp.get("ticker_link"))
+    try:
+        if not slug and s.da:
+            worte = [w for w in _worte(s.gegner) if len(w) > 3] or list(_worte(s.gegner))
+            j, mo = int(s.spieldatum[:4]), int(s.spieldatum[5:7])
+            saison = f"{j}-{str(j + 1)[2:]}" if mo >= 7 else f"{j - 1}-{str(j)[2:]}"
+            for team in ("m1", "m2"):
+                schluessel = f"{team}-{saison}"
+                if schluessel not in _FUPA_SPIELE:
+                    _FUPA_SPIELE[schluessel] = fupa_ticker.hole_json(
+                        f"{fupa_ticker.API}/v1/teams/1-sc-1911-heiligenstadt-{schluessel}/matches?flavor=past&limit=40")
+                m = fupa_ticker.finde_spiel(_FUPA_SPIELE[schluessel], s.spieldatum, worte)
+                if m:
+                    slug = m["slug"]
+                    break
+        if not slug:
+            return [], ""
+        return fupa_ticker.ereignisse(fupa_ticker.stream(slug)), f"https://www.fupa.net/match/{slug}"
+    except Exception as fehler:  # FuPa nicht erreichbar: Ticker aus den Spieldaten
+        print(f"  FuPa-Ticker nicht geladen ({fehler})")
+        return [], ""
+
+
 def ticker(s, fazit):
     sp = s.sp
     link = (sp.get("ticker_link") or "").strip()
@@ -398,9 +435,15 @@ def ticker(s, fazit):
         kopf, text = teile[1], " | ".join(teile[2:])
         kl = "tor" if re.match(r"^tor\b", kopf, re.I) else ""
         eigene.append((m[0], m[1], kl, e(kopf), e(text), stand_bei(m[0]) if s.da else ""))
+    fupa, fupa_link = ([], "") if eigene else fupa_eintraege(s)
     if eigene:
         eintraege = eigene
         quelle = "Spielverlauf aus der Redaktion."
+    elif fupa:
+        eintraege = [(x["sort"], x["min"], FUPA_KLASSE.get(x["art"], ""), FUPA_ZEICHEN.get(x["art"], "") + e(x["kopf"]),
+                      e(x["text"]), x["stand"]) for x in fupa]
+        quelle = "Liveticker von FuPa."
+        link = link or fupa_link
     elif s.da:
         quelle = "Spielverlauf aus den Spieldaten des Spielberichts."
         eintraege.append((1, "1", "", "Anpfiff", "Der Ball rollt" + (f" – {e(sp['spielort'])}." if sp.get("spielort") else "."), "0:0"))
@@ -426,8 +469,9 @@ def ticker(s, fazit):
     else:
         quelle = ""
     eintraege.sort(key=lambda x: x[0], reverse=True)
-    li = "".join(f'<li class="{kl}"><span class="sb-minute">{lab}\'</span><div><h3 class="stitel">{kopf}</h3><p>{text}</p></div>'
-                 f'<span class="stand">{st}</span></li>' for _, lab, kl, kopf, text, st in eintraege)
+    li = "".join(f'<li class="{kl}"><span class="sb-minute">{lab}\'</span><div>'
+                 + (f'<h3 class="stitel">{kopf}</h3>' if kopf else "") + (f"<p>{text}</p>" if text else "")
+                 + f'</div><span class="stand">{st}</span></li>' for _, lab, kl, kopf, text, st in eintraege)
     kopf = (f'<div class="sb-tickerkopf"><b>Abpfiff</b><span>Endstand {s.stand(s.end)}</span></div>' if s.end
             else '<div class="sb-tickerkopf"><b>Liveticker</b><span></span></div>')
     fz = f'<p class="sb-tickerfazit">{e(fazit)}</p>' if fazit else ""
@@ -598,3 +642,21 @@ def baue(d, vorlage, alle_beitraege, adresse):
     seite = pfade_fuer_seiten(kopf + main + fuss)
     # og:-Adressen sind absolut und bleiben; der Link auf die Vorberichtsseite liegt danach unter ../seiten/
     return seite, vb
+
+
+def live_seite(vorlage, adresse):
+    """seiten/live.html: Live-Ticker (Inhalt kommt von live.js) im Rahmen der Spielbericht-Seiten."""
+    kopf = vorlage[:vorlage.find('<main class="sb">')]
+    fuss = vorlage[vorlage.find("</main>") + len("</main>"):]
+    titel = "Liveticker · 1. SC 1911 Heiligenstadt"
+    beschreibung = "Die Spiele des SCH live: Spielstand, Tore, Wechsel und Karten aus dem FuPa-Liveticker."
+    kopf = re.sub(r"<title>.*?</title>", f"<title>{titel}</title>", kopf, count=1, flags=re.S)
+    kopf = re.sub(r'(<meta name="description" content=")[^"]*', lambda m: m.group(1) + beschreibung, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:title" content=")[^"]*', lambda m: m.group(1) + titel, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:description" content=")[^"]*', lambda m: m.group(1) + beschreibung, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:url" content=")[^"]*', lambda m: m.group(1) + adresse + "seiten/live.html", kopf, count=1)
+    kopf = kopf.replace("</head>", '<link rel="stylesheet" href="live.css?v=1">\n</head>', 1)
+    main = ('<main class="sb lv-seite">\n<header class="lv-kopf"><p>1. SC 1911 Heiligenstadt</p><h1 class="stitel">Liveticker</h1></header>\n'
+            '<div id="sch-live-seite"><noscript><p>Der Liveticker braucht JavaScript.</p></noscript></div>\n'
+            '<script src="live.js?v=1" data-basis="../" defer></script>\n</main>')
+    return pfade_fuer_seiten(kopf + main + fuss)

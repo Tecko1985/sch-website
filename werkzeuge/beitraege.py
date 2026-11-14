@@ -352,6 +352,8 @@ def main():
     sb_vorlage = open(os.path.join(REPO, SB_VORLAGE), encoding="utf-8").read()
     # Spielberichte im Erfurt-Aufbau; dabei merken, welcher Vorbericht zu welchem Spielbericht gehört
     zum_bericht = {}
+    # Live-Ticker-Seite (Inhalt lädt live.js) im selben Rahmen wie die Spielberichte
+    open(os.path.join(ziel, "seiten", "live.html"), "w", encoding="utf-8").write(spielbericht.live_seite(sb_vorlage, ADRESSE))
     for d in beitraege:
         if d.get("rubrik") == "Spielbericht":
             seite, vb = spielbericht.baue(d, sb_vorlage, beitraege, ADRESSE)

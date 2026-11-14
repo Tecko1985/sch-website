@@ -1,0 +1,47 @@
+# Live-Ticker waehrend der Spiele (FuPa-Ticker im SCH-Design, Startseite + seiten/live.html).
+# Alle 10 Minuten wird geschaut, ob ein SCH-Spiel mit FuPa-Liveticker ansteht (45 Min. vor Anpfiff)
+# oder laeuft. Dann fragt werkzeuge/live.py bis 15 Min. nach Abpfiff jede Minute FuPa ab und legt
+# ticker.json auf den Branch "live" (eine Datei, Verlauf wird jedes Mal ersetzt). Die Website liest
+# die Datei ueber GitHub; Besucher fragen nie selbst bei FuPa an.
+# Ein Push mit dem GITHUB_TOKEN startet keine anderen Ablaeufe; "Seite bauen" laeuft nur auf main.
+# Keine Secrets, keine Zusatzpakete.
+name: Live-Ticker
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Immer nur ein Lauf; weitere warten (und beenden sich sofort, wenn das Spiel schon vorbei ist)
+concurrency:
+  group: live
+  cancel-in-progress: false
+
+jobs:
+  ticker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    permissions:
+      contents: write   # Branch "live" schreiben
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Steht ein Spiel mit Liveticker an?
+        id: pruefen
+        run: python werkzeuge/live.py pruefen
+
+      - name: Ticker mitschreiben
+        if: steps.pruefen.outputs.aktiv == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONUNBUFFERED: '1'
+        run: python werkzeuge/live.py laufen
