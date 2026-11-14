@@ -9,6 +9,8 @@ Reiter ohne Inhalt fallen weg. Alle Pfade werden hier vom Hauptordner aus geschr
 am Ende für seiten/ umgeschrieben.
 """
 import html
+import json
+import os
 import re
 
 SCH = "1. SC 1911 Heiligenstadt"
@@ -96,6 +98,34 @@ def aufstellung(text):
     return spieler
 
 
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FUELLWOERTER = {"fc", "sv", "tsv", "fsv", "sg", "bsv", "jfc", "jsg", "spvgg", "sc", "vfb", "vfl", "ssv", "jfv", "e.v.", "1."}
+
+
+def _worte(name):
+    return {w for w in re.split(r"[\s/\-.]+", (name or "").lower()) if len(w) > 2 and w not in FUELLWOERTER and not w.isdigit()}
+
+
+def wappen_fuer(gegner):
+    """Passendes Vereinswappen aus assets/wappen/wappen.json (von werkzeuge/spiele.py gefüllt)."""
+    try:
+        namen = json.load(open(os.path.join(REPO, "assets/wappen/wappen.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    gesucht = _worte(gegner)
+    if not gesucht:
+        return None
+    bester, punkte = None, 0
+    for name, datei in namen.items():
+        w = _worte(name)
+        treffer = len(w & gesucht)
+        # mehr gemeinsame Wörter gewinnt; bei Gleichstand der Name mit weniger fremden Wörtern
+        wert = treffer * 10 - len(w - gesucht)
+        if treffer and wert > punkte and os.path.exists(os.path.join(REPO, "assets/wappen", datei)):
+            bester, punkte = datei, wert
+    return f"assets/wappen/{bester}" if bester else None
+
+
 class Spiel:
     def __init__(self, sp, d):
         self.sp = sp
@@ -117,7 +147,8 @@ class Spiel:
         self.end = (es, eg) if es is not None and eg is not None else None
         self.hz = (hs, hg) if hs is not None and hg is not None else None
         self.spieldatum = sp.get("spieldatum") or d["datum"]
-        self.wappen = sp.get("wappen") if BILDPFAD.match(sp.get("wappen") or "") else LEER_WAPPEN
+        # Eigenes Wappen aus der Redaktion, sonst das Vereinswappen aus assets/wappen/ (über den Namen), sonst neutral
+        self.wappen = (sp.get("wappen") if BILDPFAD.match(sp.get("wappen") or "") else None) or wappen_fuer(self.gegner) or LEER_WAPPEN
 
     def teams_aus_spielstand(self, sp):
         """Stehen alle Tore im Vereinsformat („1:1 Kurth (31.)“) da, ergibt der Spielstand,

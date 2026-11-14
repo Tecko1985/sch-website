@@ -108,6 +108,16 @@ def hole(url):
 WAPPEN_ORDNER = "assets/wappen"
 
 
+WAPPEN_NAMEN = os.path.join(REPO, WAPPEN_ORDNER, "wappen.json")  # Vereinsname -> Datei, für die Spielbericht-Seiten
+NAMEN = {}
+
+
+def merke_namen(team, datei):
+    for n in (teamname(team), (team.get("club") or {}).get("name"), (team.get("name") or {}).get("middle") if isinstance(team.get("name"), dict) else None):
+        if n and "heiligenstadt" not in n.lower():
+            NAMEN[n] = datei
+
+
 def lade_wappen(team):
     """Vereinswappen des Gegners von FuPa als PNG (200 x 200) nach assets/wappen/<verein>.png; gibt den Pfad zurück."""
     verein = (team.get("club") or {}).get("slug") or team.get("clubSlug") or ""
@@ -127,6 +137,7 @@ def lade_wappen(team):
             return None
         os.makedirs(os.path.dirname(ziel), exist_ok=True)
         open(ziel, "wb").write(daten)
+    merke_namen(team, os.path.basename(pfad))
     return pfad
 
 
@@ -229,6 +240,15 @@ def aktualisiere_startseite(pfad=None):
     bekannt, links = bekannte_kuerzel(block), bekannte_links(block)
     spiele = spiele_von_fupa()
     heute = datetime.date.today().isoformat()
+    # Wappen aller Gegner der Saison sammeln (auch für Spielberichte, deren Spiel nicht mehr auf einer Karte steht)
+    if os.path.exists(WAPPEN_NAMEN):
+        NAMEN.update(json.load(open(WAPPEN_NAMEN, encoding="utf-8")))
+    for m in spiele:
+        seite, team = sch_team(m)
+        if seite:
+            lade_wappen(m["awayTeam"] if seite == "homeTeam" else m["homeTeam"])
+    os.makedirs(os.path.dirname(WAPPEN_NAMEN), exist_ok=True)
+    json.dump(dict(sorted(NAMEN.items())), open(WAPPEN_NAMEN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     neu = block
     for reiter_id, regel in REITER.items():
         karten, start = baue_reiter(spiele, reiter_id, regel, bekannt, links, heute)
