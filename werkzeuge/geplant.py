@@ -29,7 +29,8 @@ def ist_live(seite):
         return True  # im Zweifel nichts anstoßen
 
 
-def main():
+def faellige():
+    """Geplante Beiträge, deren Termin erreicht ist (höchstens 3 Tage her), die aber noch nicht online sind."""
     jetzt = jetzt_berlin()
     frueheste = (datetime.datetime.strptime(jetzt, "%Y-%m-%dT%H:%M") - datetime.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M")
     faellig = []
@@ -44,6 +45,12 @@ def main():
         slug = os.path.basename(pfad)[:-5]
         if not ist_live(f"beitrag-{slug}.html"):
             faellig.append(f"{geplant}  {d.get('titel') or slug}")
+    return faellig
+
+
+def main():
+    jetzt = jetzt_berlin()
+    faellig = faellige()
     if faellig:
         print("Fällig, aber noch nicht online:\n  " + "\n  ".join(faellig))
     else:

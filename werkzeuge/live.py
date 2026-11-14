@@ -21,7 +21,7 @@ import spiele  # noqa: E402
 import spielbericht  # noqa: E402
 
 VORLAUF = datetime.timedelta(minutes=45)      # so lange vor Anpfiff geht es los
-SPIELDAUER = datetime.timedelta(minutes=150)  # danach gilt ein Spiel ohne FuPa-Ende als vorbei
+SPIELDAUER = datetime.timedelta(minutes=180)  # danach gilt ein Spiel ohne FuPa-Ende als vorbei
 NACHLAUF = datetime.timedelta(minutes=15)     # so lange nach Abpfiff läuft der Ablauf weiter
 HOECHSTENS = datetime.timedelta(hours=5)
 TAKT = 60  # Sekunden
@@ -140,8 +140,7 @@ def laufen():
     while jetzt() - start < HOECHSTENS:
         if zuletzt is None or jetzt() - zuletzt > datetime.timedelta(minutes=10):
             try:  # Spielliste alle 10 Minuten neu (z. B. Anpfiff eines weiteren Spiels)
-                neu = anstehende()
-                liste = neu + [x for x in liste if x not in neu]
+                liste = anstehende()
             except Exception as fehler:
                 print(f"Spielliste nicht geladen: {fehler}", file=sys.stderr)
             zuletzt = jetzt()
@@ -176,8 +175,9 @@ def laufen():
 def main():
     art = sys.argv[1] if len(sys.argv) > 1 else "probe"
     if art == "pruefen":
-        liste = [x for x in anstehende() if mit_ticker(fupa_ticker.spiel(x[0]))]
-        print("Anstehend mit Ticker:", liste or "nichts")
+        # Auch ohne (schon reservierten) FuPa-Ticker: laufen() wartet, bis einer kommt oder das Spiel vorbei ist
+        liste = anstehende()
+        print("Anstehend:", liste or "nichts")
         if os.environ.get("GITHUB_OUTPUT"):
             with open(os.environ["GITHUB_OUTPUT"], "a") as f:
                 f.write(f"aktiv={'1' if liste else '0'}\n")

@@ -133,3 +133,5 @@ input:focus,select:focus,textarea:focus,.text:focus{outline:none;border-color:va
 
 /* Mannschaft automatisch erkannt (Spieldaten) */
 .erkannt{display:block;margin-top:6px;color:#1d7a45;font-weight:600}
+.klein-knopf.breit{width:100%;min-height:46px;margin-top:-4px;border:2px solid var(--hell)}
+.klein-knopf.breit[hidden]{display:none}

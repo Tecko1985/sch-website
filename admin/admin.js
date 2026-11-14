@@ -276,6 +276,7 @@
   function planText(iso) { return datumDe(iso.slice(0, 10)).slice(0, 6) + ' ' + iso.slice(11, 16) + ' Uhr'; }
   function zeigePlanung() {
     $('[data-planenzeit]').hidden = !form.planen.checked;
+    $('[data-planenknopf]').hidden = form.planen.checked;
     if (form.planen.checked && !form.plan_datum.value) {
       var morgen = new Date(Date.now() + 864e5);
       form.plan_datum.value = new Date(morgen - morgen.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -283,6 +284,15 @@
     aktualisiereKnopf();
   }
   form.planen.addEventListener('change', zeigePlanung);
+  // Eigener Knopf unter „Veröffentlichen“: schaltet die Planung ein und springt zu Datum/Uhrzeit
+  $('[data-planenknopf]').addEventListener('click', function () {
+    form.planen.checked = true;
+    form.entwurf.checked = false;
+    zeigePlanung();
+    aktualisiereKnopf();
+    form.plan_datum.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(function () { form.plan_datum.focus(); }, 300);
+  });
   [form.plan_datum, form.plan_zeit].forEach(function (f) { f.addEventListener('change', aktualisiereKnopf); });
 
   function aktualisiereKnopf() {

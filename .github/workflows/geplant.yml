@@ -1,4 +1,5 @@
-# Geplante Beitraege aus der Redaktion zum Termin online stellen.
+# Geplante Beitraege aus der Redaktion zum Termin online stellen (Rueckfallebene; puenktlich startet
+# "Seite bauen" der Zeitplan-Waechter .github/workflows/zeitplan.yml).
 # Die Redaktion speichert bei "Veroeffentlichung planen" das Feld "geplant" (deutsche Zeit). Der Seitenbau
 # (werkzeuge/beitraege.py) zeigt solche Beitraege erst ab dem Termin. Dieser Ablauf schaut alle 15 Minuten
 # nach, ob ein Termin erreicht ist und die Beitragsseite noch fehlt -- dann startet er "Seite bauen"

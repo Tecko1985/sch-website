@@ -1,0 +1,47 @@
+# Zeitplan-Waechter: startet "Seite bauen" genau zum Termin eines geplanten Redaktionsbeitrags und den
+# "Live-Ticker" 45 Minuten vor jedem SCH-Spiel. GitHubs cron-Zeitplaene starten oft stark verspaetet oder
+# gar nicht (14.11.2026: "alle 15 Minuten" lief nur einmal in 12 Stunden) -- deshalb wartet dieser Ablauf
+# selbst bis zum Termin (werkzeuge/zeitplan.py).
+# Startet bei jedem Push auf main neu (z. B. wenn die Redaktion einen Beitrag plant); der neue Lauf ersetzt
+# den alten. Vor Ablauf der 6-Stunden-Grenze startet er sich selbst neu. Der stuendliche cron ist nur die
+# Rueckfallebene, falls die Kette einmal reisst.
+# Keine Secrets; GITHUB_TOKEN nur zum Starten der anderen Ablaeufe.
+name: Zeitplan
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zeitplan
+  cancel-in-progress: true
+
+jobs:
+  warten:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    permissions:
+      contents: read
+      actions: write   # andere Ablaeufe starten
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+
+      - run: pip install --quiet tzdata==2026.4
+
+      - name: Auf den naechsten Termin warten
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONUNBUFFERED: '1'
+        run: python werkzeuge/zeitplan.py

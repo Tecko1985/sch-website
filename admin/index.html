@@ -7,7 +7,7 @@
 <title>Redaktion · 1. SC 1911 Heiligenstadt</title>
 <meta name="theme-color" content="#1b2d4f">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
-<link rel="stylesheet" href="admin.css?v=2026111502">
+<link rel="stylesheet" href="admin.css?v=2026111503">
 </head>
 <body>
 <header class="kopf">
@@ -195,11 +195,12 @@
           <div class="planen-zeit" data-planenzeit hidden>
             <label>Datum<input type="date" name="plan_datum"></label>
             <label>Uhrzeit<input type="time" name="plan_zeit" value="18:00"></label>
-            <p class="vorlagen-tipp">Der Beitrag erscheint automatisch zu diesem Zeitpunkt auf der Seite (höchstens etwa 15 bis 20 Minuten später).</p>
+            <p class="vorlagen-tipp">Der Beitrag erscheint automatisch zu diesem Zeitpunkt auf der Seite (etwa 1 bis 2 Minuten später).</p>
           </div>
         </div>
         <label class="haken"><input type="checkbox" name="entwurf"><span>Nur als Entwurf speichern (noch nicht auf der Seite zeigen)</span></label>
         <button type="submit" class="knopf breit" data-speichern>Veröffentlichen</button>
+        <button type="button" class="klein-knopf breit" data-planenknopf>Für später planen (Datum und Uhrzeit)</button>
         <p class="meldung" role="status" data-editormeldung></p>
         <button type="button" class="loeschen" data-loeschen hidden>Beitrag löschen</button>
       </aside>
@@ -224,6 +225,6 @@
   </form>
 </dialog>
 
-<script src="admin.js?v=11"></script>
+<script src="admin.js?v=12"></script>
 </body>
 </html>
