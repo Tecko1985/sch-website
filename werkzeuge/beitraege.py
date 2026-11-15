@@ -106,7 +106,21 @@ def saeubern(roh):
     t = s.ergebnis()
     if t and not t.startswith("<"):
         t = f"<p>{t}</p>"
-    return t
+    return zwischentitel(t)
+
+
+def zwischentitel(t):
+    """Fette Zeile am Absatzanfang (<p><strong>Titel</strong><br>Text</p> oder allein im Absatz) als <h3>.
+
+    So stehen Zwischenüberschriften aus WordPress/Redaktion als echte Überschriften im Beitrag.
+    Zitate („…“) und lange fette Sätze bleiben, wie sie sind."""
+    def ersetze(m):
+        titel = m.group(1).replace(" ", " ").strip()
+        rest = (m.group(2) or "").strip()
+        if not titel or len(titel) > 110 or titel[0] in "„\"»“'" or titel.endswith((".", "!", "?")) and len(titel) > 70:
+            return m.group(0)
+        return f"<h3>{titel}</h3>\n" + (f"<p>{rest}</p>" if rest else "")
+    return re.sub(r"<p>\s*<strong>([^<]+)</strong>\s*(?:<br\s*/?>\s*((?:(?!</p>).)*?))?</p>", ersetze, t, flags=re.S)
 
 
 # ---------------------------------------------------------------- Hilfen
