@@ -45,3 +45,36 @@
 
 /* Newsletter-Titel in der Hausschrift wie alle anderen Sektionstitel */
 :is(#top,body) .nl-band h2{font-family:'SCH Barlow',Impact,'Arial Narrow',sans-serif;font-weight:700;font-stretch:normal;line-height:1.05;letter-spacing:-.5px}
+
+/* ---- Neu 15.11.2026: Startseite unten wie ein Fußbereich (runde Social-Symbole + zwei Knöpfe) ---- */
+.nl-band.nl-neu{background:#fff;color:#1b2d4f;padding:72px 5% 80px;border-top:1px solid #dce3ec}
+.nl-neu .nl-mitte{max-width:1000px;margin:0 auto;text-align:center}
+.nl-neu .eyebrow{color:#56627a!important}
+.nl-neu h2{color:#1b2d4f!important;margin-top:8px}
+.nl-neu>div>p{color:#56627a!important;max-width:620px;margin:14px auto 0!important;font-size:17px}
+.nl-social{display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(14px,3vw,32px);margin:36px 0 34px}
+.nl-social a{display:grid;place-items:center;width:clamp(64px,8vw,96px);aspect-ratio:1;border-radius:50%;background:#1b2d4f;color:#fff;transition:transform .2s,background .2s}
+.nl-social a:hover,.nl-social a:focus-visible{background:#2c4a7e;transform:translateY(-3px)}
+.nl-social svg{width:46%;height:46%;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.nl-social svg .voll{fill:currentColor;stroke:none}
+.nl-knoepfe{display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(14px,3vw,40px)}
+.nl-knopf{display:inline-flex;align-items:center;justify-content:center;min-width:min(100%,330px);min-height:66px;padding:0 30px;border:2px solid #1b2d4f;border-radius:6px;
+  color:#1b2d4f!important;text-decoration:none!important;font:700 clamp(19px,2vw,25px)/1 "SCH Barlow","Arial Narrow",Impact,sans-serif;text-transform:uppercase;letter-spacing:.4px;transition:background .2s,color .2s}
+.nl-knopf:hover,.nl-knopf:focus-visible{background:#1b2d4f;color:#fff!important}
+
+/* ---- Anmeldeseite newsletter.html: schlicht wie eine Anmeldemaske ---- */
+.nl-anmeldung{background:#eef2f8;padding:clamp(32px,6vw,80px) 16px}
+.nl-karte{max-width:520px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 10px 40px #1b2d4f1f;padding:clamp(28px,5vw,48px) clamp(20px,4vw,44px);text-align:center;color:#1b2d4f}
+.nl-wappen{width:88px;height:auto;margin:0 auto 18px}
+.nl-karte h1{font:700 clamp(30px,5vw,40px)/1.1 "SCH Barlow","Arial Narrow",Impact,sans-serif;text-transform:uppercase;margin:0 0 10px;color:#1b2d4f}
+.nl-unterzeile{margin:0 auto 22px;color:#56627a;font-size:16px;line-height:1.5}
+.nl-karte .nl-form{padding:0;background:transparent;text-align:left;gap:14px}
+.nl-unsichtbar-label>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nl-karte .nl-form input[type=email],.nl-karte .nl-form input[type=text]{min-height:56px;padding:0 18px;border:1.5px solid #8a94a6;border-radius:8px;font-size:17px}
+.nl-karte .nl-form input:focus{outline:3px solid #aac7ed;border-color:#1b2d4f}
+.nl-karte .nl-form button[type=submit]{min-height:56px;border-radius:8px;font-size:18px}
+.nl-schritte{margin:18px 0 0;font-size:14px;color:#56627a;line-height:1.5}
+.nl-abmelden{margin-top:26px;padding-top:18px;border-top:1px solid #dce3ec;text-align:left}
+.nl-abmelden summary{cursor:pointer;text-align:center;font-size:14px;color:#56627a;text-decoration:underline}
+.nl-abmelden p{font-size:14px;color:#56627a;margin:12px 0}
+.nl-karte .nl-ergebnis{text-align:left;margin-bottom:22px}

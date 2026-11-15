@@ -73,6 +73,10 @@
     }).catch(function () { /* ohne Hinweis geht die Anmeldung trotzdem */ });
   }
 
+  // newsletter.html#abmelden: Abmelde-Kasten gleich aufklappen
+  var abmeldenKasten = document.querySelector('details.nl-abmelden');
+  if (abmeldenKasten && location.hash === '#abmelden') abmeldenKasten.open = true;
+
   // newsletter.html?bestaetigen=… und ?abmelden=… (Links aus den Mails)
   var ergebnis = document.getElementById('nl-ergebnis');
   if (!ergebnis) return;
