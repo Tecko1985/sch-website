@@ -160,3 +160,16 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-social .sch-socialcaption h3{font-size:clamp(30px,2.3vw,42px);line-height:1.12}
   :is(#top,body) .sch-social .sch-socialcaption a,:is(#top,body) .sch-social .sch-socialcta{font-size:16px}
 }
+
+/* Handy quer (wenig Höhe): Menüleiste kompakter, Begrüßung höher, Karten überlappen nur noch leicht –
+   sonst schoben sich die Beitragskarten über Menü und Überschrift. */
+@media (orientation:landscape) and (max-height:500px){
+  :is(#top,body) .sch-home .sch-rail{top:14px;width:58px;padding:4px;border-radius:14px}
+  :is(#top,body) .sch-home .sch-rail>a,:is(#top,body) .sch-home .sch-rail>button{height:46px;gap:3px;font-size:9px;letter-spacing:.6px;border-radius:10px}
+  :is(#top,body) .sch-home .sch-rail svg{width:18px;height:18px}
+  :is(#top,body) .sch-home .sch-rail .sch-crest{height:54px;margin-bottom:4px}
+  :is(#top,body) .sch-home .sch-toptools{top:14px}
+  :is(#top,body) .sch-home .sch-wordmark{bottom:58px;left:96px}
+  :is(#top,body) .sch-home .sch-wordmark h1{font-size:30px}
+  :is(#top,body) .sch-home .sch-latest{margin-top:-40px}
+}
