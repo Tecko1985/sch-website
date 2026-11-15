@@ -3,18 +3,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>body{margin:0}
+html{color-scheme:light}
 /* Layout: Vereinskopf in Navy, darunter Schnellzugriff-Leiste und ein Raster aus Bausteinen; jeder Baustein mit „Warum?“-Notiz */
 :root{
-  --navy:#1b2d4f; --tief:#13233e; --hell:#aac7ed; --flaeche:#eef2f8; --karte:#ffffff; --text:#1b2d4f; --grau:#56627a; --linie:#dce3ec;
+  --navy:#1b2d4f; --tief:#13233e; --hell:#aac7ed; --flaeche:#ffffff; --zart:#f3f6fb; --karte:#ffffff; --text:#1b2d4f; --grau:#56627a; --linie:#dce3ec;
   --gut:#1d7a45; --gut-bg:#dff3e6; --warn:#7a5600; --warn-bg:#fff4d6; --rot:#a5281d; --rot-bg:#fde3e1; --notiz:#f6f1df; --notiz-text:#5b4a12;
   --kopf:"Barlow Condensed","Arial Narrow",Impact,sans-serif; --koerper:"Barlow",Arial,sans-serif;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --flaeche:#0f1a2e; --karte:#17253f; --text:#e6edf8; --grau:#a3b1c9; --linie:#2a3b5c; --hell:#9ebde8;
-  --gut:#7fd6a2; --gut-bg:#16392a; --warn:#f2cf78; --warn-bg:#3a3018; --rot:#f4a39b; --rot-bg:#43201d; --notiz:#2c2716; --notiz-text:#e9da9c; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --flaeche:#0f1a2e; --karte:#17253f; --text:#e6edf8; --grau:#a3b1c9; --linie:#2a3b5c; --hell:#9ebde8;
-  --gut:#7fd6a2; --gut-bg:#16392a; --warn:#f2cf78; --warn-bg:#3a3018; --rot:#f4a39b; --rot-bg:#43201d; --notiz:#2c2716; --notiz-text:#e9da9c; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--flaeche);color:var(--text);font:16px/1.5 var(--koerper)}
 .huelle{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -46,19 +41,19 @@ button{font:inherit;cursor:pointer}
 .umschalter{display:inline-flex;align-items:center;gap:10px;font-weight:700;background:var(--karte);border:1px solid var(--linie);border-radius:999px;padding:8px 16px;color:var(--text)}
 .umschalter span{width:38px;height:22px;border-radius:999px;background:var(--linie);position:relative;transition:background .2s}
 .umschalter span::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
-.umschalter[aria-pressed="true"] span{background:var(--gut)}
+.umschalter[aria-pressed="true"] span{background:var(--navy)}
 .umschalter[aria-pressed="true"] span::after{transform:translateX(16px)}
 
 /* Schnellzugriff */
 .schnell{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px}
-.schnell a{display:flex;flex-direction:column;gap:2px;padding:14px 16px;background:var(--karte);border:1px solid var(--linie);border-radius:10px;text-decoration:none}
+.schnell a{display:flex;flex-direction:column;gap:2px;padding:14px 16px;background:var(--karte);border:1px solid var(--linie);border-left:4px solid var(--navy);border-radius:10px;text-decoration:none}
 .schnell b{font-family:var(--kopf);font-size:20px;text-transform:uppercase}
 .schnell span{font-size:13px;color:var(--grau)}
-.schnell a:hover{border-color:var(--hell)}
+.schnell a:hover{background:var(--zart)}
 
 /* Raster */
 .raster{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px;padding-bottom:48px}
-.baustein{grid-column:span 6;background:var(--karte);border:1px solid var(--linie);border-radius:12px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-width:0;scroll-margin-top:16px}
+.baustein{grid-column:span 6;background:var(--karte);border:1px solid var(--linie);border-top:4px solid var(--navy);border-radius:10px;box-shadow:0 6px 18px rgba(27,45,79,.07);padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-width:0;scroll-margin-top:16px}
 .baustein.breit{grid-column:span 12}
 .baustein.drittel{grid-column:span 4}
 .baustein.zweidrittel{grid-column:span 8}
@@ -108,7 +103,7 @@ body.erklaert .warum{display:block}
 
 /* Daten */
 .daten{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0}
-.daten div{background:var(--flaeche);border-radius:8px;padding:10px 12px}
+.daten div{background:var(--zart);border-radius:8px;padding:10px 12px}
 .daten dt{font-size:12px;color:var(--grau);text-transform:uppercase;letter-spacing:.6px}
 .daten dd{margin:2px 0 0;font-weight:600;overflow-wrap:anywhere}
 
@@ -117,19 +112,19 @@ body.erklaert .warum{display:block}
 .vorteil{border:1.5px dashed var(--linie);border-radius:10px;padding:12px 14px}
 .vorteil b{display:block;font:700 22px/1 var(--kopf);text-transform:uppercase}
 .vorteil span{font-size:14px;color:var(--grau)}
-.code{display:inline-block;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:13px;background:var(--flaeche);padding:2px 8px;border-radius:4px}
+.code{display:inline-block;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:13px;background:var(--zart);padding:2px 8px;border-radius:4px}
 
 /* Schalter-Zeilen */
 .schalter li{grid-template-columns:1fr auto}
 .kipp{width:44px;height:26px;border-radius:999px;border:0;background:var(--linie);position:relative;padding:0}
 .kipp::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
-.kipp[aria-checked="true"]{background:var(--gut)}
+.kipp[aria-checked="true"]{background:var(--navy)}
 .kipp[aria-checked="true"]::after{transform:translateX(18px)}
 
 .fuss{color:var(--grau);font-size:14px;padding-bottom:40px}
 .klein-link{background:none;border:0;padding:0;color:var(--text);text-decoration:underline;font-weight:600;font-size:14px}
-.balken{height:8px;border-radius:999px;background:var(--flaeche);overflow:hidden}
-.balken i{display:block;height:100%;background:var(--gut);border-radius:inherit}
+.balken{height:8px;border-radius:999px;background:var(--zart);overflow:hidden}
+.balken i{display:block;height:100%;background:var(--navy);border-radius:inherit}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
 
