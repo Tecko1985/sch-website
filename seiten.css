@@ -317,3 +317,12 @@ body{margin:0;background:#fff}
 /* ---------- Kader ohne Foto / Rolle im Trainerstab (seiten/zweite-mannschaft.html) ---------- */
 .kd-raster .kd-ohnebild{grid-column:1/-1;width:100%;aspect-ratio:214/300;background:#24395f url(sch-startseite/assets/logo.png) center 42%/38% auto no-repeat;opacity:1}
 .kd-raster .kd-rolle{display:block;margin-top:6px;font:600 13px/1.2 Arial,sans-serif;letter-spacing:.8px;text-transform:uppercase;color:#aac7ed}
+
+/* ---------- Bildkarten am Handy: Foto oben frei, Text darunter (Gesichter nicht mehr verdeckt) ---------- */
+@media (max-width:640px){
+  .fb-team,.fb-team.fb-gross{flex-direction:column;align-items:stretch;min-height:0}
+  .fb-team img{position:relative;inset:auto;height:auto;aspect-ratio:4/3;z-index:0}
+  .fb-team::before{display:none}
+  .fb-team>div{background:#1b2d4f;padding:18px 20px 20px}
+  .fb-team b,.fb-team.fb-gross b{font-size:32px}
+}
