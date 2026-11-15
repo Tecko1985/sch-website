@@ -340,3 +340,7 @@ body{margin:0;background:#fff}
 @media (max-width:640px){.tn-raster{grid-template-columns:1fr}}
 /* Abteilungs-Übersicht: Text so breit wie die neuen Seiten */
 .sp-inhalt.ab-seite{max-width:1240px}
+/* News/Archiv: Kartenraster breiter (wie Kaderseiten), Kopf bündig dazu */
+.sp-inhalt:has(.sp-karten){max-width:calc(1640px + 2*clamp(18px,4vw,64px));padding-left:clamp(18px,4vw,64px);padding-right:clamp(18px,4vw,64px)}
+.sp-karten{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.sp-seite:has(.sp-karten) .sp-held>div{max-width:calc(1640px + 2*clamp(18px,4vw,64px));padding-left:clamp(18px,4vw,64px);padding-right:clamp(18px,4vw,64px)}
