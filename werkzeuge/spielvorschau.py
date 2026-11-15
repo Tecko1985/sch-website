@@ -20,6 +20,7 @@ import spielbericht as sb  # noqa: E402
 CLUB = "1-sc-1911-heiligenstadt"
 TEAMS = ["m1", "m2"]  # Mannschaften mit Spielinfo-Seiten
 TITELBILD = "assets/hero-mannschaft-1600.webp"
+TITELBILD_ZWEITE = "assets/zweite-titel.webp"  # Spielinfo-Seiten der 2. Mannschaft
 e = html.escape
 
 
@@ -154,7 +155,8 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     paar = f"{wir} gegen {gegner}" if heim else f"{gegner} gegen {wir}"
     titel = f"Spielinfo: {paar}"
     beschreibung = f'{paar} am {sb.datum_tag(sp["spieldatum"])}, {sp["anstoss"]} Uhr' + (f' – {sp["wettbewerb"]}' if sp["wettbewerb"] else "")
-    return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, TITELBILD, tafel, reiter, "spielinfo")
+    bild = TITELBILD_ZWEITE if team == "m2" else TITELBILD
+    return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, bild, tafel, reiter, "spielinfo")
 
 
 def baue_alle(ziel, vorlage, adresse, beitraege):
