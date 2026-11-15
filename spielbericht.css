@@ -254,3 +254,5 @@
 .sb-tabelle tr.sb-wir td{background:var(--navy);color:#fff}
 .sb-tabelle tr.sb-gegner td{background:#dfe9f7}
 @media (max-width:600px){.sb-tabelle .sb-breit{display:none}.sb-tabelle{font-size:14px}.sb-tabelle td,.sb-tabelle th{padding:8px 6px}}
+/* Handy: Wettbewerb/Ort in der Spielkopfzeile darf umbrechen (sonst ragt z. B. "Sportzentrum Oberaue, Platz 6" über den Rand) */
+@media (max-width:560px){.sb-meta{white-space:normal}.sb-meta p{min-width:0;margin:0}}
