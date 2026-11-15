@@ -152,7 +152,7 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-social .sch-socialtrack{gap:16px}
   :is(#top,body) .sch-social .sch-socialtrack:has(> .sch-socialcard:nth-child(3):last-child)>.sch-socialcard{flex-basis:calc((100% - 32px)/3)}
   :is(#top,body) .sch-social .sch-socialcard{flex-basis:calc((100% - 48px)/4)}
-  :is(#top,body) .sch-social .sch-socialvisual{height:clamp(430px,34vw,600px)}
+  :is(#top,body) .sch-social .sch-socialvisual{height:clamp(400px,26vw,480px)}
   :is(#top,body) .sch-social .sch-socialfooter{font-size:15px;min-height:68px;padding:14px 18px}
   :is(#top,body) .sch-social .sch-socialfooter img{width:30px;height:36px}
   :is(#top,body) .sch-social .sch-socialcaption{padding:34px 32px}
