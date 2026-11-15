@@ -171,5 +171,11 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-home .sch-toptools{top:14px}
   :is(#top,body) .sch-home .sch-wordmark{bottom:58px;left:96px}
   :is(#top,body) .sch-home .sch-wordmark h1{font-size:30px}
+  :is(#top,body) .sch-home .sch-scene{min-height:340px}  /* Menüleiste endet bei ~275 px: Karten beginnen sicher darunter */
   :is(#top,body) .sch-home .sch-latest{margin-top:-40px}
+  /* Aufgeklapptes Menü: passt in die Bildhöhe, Rest per Wischen erreichbar (vorher unten abgeschnitten) */
+  :is(#top,body) .sch-home .sch-panel{top:14px;left:84px;width:min(380px,calc(100% - 100px));max-height:calc(min(100%, 100svh) - 28px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  :is(#top,body) .sch-home .sch-panelhead{padding:6px 6px 8px 12px}
+  :is(#top,body) .sch-home .sch-panelhead span{font-size:19px}
+  :is(#top,body) .sch-home .sch-panel nav a{padding:9px 12px;font-size:17px}
 }
