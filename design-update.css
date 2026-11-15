@@ -142,3 +142,21 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-more .sch-morecopy>span{font-size:14px}
   :is(#top,body) .sch-more .sch-morecard:first-child .sch-morecopy h3{font-size:clamp(30px,2.8vw,46px)}
 }
+
+/* ---------- „Social Media beim SCH“ 15.11.: so breit wie die Beiträge darüber (ab 1100 px) ---------- */
+@media(min-width:1100px){
+  :is(#top,body) .sch-social{padding:100px 0 110px}
+  :is(#top,body) .sch-social .sch-sectioninner{width:calc(100% - 2 * clamp(16px,4vw,64px));max-width:1640px}
+  :is(#top,body) .sch-social .sch-sectionhead{margin-bottom:48px}
+  :is(#top,body) .sch-social .sch-sectionhead h2{font-size:clamp(54px,4.6vw,78px);letter-spacing:-.5px}
+  :is(#top,body) .sch-social .sch-socialtrack{gap:16px}
+  :is(#top,body) .sch-social .sch-socialtrack:has(> .sch-socialcard:nth-child(3):last-child)>.sch-socialcard{flex-basis:calc((100% - 32px)/3)}
+  :is(#top,body) .sch-social .sch-socialcard{flex-basis:calc((100% - 48px)/4)}
+  :is(#top,body) .sch-social .sch-socialvisual{height:clamp(430px,34vw,600px)}
+  :is(#top,body) .sch-social .sch-socialfooter{font-size:15px;min-height:68px;padding:14px 18px}
+  :is(#top,body) .sch-social .sch-socialfooter img{width:30px;height:36px}
+  :is(#top,body) .sch-social .sch-socialcaption{padding:34px 32px}
+  :is(#top,body) .sch-social .sch-socialcaption>span:first-child{font-size:14px;letter-spacing:1.2px}
+  :is(#top,body) .sch-social .sch-socialcaption h3{font-size:clamp(30px,2.3vw,42px);line-height:1.12}
+  :is(#top,body) .sch-social .sch-socialcaption a,:is(#top,body) .sch-social .sch-socialcta{font-size:16px}
+}
