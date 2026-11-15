@@ -191,3 +191,12 @@ body{margin:0;background:#fff}
 .sp-inhalt .wp-team a{color:#1b2d4f;font-weight:700;white-space:nowrap}
 .sp-inhalt .wp-gruss{margin-top:20px!important;font:700 22px/1.3 'SCH Barlow',Impact,sans-serif;color:#1b2d4f!important}
 @media (max-width:600px){.sp-inhalt .wp-liste li{grid-template-columns:1fr}.sp-inhalt .wp-datum{padding:10px 14px}.sp-inhalt .wp-datum b{font-size:24px}}
+
+/* Wanderseite breiter (weniger Scrollen): Text bis 1240px, Wanderplan auf großen Bildschirmen zweispaltig */
+.wd-seite .sp-held>div{max-width:1240px}
+.wd-seite .sp-inhalt{max-width:1240px;font-size:17px}
+@media (min-width:1000px){
+  .wd-seite .sp-inhalt .wp-liste{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wd-seite .sp-inhalt .wp-extra{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .wd-seite .sp-inhalt .wp-team{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
