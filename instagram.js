@@ -27,7 +27,7 @@
   const vom = 'Instagram-Beitrag vom ' + (b.datum || '');
   const kurz = kuerzen(b.text, 100);
   const bild = el('img', { src: 'assets/instagram/' + b.bild, alt: (b.art && b.art !== 'Bild' ? b.art + ': ' : '') + (kurz || vom), loading: 'lazy' });
-  const fuss = el('div', { class: 'sch-socialfooter' }, [el('img', { src: 'assets/logo.png', alt: '' }), el('span', {}, ['sc1911heiligenstadt']), el('b', { 'aria-hidden': 'true' }, ['◎'])]);
+  const fuss = el('div', { class: 'sch-socialfooter' }, [el('img', { src: 'assets/logo.png', alt: '' }), el('span', {}, ['sc1911heiligenstadt']), el('b', { class: 'sch-ig-logo', 'aria-hidden': 'true' }, [])]);
   track.append(el('a', { class: 'sch-socialcard sch-igpost', href: b.href, 'aria-label': vom + ' auf Instagram ansehen' + (kurz ? ': ' + kurz : '') }, [el('div', { class: 'sch-socialvisual' }, [bild, caption]), fuss]));
  });
 })();
