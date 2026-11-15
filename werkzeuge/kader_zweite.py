@@ -22,6 +22,10 @@ SEITE = os.path.join(REPO, "seiten/zweite-mannschaft.html")
 ORDNER = "assets/kader-zweite"
 GRUPPEN = [("Torwart", "Tor"), ("Abwehr", "Abwehr"), ("Mittelfeld", "Mittelfeld"), ("Angriff", "Angriff")]
 UA = {"User-Agent": "SCH-Website"}
+# Stehen bei FuPa im Kader, sollen auf unserer Seite aber nicht erscheinen (Wunsch Redaktion, 15.11.2026).
+# Daniel Papst nur als Spieler – im Trainerstab bleibt er.
+NICHT_ZEIGEN = {"Kai Rhöse", "Pascal Köhler", "Fabio Dornieden", "Jonas Grimm", "Jannis Mähler",
+                "Paul Opfermann", "Daniel Papst", "Lucas Roth", "Jagar Jargees Ali"}
 
 
 def hole(url):
@@ -62,7 +66,8 @@ def gruppe(titel, leute):
 def main():
     slug = f"1-sc-1911-heiligenstadt-m2-{saison()}"
     d = json.loads(hole(f"https://api.fupa.net/v1/teams/{slug}/squad"))
-    spieler = [p for p in d["players"] if not p.get("isDeactivated")]
+    spieler = [p for p in d["players"] if not p.get("isDeactivated")
+               and f'{p["firstName"].strip()} {p["lastName"].strip()}' not in NICHT_ZEIGEN]
     ordnung = lambda p: (p.get("jerseyNumber") is None, p.get("jerseyNumber") or 0, p["lastName"])
     teile = []
     for pos, titel in GRUPPEN:

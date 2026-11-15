@@ -199,6 +199,41 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
     return links
 
 
+MANNSCHAFTSSEITEN = {"seiten/erste-mannschaft.html": "", "seiten/zweite-mannschaft.html": "zweite-"}
+
+
+def verlinke_mannschaftsseiten(ziel, links):
+    """„Nächste Spiele“ auf den Mannschaftsseiten (im gebauten Ordner): „Zum Spiel“ zeigt auf unsere eigene
+    Spielinfo-Seite statt auf fussball.de. Zuordnung über Mannschaft und Spieltag (Datum)."""
+    for datei, zusatz in MANNSCHAFTSSEITEN.items():
+        pfad = os.path.join(ziel, datei)
+        if not os.path.exists(pfad):
+            continue
+        # TT.MM. -> Seitenname (nur Seiten dieser Mannschaft)
+        nach_tag = {}
+        for seite in links.values():
+            name = seite.split("/")[-1]
+            m = re.match(r"spiel-(zweite-)?(\d{4})-(\d{2})-(\d{2})-", name)
+            if m and (m.group(1) or "") == zusatz:
+                nach_tag[f"{m.group(4)}.{m.group(3)}."] = name
+
+        def ersetze(li):
+            t = li.group(0)
+            tag = re.search(r'<span class="tm-team"><b>\w+, (\d{2}\.\d{2}\.)</b>', t)
+            if not tag or tag.group(1) not in nach_tag:
+                return t
+            return re.sub(r'<a href="[^"]*">Zum Spiel', f'<a href="{nach_tag[tag.group(1)]}">Zum Spiel', t, count=1)
+
+        s = open(pfad, encoding="utf-8").read()
+        k = s.find("<h2>Nächste Spiele</h2>")
+        if k < 0:
+            continue
+        e = s.find("</ul>", k)
+        neu = s[:k] + re.sub(r'<li class="tm-spiel[^"]*">.*?</li>', ersetze, s[k:e], flags=re.S) + s[e:]
+        if neu != s:
+            open(pfad, "w", encoding="utf-8").write(neu)
+
+
 def verlinke_karten(start, links):
     """Kommende Spielkarten (noch mit FuPa-Link) auf die eigene Spielinfo-Seite zeigen lassen."""
     def ersetze(treffer):

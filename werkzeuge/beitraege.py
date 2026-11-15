@@ -467,6 +467,7 @@ def main():
     spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, sichtbar)
     spielvorschau.vereinsspiele(ziel)  # für die Redaktion: Mannschaft aus Spieltag und Gegner erkennen
     start = spielvorschau.verlinke_karten(start, spielinfo)
+    spielvorschau.verlinke_mannschaftsseiten(ziel, spielinfo)  # „Nächste Spiele“ -> eigene Spielinfo-Seiten
     open(p, "w", encoding="utf-8").write(spiele.verlinke_berichte(start, sichtbar))
     print(f"{len(beitraege)} Redaktionsbeiträge eingebaut, {len(liste)} Beiträge in der Liste.")
 
