@@ -347,3 +347,31 @@ body{margin:0;background:#fff}
 .sp-inhalt h3{color:#1b2d4f;font-size:clamp(22px,2.2vw,26px);margin:38px 0 8px}
 .sp-inhalt h3+p{margin-top:0}
 @media(max-width:767px){.sp-inhalt p,.sp-inhalt li{font-size:17px}}
+/* ---------- Satzung (seiten/satzung.html) ---------- */
+.sp-inhalt.sz-seite{max-width:880px}
+.sz-seite .sz-lead{font:500 clamp(19px,1.7vw,22px)/1.5 'SCH Barlow',Arial,sans-serif;color:#1b2d4f;margin:4px 0 18px}
+.sz-stand{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 34px}
+.sz-stand span{background:#eaf0f7;color:#1b2d4f;border-radius:999px;padding:8px 14px;font:700 14px/1.2 'SCH Barlow',Arial,sans-serif;letter-spacing:.3px}
+.sz-inhalt{background:#f4f7fb;border:1px solid #dce3ec;border-radius:12px;padding:22px 24px 18px;margin:0 0 48px}
+.sz-inhalt h2{font-size:22px!important;margin:0 0 12px!important}
+.sz-inhalt ol{list-style:none;margin:0;padding:0;columns:2 280px;column-gap:28px}
+.sz-inhalt li{break-inside:avoid;margin:0}
+.sz-inhalt a{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #e1e7ef;color:#1b2d4f;text-decoration:none;font:500 16px/1.35 'SCH Barlow',Arial,sans-serif}
+.sz-inhalt a b{flex:none;min-width:42px;color:#304e79}
+.sz-inhalt a:hover{color:#304e79;text-decoration:underline}
+.sz-par{scroll-margin-top:20px;padding:30px 0 6px;border-top:1px solid #dce3ec}
+.sz-par h2{display:flex;align-items:baseline;gap:12px;font-size:clamp(24px,2.4vw,30px)!important;margin:0 0 14px!important;text-transform:none!important;color:#1b2d4f}
+.sz-par h2 span{flex:none;background:#1b2d4f;color:#fff;border-radius:6px;padding:4px 9px 3px;font-size:.72em;letter-spacing:.5px}
+.sz-par p{margin:0 0 12px}
+.sz-punkte{margin:0 0 12px;padding-left:0;list-style:none;counter-reset:none}
+.sz-punkte>li{position:relative;padding-left:38px;margin:0 0 14px}
+.sz-punkte>li::before{content:counter(list-item) ".";position:absolute;left:0;top:0;font:700 18px/1.7 'SCH Barlow',Arial,sans-serif;color:#304e79}
+.sz-punkte>li>p:last-child{margin-bottom:0}
+.sz-strich,.sz-buchst{list-style:none;margin:2px 0 12px;padding:0}
+.sz-strich li,.sz-buchst li{position:relative;padding-left:26px;margin:0 0 4px}
+.sz-strich li::before{content:"–";position:absolute;left:6px;color:#304e79;font-weight:700}
+.sz-buchst li::before{content:attr(data-b);position:absolute;left:0;color:#304e79;font-weight:700}
+.sz-strich.sz-tief{margin-left:26px}
+.sz-ort{margin:34px 0 0!important;padding-top:20px;border-top:1px solid #dce3ec;color:#5f6a7b!important;font-size:16px!important}
+@media(max-width:767px){.sz-inhalt{padding:18px 16px 12px}.sz-punkte>li{padding-left:30px}.sz-par h2{gap:10px}}
+.sz-seite p,.sz-seite li{overflow-wrap:break-word}
