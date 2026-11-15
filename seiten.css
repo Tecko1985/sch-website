@@ -200,3 +200,52 @@ body{margin:0;background:#fff}
   .wd-seite .sp-inhalt .wp-extra{grid-template-columns:repeat(3,minmax(0,1fr))}
   .wd-seite .sp-inhalt .wp-team{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+
+/* ---------- Fußball-Übersicht (seiten/fussball.html) ---------- */
+.sp-inhalt.fb-seite{max-width:1240px!important}
+.fb-seite .fb-lead{font:500 clamp(19px,1.7vw,23px)/1.5 Arial,sans-serif;color:#1b2d4f;max-width:62ch;margin:6px 0 34px}
+.fb-seite .fb-titel{display:flex;align-items:center;gap:14px;font:700 clamp(26px,2.6vw,34px)/1 'SCH Barlow',Impact,sans-serif!important;text-transform:uppercase;color:#1b2d4f;margin:0 0 18px!important}
+.fb-seite .fb-titel::after{content:"";flex:1;height:3px;background:linear-gradient(90deg,#1b2d4f,#aac7ed 60%,transparent)}
+.fb-teams{display:grid;grid-template-columns:1.35fr 1fr 1fr;grid-template-rows:repeat(2,minmax(250px,auto));gap:16px}
+.fb-team{position:relative;display:flex;align-items:flex-end;min-height:250px;border-radius:12px;overflow:hidden;background:#1b2d4f;color:#fff!important;text-decoration:none!important;isolation:isolate;box-shadow:0 10px 26px rgba(27,45,79,.16)}
+.fb-team img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .5s ease}
+.fb-team::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(11,26,56,.94) 0%,rgba(11,26,56,.55) 45%,rgba(11,26,56,.05) 80%)}
+.fb-team:hover img{transform:scale(1.05)}
+.fb-team>div{padding:22px 24px;width:100%}
+.fb-team span{display:inline-block;background:#fff;color:#1b2d4f;font:700 12px/1 Arial,sans-serif;letter-spacing:1.2px;text-transform:uppercase;padding:6px 10px;border-radius:4px}
+.fb-team b{display:block;font:700 clamp(28px,2.6vw,38px)/1 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;margin:10px 0 6px}
+.fb-team p{margin:0!important;font:15px/1.45 Arial,sans-serif!important;color:#dce3ef!important;max-width:40ch}
+.fb-team i{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font:700 14px Arial,sans-serif;font-style:normal;color:#aac7ed}
+.fb-team i svg,.fb-service svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.fb-team:hover i svg,.fb-service a:hover svg{transform:translateX(4px)}
+.fb-team.fb-gross{grid-row:span 2;min-height:516px}
+.fb-team.fb-gross b{font-size:clamp(36px,4vw,56px)}
+.fb-team.fb-breit{grid-column:span 2}
+.fb-nachwuchs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 44px}
+.fb-nachwuchs>div{background:#fff;border:1px solid #dce3ec;border-left:5px solid #1b2d4f;border-radius:10px;padding:18px 20px}
+.fb-nachwuchs h3{margin:0!important;font:700 22px/1.1 'SCH Barlow',Impact,sans-serif!important;text-transform:uppercase}
+.fb-nachwuchs h3 a{color:#1b2d4f!important;text-decoration:none!important}
+.fb-nachwuchs p{margin:2px 0 12px!important;font:14px Arial,sans-serif!important;color:#647086!important}
+.fb-nachwuchs nav{display:flex;flex-wrap:wrap;gap:8px}
+.fb-nachwuchs nav a{display:inline-flex;align-items:center;min-height:38px;padding:0 16px;border-radius:999px;border:2px solid #1b2d4f;color:#1b2d4f!important;font:700 15px Arial,sans-serif;text-decoration:none!important;transition:background .15s,color .15s}
+.fb-nachwuchs nav a:hover{background:#1b2d4f;color:#fff!important}
+.fb-service{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:34px}
+.fb-service a{position:relative;display:flex;flex-direction:column;gap:4px;background:#1b2d4f;color:#fff!important;border-radius:10px;padding:20px 22px 22px;text-decoration:none!important;transition:background .2s}
+.fb-service a:hover{background:#304e79}
+.fb-service b{font:700 24px/1.05 'SCH Barlow',Impact,sans-serif;text-transform:uppercase}
+.fb-service span{font:14px/1.45 Arial,sans-serif;color:#dce3ef;padding-right:22px}
+.fb-service svg{position:absolute;right:18px;top:22px;color:#aac7ed}
+@media (max-width:980px){
+  .fb-teams{grid-template-columns:1fr 1fr;grid-template-rows:none}
+  .fb-team.fb-gross{grid-column:span 2;grid-row:auto;min-height:360px}
+  .fb-service{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .fb-teams,.fb-nachwuchs{grid-template-columns:1fr}
+  .fb-team.fb-gross,.fb-team.fb-breit{grid-column:auto}
+  .fb-team,.fb-team.fb-gross{min-height:280px}
+  .fb-service{grid-template-columns:1fr 1fr;gap:10px}
+  .fb-service a{padding:16px}
+  .fb-service b{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){.fb-team img,.fb-team i svg,.fb-service svg{transition:none}}
