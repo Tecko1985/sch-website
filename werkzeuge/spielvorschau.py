@@ -33,7 +33,16 @@ def saison(heute=None):
 
 def kommende(team):
     liste = fupa_ticker.hole_json(f"{fupa_ticker.API}/v1/teams/{CLUB}-{team}-{saison()}/matches?flavor=current")
-    return [m for m in liste if m.get("section") == "PRE" and m.get("homeGoal") is None]
+    # Laufende Spiele behalten ihre Spielinfo-Seite, bis sie fertig sind (Bugjagd 16.11.2026 H2-7)
+    return [m for m in liste if m.get("section") == "LIVE" or (m.get("section") == "PRE" and m.get("homeGoal") is None)]
+
+
+def gespielte(team):
+    """Fertige Spiele dieser Saison (für die Ergebnisseite, damit geteilte Spielinfo-Links nicht 404 werden)."""
+    beginn = saison().split("-")[0] + "-07-01"
+    liste = fupa_ticker.hole_json(f"{fupa_ticker.API}/v1/teams/{CLUB}-{team}-{saison()}/matches?flavor=past&limit=40") or []
+    return [m for m in liste if m.get("section") != "LIVE" and m.get("homeGoal") is not None and m.get("awayGoal") is not None
+            and team_von(m) == team and m.get("kickoff", "")[:10] >= beginn]
 
 
 def tabelle(liga_slug):
@@ -224,7 +233,33 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
                     "seite": "seiten/" + seitenname(m)})
             except Exception as fehler:
                 print(f"  Spielinfo {m.get('slug')}: {fehler}")
-    print(f"{len(links)} Spielinfo-Seiten gebaut.")
+        # Nach dem Abpfiff: Ergebnisseite unter demselben Namen wie die Spielinfo-Seite (wie beim Nachwuchs),
+        # damit geteilte Links („Alle Infos zum Spiel“) die ganze Saison erreichbar bleiben (H2-7).
+        try:
+            fertig = gespielte(team)
+        except Exception as fehler:
+            print(f"  Ergebnisse {team}: FuPa nicht erreichbar ({fehler})")
+            fertig = []
+        for m in fertig:
+            if m["slug"] in links:
+                continue
+            try:
+                d = fupa_ticker.spiel(m["slug"])
+                liga = ((d.get("round") or {}).get("competitionSeason") or {}).get("slug")
+                if liga and liga not in tabellen:
+                    try:
+                        tabellen[liga] = tabelle(liga)
+                    except Exception as fehler:
+                        print(f"  Tabelle {liga}: {fehler}")
+                        tabellen[liga] = []
+                heim = ist_sch(m["homeTeam"])
+                bericht = bericht_fuer(team, m["kickoff"][:10], teamname(m["awayTeam"] if heim else m["homeTeam"]), beitraege)
+                seite = baue_ergebnis(m, d, tabellen.get(liga) or [], vorlage, adresse, bericht)
+                open(os.path.join(ziel, "seiten", seitenname(m)), "w", encoding="utf-8").write(seite)
+                links[m["slug"]] = "seiten/" + seitenname(m)
+            except Exception as fehler:
+                print(f"  Ergebnisseite {m.get('slug')}: {fehler}")
+    print(f"{len(links)} Spielinfo- und Ergebnisseiten (Herren) gebaut.")
     # Für die Redaktion: Auswahl „Zu welchem Spiel?“ beim Vorbericht
     liste_fuer_redaktion.sort(key=lambda x: x["anstoss"])
     with open(os.path.join(ziel, "assets", "kommende-spiele.json"), "w", encoding="utf-8") as f:
@@ -309,7 +344,7 @@ def tore_und_pause(slug, heim, gegner, end):
     return zeilen_, sch_namen, hz
 
 
-def baue_ergebnis(m, d, standings, vorlage, adresse):
+def baue_ergebnis(m, d, standings, vorlage, adresse, bericht=None):
     heim = ist_sch(m["homeTeam"])
     gegner_t = m["awayTeam"] if heim else m["homeTeam"]
     gegner = teamname(gegner_t)
@@ -345,9 +380,13 @@ def baue_ergebnis(m, d, standings, vorlage, adresse):
             felder.append((f'Tabelle {wir_name(team) if ist_sch(t) else gegner}', f'{z["rank"]}. Platz · {z["points"]} Punkte'))
     dl = "\n".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in felder if b)
     links = []
+    if bericht and bericht.get("seite"):
+        links.append(f'<a href="{e(bericht["seite"])}">Zum Spielbericht</a>')
     if standings:
         links.append('<a href="#tabelle" data-sb-zu="tabelle">Zur Tabelle</a>')
-    links.append('<a href="seiten/nachwuchs.html">Unser Nachwuchs</a>')
+    links.append({"m1": '<a href="seiten/erste-mannschaft.html">1. Mannschaft</a>',
+                  "m2": '<a href="seiten/zweite-mannschaft.html">2. Mannschaft</a>'}.get(
+        team, '<a href="seiten/nachwuchs.html">Unser Nachwuchs</a>'))
     text = kurztext(team, heim, gegner, es, eg, hz, sch_namen)
     info = (f'<div class="sb-schmal">\n<h2 class="sb-h2 stitel">Kurzbericht</h2>\n<p class="sb-kurz">{e(text)}</p>\n'
             f'<dl class="sb-info">\n{dl}\n</dl>\n<p class="sb-hinweis">{" · ".join(links)}</p>\n</div>')
