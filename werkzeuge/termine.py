@@ -16,7 +16,15 @@ import urllib.request
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEITE = os.path.join(REPO, "seiten", "termine.html")
 VEREIN_ID = "00ES8GNC5C0000A8VV0AG08LVUPGND5I"
-SAISONENDE = "2027-06-30"
+
+
+def saisonende(heute=None):
+    """Letzter Tag der laufenden Saison (30. Juni), Saisonwechsel am 1. Juli (Bugjagd 16.11.2026 H2-4)."""
+    h = datetime.date.fromisoformat(heute) if isinstance(heute, str) else (heute or datetime.date.today())
+    return f"{h.year if h.month < 7 else h.year + 1}-06-30"
+
+
+SAISONENDE = saisonende()
 TAGE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
 ALTER = {"A": "U19", "B": "U17", "C": "U15", "D": "U13", "E": "U11", "F": "U9", "G": "U7"}
@@ -185,7 +193,7 @@ def baue(heute=None):
     bekannt = alte_bezeichnungen(alt)
     # Ab 60 Tagen zurück: verlegte Spiele stehen bei fussball.de unter ihrem ursprünglichen Datum
     von = (datetime.date.fromisoformat(heute) - datetime.timedelta(days=60)).isoformat()
-    zeilen = spielplan(von, SAISONENDE)
+    zeilen = spielplan(von, saisonende(heute))
     if not zeilen:
         sys.exit("Keine Spiele von fussball.de erhalten – Seite bleibt unverändert.")
     # Mannschaft (fussball.de team-id) -> Bezeichnung, gelernt aus Spielen, die schon auf der Seite stehen

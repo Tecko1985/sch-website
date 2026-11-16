@@ -17,7 +17,16 @@ import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLUB = "1-sc-1911-heiligenstadt"
-SAISON = "2026-27"
+
+
+def saison(heute=None):
+    """Saison-Kürzel wie bei FuPa („2026-27“), Saisonwechsel am 1. Juli (Bugjagd 16.11.2026 H2-4)."""
+    h = heute or datetime.date.today()
+    j = h.year if h.month >= 7 else h.year - 1
+    return f"{j}-{str(j + 1)[2:]}"
+
+
+SAISON = saison()
 LOGO = '<img src="assets/logo.png" alt="" width="827" height="945">'
 
 # Reiter -> FuPa-Mannschaften (Kürzel im FuPa-Teamnamen), Anzahl gespielter / kommender Karten
@@ -183,7 +192,8 @@ def sch_team(m):
     for seite in ("homeTeam", "awayTeam"):
         slug = m[seite].get("slug") or ""
         if slug.startswith(CLUB + "-"):
-            return seite, slug[len(CLUB) + 1:].replace("-" + SAISON, "")
+            # Saison-Anhängsel („-2026-27“) unabhängig von der laufenden Saison abschneiden
+            return seite, re.sub(r"-\d{4}-\d{2}$", "", slug[len(CLUB) + 1:])
     return None, None
 
 
