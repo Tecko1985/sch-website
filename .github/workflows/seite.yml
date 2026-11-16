@@ -9,7 +9,7 @@
 # selbst aktiv gehalten (Job wach-halten, ohne Commit).
 # Secrets: IG_TOKEN (Instagram Verein), IG_TOKEN_NACHWUCHS (Instagram Nachwuchs), SECRETS_PAT (darf Secrets
 # dieses Repos schreiben, nur fuer die Verlaengerung alter "IG..."-Schluessel; Systemnutzer-Tokens laufen nie ab).
-# Optional Repo-Variablen IG_ID / IG_ID_NACHWUCHS (Instagram-Konto-ID), falls das Skript sie nicht selbst findet.
+# Optional Repo-Variablen oder Secrets IG_ID / IG_ID_NACHWUCHS (Instagram-Konto-ID), falls das Skript sie nicht selbst findet.
 # Pages-Quelle muss "GitHub Actions" sein (build_type workflow); steht sie auf einem Branch,
 # baut der Lauf nur und veroeffentlicht nichts.
 name: Seite bauen
@@ -91,8 +91,8 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           IG_TOKEN_NACHWUCHS: ${{ secrets.IG_TOKEN_NACHWUCHS }}
-          IG_ID: ${{ vars.IG_ID }}
-          IG_ID_NACHWUCHS: ${{ vars.IG_ID_NACHWUCHS }}
+          IG_ID: ${{ vars.IG_ID || secrets.IG_ID }}
+          IG_ID_NACHWUCHS: ${{ vars.IG_ID_NACHWUCHS || secrets.IG_ID_NACHWUCHS }}
           IG_ERNEUERN: ${{ (github.event.schedule == '41 3 * * 1' || inputs.erneuern) && '1' || '0' }}
           IG_ZIEL: _site
         run: python .github/instagram.py
