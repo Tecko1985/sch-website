@@ -388,3 +388,6 @@ body{margin:0;background:#fff}
 
 /* Handy quer (z. B. 812x375): Kopfbild flacher, damit der Mannschaftsname im ersten Bild steht (Abnahme 16.11.2026 H3-C1) */
 @media (orientation:landscape) and (max-height:500px){.kd-seite .kd-held>img,.nw-seite .kd-held>img{max-height:42vh;object-fit:cover}}
+
+/* Fanshop: Shop-Banner ganz zeigen (Breitformat, nicht auf 4:3 zuschneiden) */
+.sp-shopbanner{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.sp-shopbanner img{aspect-ratio:auto;object-fit:contain;transition:transform .2s}.sp-shopbanner a:hover img,.sp-shopbanner a:focus-visible img{transform:translateY(-3px)}
