@@ -82,7 +82,7 @@ def fuss(p):
     </div>
   </div>
   <p class="fuss-jahr" aria-hidden="true">1911</p>
-  <p class="fuss-recht"><span>© 1. SC 1911 Heiligenstadt e. V.</span><a href="https://www.sc1911-heiligenstadt.de/impressum-2/">Impressum</a><a href="{p}seiten/datenschutz.html">Datenschutz</a></p>
+  <p class="fuss-recht"><span>© 1. SC 1911 Heiligenstadt e. V.</span><a href="{p}seiten/impressum.html">Impressum</a><a href="{p}seiten/datenschutz.html">Datenschutz</a></p>
 </footer>"""
 
 
