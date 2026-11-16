@@ -79,6 +79,7 @@ jobs:
       - name: Redaktionsbeitraege einbauen
         run: |
           python werkzeuge/beitraege.py _site
+          python werkzeuge/suche.py index _site
           python _site/werkzeuge/neu_seiten.py
           rm -rf _site/werkzeuge/__pycache__
 

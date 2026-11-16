@@ -23,7 +23,8 @@ gesichert unter `E:\Vereine\SCH\_umzug\beitraege-2025\` (Michels Rechner). Sie k
 1. **WordPress sichern**: alle Dateien und die Datenbank (`sccnld_db1`), per SSH oder über die konsoleH.
 2. **Platzhalter zeigen** (optional, für die Zeit des Umbaus): `umzug.html` als `index.html` hochladen.
 3. **Seite bauen** wie GitHub es tut: Repo-Dateien in einen Ordner kopieren, dann
-   `python werkzeuge/beitraege.py <ordner>` und `python <ordner>/werkzeuge/neu_seiten.py`.
+   `python werkzeuge/beitraege.py <ordner>`, `python werkzeuge/suche.py index <ordner>` und `python <ordner>/werkzeuge/neu_seiten.py`.
+   Nach Schritt 4 (Beiträge 2025) den Suchindex noch einmal erzeugen, damit sie gefunden werden.
 4. **Beiträge aus 2025 dazulegen**: den Inhalt von `_umzug\beitraege-2025\` in den Ordner kopieren
    (inklusive `seiten/news.html`, die alle Karten enthält). Neu erzeugen geht auch:
    `python werkzeuge/alte_beitraege.py 2025`, solange das WordPress noch erreichbar ist.
