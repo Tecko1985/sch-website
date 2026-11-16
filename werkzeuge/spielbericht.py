@@ -569,6 +569,19 @@ def aufstellungen(s):
             '<p class="sb-hinweis">Startelf in der Reihenfolge des Spielberichts, rechts die Wechsel mit Minute.</p>')
 
 
+def tabelle_reiter(s):
+    """Aktuelle Tabelle der Liga dieses Spiels (FuPa, über den Ticker-Link). Ohne Link oder Daten: kein Reiter."""
+    m = re.search(r"fupa\.net/match/([a-z0-9-]+)", s.sp.get("ticker_link") or "")
+    if not m:
+        return ""
+    try:
+        import spielvorschau  # erst hier: spielvorschau importiert dieses Modul
+        return spielvorschau.tabelle_zum_spiel(m.group(1))
+    except Exception as fehler:
+        print(f"  Tabelle zu {m.group(1)}: {fehler}")
+        return ""
+
+
 def vorbericht_html(vb):
     if not vb:
         return ""
@@ -646,11 +659,9 @@ def baue(d, vorlage, alle_beitraege, adresse):
         ("stimmen", "Stimmen", stimmen(s), ""),
         ("statistiken", "Statistiken", statistik(s), "grau"),
         ("aufstellung", "Aufstellung", aufstellungen(s), ""),
+        ("tabelle", "Tabelle", tabelle_reiter(s), ""),
         ("vorbericht", "Vorbericht", vorbericht_html(vb), ""),  # Vorbericht als letzter Reiter
     ]
-    if s.team == "m2" and not s.heim:
-        # 2. Mannschaft auswärts: schlanke Seite (Titelbild, Spielbericht, Aufstellung, ggf. Galerie und Vorbericht)
-        reiter = [r for r in reiter if r[0] in ("spielbericht", "galerie", "aufstellung", "vorbericht")]
     reiter = [r for r in reiter if r[2]]
     knoepfe = "".join(
         f'<button type="button" role="tab" id="sb-tab-{n}" data-name="{n}" aria-controls="sb-{n}" '

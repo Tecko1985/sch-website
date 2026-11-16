@@ -79,6 +79,29 @@ def wappen(team):
     return sb.wappen_fuer(teamname(team)) or sb.LEER_WAPPEN
 
 
+_TABELLEN = {}
+
+
+def tabelle_zum_spiel(slug):
+    """Tabelle (HTML) der Liga, in der das FuPa-Spiel `slug` stattfand; Gegner hervorgehoben. Pokal: leer."""
+    d = fupa_ticker.spiel(slug)
+    runde = d.get("round") or {}
+    liga = (runde.get("competitionSeason") or {}).get("slug")
+    if not liga:  # manche Spiele (Nachwuchs, Zweite) liefern die Liga nur in der Spielliste der Mannschaft
+        for t in (d.get("homeTeam") or {}, d.get("awayTeam") or {}):
+            if ist_sch(t):
+                for x in fupa_ticker.hole_json(f"{fupa_ticker.API}/v1/teams/{t['slug']}/matches?flavor=past&limit=40") or []:
+                    if x.get("slug") == slug:
+                        runde = x.get("round") or {}
+                        liga = (runde.get("competitionSeason") or {}).get("slug")
+    if not liga or runde.get("type") not in (None, "league"):
+        return ""
+    if liga not in _TABELLEN:
+        _TABELLEN[liga] = tabelle(liga)
+    gegner = [t.get("slug") for t in (d.get("homeTeam") or {}, d.get("awayTeam") or {}) if t and not ist_sch(t)]
+    return tabelle_html(_TABELLEN[liga], set(gegner))
+
+
 def tabelle_html(zeilen, hervor):
     if not zeilen:
         return ""
