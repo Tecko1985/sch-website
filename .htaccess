@@ -10,6 +10,12 @@ RewriteRule ^page/[0-9]+/?$ /seiten/news.html [R=301,L]
 # Beiträge bis Juni 2025 (nur noch im Nextcloud-Archiv) -> News-Archiv
 RewriteRule ^(2021|2022|2023|2024)/[0-9]{2}/[0-9]{2}/ /seiten/archiv.html [R=301,L]
 RewriteRule ^2025/0[1-6]/[0-9]{2}/ /seiten/archiv.html [R=301,L]
+# Dokumente (PDF) der alten Seite -> assets/dokumente/
+RewriteRule ^wp-content/uploads/[0-9]{4}/[0-9]{2}/1SC\-Heiligenstadt\-Flyer\-A5\-hoch\-Wandern\-2025\-W\.pdf$ /assets/dokumente/1SC-Heiligenstadt-Flyer-A5-hoch-Wandern-2025-W.pdf [R=301,L]
+RewriteRule ^wp-content/uploads/[0-9]{4}/[0-9]{2}/Mitgliedsantrag\-neu\-PDF\.pdf$ /assets/dokumente/Mitgliedsantrag-neu-PDF.pdf [R=301,L]
+RewriteRule ^wp-content/uploads/[0-9]{4}/[0-9]{2}/Programmheft\.pdf$ /assets/dokumente/Programmheft.pdf [R=301,L]
+RewriteRule ^wp-content/uploads/[0-9]{4}/[0-9]{2}/konzeptpapier\-nachwuchsfoerderung\.pdf$ /assets/dokumente/konzeptpapier-nachwuchsfoerderung.pdf [R=301,L]
+RewriteRule ^wp-content/uploads/[0-9]{4}/[0-9]{2}/wanderplan\-2027\.pdf$ /assets/dokumente/wanderplan-2027.pdf [R=301,L]
 
 RewriteRule ^1\-mannschaft/?$ /seiten/erste-mannschaft.html [R=301,L]
 RewriteRule ^2\-mannschaft/?$ /seiten/zweite-mannschaft.html [R=301,L]

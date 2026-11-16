@@ -83,6 +83,16 @@ def redaktion():
     return aus
 
 
+def dokumente():
+    """Regeln für alte Datei-Adressen: jedes PDF aus assets/dokumente/ unter seinem WordPress-Pfad
+    wp-content/uploads/<Jahr>/<Monat>/<Name> (Bugjagd 16.11.2026 H2-6: Flyer/QR-Codes/Mails)."""
+    aus = []
+    for f in sorted(glob.glob(os.path.join(REPO, "assets", "dokumente", "*"))):
+        name = os.path.basename(f)
+        aus.append(f"RewriteRule ^wp-content/uploads/[0-9]{{4}}/[0-9]{{2}}/{re.escape(name)}$ /assets/dokumente/{name} [R=301,L]")
+    return aus
+
+
 def main():
     # Beiträge aus 2025 liegen bis zum Umzug außerhalb des (öffentlichen) Repos, siehe UMZUG.md
     da = lambda p: any(os.path.isfile(os.path.join(w, p)) for w in (REPO, UMZUG_2025))
@@ -141,6 +151,8 @@ def main():
         "# Beiträge bis Juni 2025 (nur noch im Nextcloud-Archiv) -> News-Archiv",
         r"RewriteRule ^(2021|2022|2023|2024)/[0-9]{2}/[0-9]{2}/ /seiten/archiv.html [R=301,L]",
         r"RewriteRule ^2025/0[1-6]/[0-9]{2}/ /seiten/archiv.html [R=301,L]",
+        "# Dokumente (PDF) der alten Seite -> assets/dokumente/",
+        *dokumente(),
         "",
     ]
     for alt in sorted(regeln):
