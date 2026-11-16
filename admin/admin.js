@@ -499,12 +499,12 @@
       .catch(function () { return []; })
       .then(function (l) { vereinsspiele = l; return l; });
   }
-  function erkenneMannschaft() {
+  function erkenneMannschaft(beimEinfuegen) {
     var hinweis = $('[data-mannschafterkannt]');
     if (form.rubrik.value !== 'Spielbericht' || form.sp_mannschaft.dataset.hand === '1') return;
     var gegner = worte(form.sp_gegner.value);
     if (!gegner.length) { hinweis.hidden = true; return; }
-    ladeVereinsspiele().then(function (liste) {
+    return ladeVereinsspiele().then(function (liste) {
       var tag = form.sp_spieldatum.value;
       var bis = form.datum.value || new Date().toISOString().slice(0, 10);
       var passend = liste.filter(function (sp) {
@@ -522,6 +522,7 @@
       form.sp_ort_art.value = sp.heim ? 'heim' : 'auswaerts';
       if (!tag) form.sp_spieldatum.value = sp.datum;
       if (!form.sp_anstoss.value) form.sp_anstoss.value = sp.anstoss;
+      if (beimEinfuegen === true && !aktuell) form.datum.value = sp.datum;   // neuer Bericht steht beim Spieltag
       var datum = sp.datum.slice(8, 10) + '.' + sp.datum.slice(5, 7) + '.';
       hinweis.textContent = 'Automatisch erkannt: ' + sp.mannschaft + ' – ' + (sp.heim ? 'Heimspiel gegen ' : 'auswärts bei ') + sp.gegner +
         ' am ' + datum + (passend.length > 1 ? ' (mehrere Spiele passen – bitte prüfen)' : '');
@@ -784,16 +785,142 @@
     if (r.spiel) Object.keys(r.spiel).forEach(function (n) { if (form['sp_' + n]) form['sp_' + n].value = r.spiel[n]; });
     // Spieltag, Liga, Stadion, Zitat aus dem Text nur eintragen, wo noch nichts steht
     Object.keys(r.extra).forEach(function (n) { if (form['sp_' + n] && !form['sp_' + n].value.trim()) form['sp_' + n].value = r.extra[n]; });
-    erkenneMannschaft();
-    zeichneVorberichte();
-    aktualisiereKnopf();
     var teile = ['Titel', r.kurz && 'Kurzüberschrift', r.teaser && 'Anreißer', 'Text', r.spiel && 'Spieldaten'].filter(Boolean);
-    var fehlt = ['wettbewerb', 'runde', 'spielort'].filter(function (n) { return !form['sp_' + n].value.trim(); })
-      .map(function (n) { return { wettbewerb: 'Wettbewerb', runde: 'Spieltag', spielort: 'Spielort' }[n]; });
-    meldung('Spielbericht erkannt und aufgeteilt: ' + teile.join(', ') + '. Bitte kurz prüfen' +
-      (!r.spiel ? '; Gegner und Ergebnis bei den Spieldaten eintragen' : '') +
-      (fehlt.length ? '; noch offen: ' + fehlt.join(', ') : '') + '.', 'ok');
+    function fertig(zusatz) {
+      var fehlt = ['gegner', 'end_sch', 'wettbewerb', 'runde', 'spielort'].filter(function (n) { return !String(form['sp_' + n].value).trim(); })
+        .map(function (n) { return { gegner: 'Gegner', end_sch: 'Ergebnis', wettbewerb: 'Wettbewerb', runde: 'Spieltag', spielort: 'Spielort' }[n]; });
+      meldung('Spielbericht erkannt und aufgeteilt: ' + teile.join(', ') + (zusatz && zusatz.length ? '; aus dem Text erkannt: ' + zusatz.join(', ') : '') +
+        '. Bitte kurz prüfen' + (fehlt.length ? '; noch offen: ' + fehlt.join(', ') : '') + '.', 'ok');
+    }
+    var liga = t.match(LIGEN);
+    if (liga && !form.sp_wettbewerb.value.trim()) form.sp_wettbewerb.value = liga[1];
+    if (r.spiel && r.spiel.gegner) {
+      if (r.spiel.spieldatum && !aktuell) form.datum.value = r.spiel.spieldatum;
+      erkenneMannschaft(true);
+      zeichneVorberichte();
+      aktualisiereKnopf();
+      fertig();
+    } else {
+      fertig();
+      fliesstextAuswerten(t).then(function (x) { fertig(x.teile); }, function () {});
+    }
     return true;
+  }
+
+  // ---------------------------------------------------------------- Spiel aus dem Fließtext erkennen (16.11.2026)
+  // Ohne Block „Spieldaten“: Mannschaft, Spiel, Ergebnis und Wettbewerb aus dem Text selbst ableiten.
+  // Grundlage ist der Vereinsspielplan aller Mannschaften (assets/vereinsspiele.json); Trainer-Elf, Liga
+  // und Altersklasse grenzen die Mannschaft ein, der Gegnername im Text das Spiel.
+  var TRAINER_ELF = { ludwig: 'm1', papst: 'm2', hartmann: 'u19-1', 'förster': 'u17-1', foerster: 'u17-1',
+    perriello: 'u17-2', eschborn: 'u15-1', seipel: 'u13-1' };
+  var LIGA_TEAM = [[/thüringenliga|verbandsliga/i, 'm1'], [/kreisoberliga/i, 'm2']];
+  var LIGEN = /\b(Thüringenliga|Verbandsliga|Landesliga|Landesklasse|Kreisoberliga|Kreisliga|Kreisklasse|Talenteliga|Regionalliga|Oberliga|Kreispokal|Landespokal|Thüringenpokal|Hallenmasters|Hallenturnier|Testspiel|Freundschaftsspiel)\b/;
+  var JUNIOREN = { a: 'u19-1', b1: 'u17-1', b: 'u17-1', b2: 'u17-2', c: 'u15-1', c1: 'u15-1', d1: 'u13-1' };
+
+  function mannschaftsHinweise(text) {
+    var tipps = {}, m, re = /\b([A-ZÄÖÜ][a-zäöüß]+)-Elf\b/g;
+    while ((m = re.exec(text))) { var t = TRAINER_ELF[m[1].toLowerCase()]; if (t) tipps[t] = (tipps[t] || 0) + 3; }
+    LIGA_TEAM.forEach(function (l) { if (l[0].test(text)) tipps[l[1]] = (tipps[l[1]] || 0) + 2; });
+    re = /\b([A-D])([12])?-Junioren\b/g;
+    while ((m = re.exec(text))) {
+      var j = JUNIOREN[(m[1] + (m[2] || '')).toLowerCase()] || JUNIOREN[m[1].toLowerCase()];
+      if (j) tipps[j] = (tipps[j] || 0) + 3;
+    }
+    // „Trainer Andreas Seipel“ ohne „-Elf“
+    Object.keys(TRAINER_ELF).forEach(function (n) {
+      if (new RegExp('Trainer(?:in)?\\s+(?:[A-ZÄÖÜ][a-zäöüß]+\\s+)?' + n, 'i').test(text)) tipps[TRAINER_ELF[n]] = (tipps[TRAINER_ELF[n]] || 0) + 2;
+    });
+    return tipps;
+  }
+
+  // Ergebnis „4:0 (1:0)“ aus Sicht des SCH; Uhrzeiten („14:00 Uhr“) zählen nicht
+  function ergebnisAusText(text) {
+    var re = /(\d{1,2})\s*:\s*(\d{1,2})(?:\s*\(\s*(\d{1,2})\s*:\s*(\d{1,2})\s*\))?(?!\s*Uhr)(?!\d)/g, m, alle = [];
+    while ((m = re.exec(text))) {
+      var davor = text.slice(Math.max(0, m.index - 3), m.index);
+      if (/\d[.:]\s*$/.test(davor) || /(?:^|\D)\(\s*$/.test(davor)) continue;   // Datum/Uhrzeit oder Halbzeitstand
+      if (+m[1] > 30 || +m[2] > 30) continue;
+      alle.push(m);
+    }
+    if (!alle.length) return null;
+    // Das zuerst genannte Ergebnis zählt (Einstieg); den Halbzeitstand liefert notfalls eine spätere Nennung
+    var beste = alle[0], a = +beste[1], b = +beste[2], h = null;
+    alle.some(function (x) {
+      var gleich = (+x[1] === a && +x[2] === b) || (+x[1] === b && +x[2] === a);
+      if (gleich && x[3] !== undefined) { h = +x[1] === a ? [+x[3], +x[4]] : [+x[4], +x[3]]; return true; }
+      return false;
+    });
+    var satz = (text.slice(Math.max(0, beste.index - 220), beste.index + 120).match(/[^.!?]*$/) || [''])[0] +
+      text.slice(beste.index, beste.index + 160);
+    var drehen = false;
+    if (/aus sicht (?:der|des) (?:gäste|gegner)/i.test(satz)) drehen = true;
+    else if (!/aus sicht/i.test(satz)) {
+      if (/\b(gewinn|gewann|siegt|besiegt|sieg\b|erfolg|dreier|bezwing)/i.test(satz) && a < b) drehen = true;
+      if (/\b(verlier|verlor|unterl[ai]g|niederlage|pleite)/i.test(satz) && a > b) drehen = true;
+    }
+    if (drehen) { var x = a; a = b; b = x; if (h) h = [h[1], h[0]]; }
+    return { sch: a, geg: b, hz: h };
+  }
+
+  function spielAusText(text) {
+    return ladeVereinsspiele().then(function (liste) {
+      if (!liste.length) return null;
+      var tipps = mannschaftsHinweise(text), klein = text.toLowerCase();
+      var bis = form.datum.value || new Date().toISOString().slice(0, 10);
+      var genannt = (text.match(/\b(\d{1,2})\.(\d{1,2})\.(?:(20\d\d)|\b)/) || null);
+      var kandidaten = liste.map(function (sp) {
+        var tage = (new Date(bis + 'T12:00:00') - new Date(sp.datum + 'T12:00:00')) / 864e5;
+        var p = 0;
+        var w = worte(sp.gegner);
+        var treffer = w.filter(function (x) { return klein.indexOf(x) >= 0; }).length;
+        if (treffer) p += 4 + treffer;
+        if (tipps[sp.team]) p += tipps[sp.team];
+        if (genannt && +genannt[1] === +sp.datum.slice(8, 10) && +genannt[2] === +sp.datum.slice(5, 7)) p += 3;
+        else if (tage < 0 || tage > 9) p -= 6;
+        return { sp: sp, p: p, gegnerTreffer: treffer };
+      }).filter(function (k) { return k.gegnerTreffer && k.p > 0; })
+        .sort(function (a, b) { return b.p - a.p || (b.sp.datum).localeCompare(a.sp.datum); });
+      if (!kandidaten.length) return null;
+      return { sp: kandidaten[0].sp, unsicher: kandidaten.length > 1 && kandidaten[1].p === kandidaten[0].p };
+    });
+  }
+
+  function fliesstextAuswerten(text) {
+    var erg = ergebnisAusText(text), liga = text.match(LIGEN);
+    return spielAusText(text).then(function (treffer) {
+      var teile = [];
+      if (treffer) {
+        var sp = treffer.sp;
+        form.sp_gegner.value = sp.gegner;
+        form.sp_mannschaft.value = sp.team;
+        form.sp_mannschaft.dataset.hand = '';
+        form.sp_ort_art.value = sp.heim ? 'heim' : 'auswaerts';
+        form.sp_spieldatum.value = sp.datum;
+        if (!form.sp_anstoss.value) form.sp_anstoss.value = sp.anstoss;
+        if (!aktuell) form.datum.value = sp.datum;   // Bericht steht in der Liste beim Spieltag
+        var hinweis = $('[data-mannschafterkannt]');
+        hinweis.textContent = 'Automatisch erkannt: ' + sp.mannschaft + ' – ' + (sp.heim ? 'Heimspiel gegen ' : 'auswärts bei ') +
+          sp.gegner + ' am ' + sp.datum.slice(8, 10) + '.' + sp.datum.slice(5, 7) + '.' + (treffer.unsicher ? ' (mehrere Spiele passen – bitte prüfen)' : '');
+        hinweis.hidden = false;
+        zeigeMannschaft();
+        teile.push(sp.mannschaft + ' gegen ' + sp.gegner);
+      }
+      if (erg && !form.sp_end_sch.value) {
+        form.sp_end_sch.value = erg.sch; form.sp_end_geg.value = erg.geg;
+        if (erg.hz) { form.sp_hz_sch.value = erg.hz[0]; form.sp_hz_geg.value = erg.hz[1]; }
+        teile.push('Ergebnis ' + erg.sch + ':' + erg.geg);
+      }
+      if (liga && !form.sp_wettbewerb.value.trim()) { form.sp_wettbewerb.value = liga[1]; teile.push(liga[1]); }
+      zeichneVorberichte();
+      aktualisiereKnopf();
+      return { teile: teile, spiel: !!treffer };
+    });
+  }
+
+  // Sieht der eingefügte Text nach einem Spielbericht aus? (Ergebnis + mehrere Absätze)
+  function wieSpielbericht(t) {
+    var zeilen = t.split(/\n/).filter(function (z) { return z.trim(); }).length;
+    return zeilen >= 4 && !!ergebnisAusText(t);
   }
 
   // Einfügen nur als reiner Text (kein Word-/Webseiten-Ballast); Absätze bleiben erhalten
@@ -803,7 +930,10 @@
     e.preventDefault();
     // Ganzer Spielbericht (Rubrik Spielbericht oder Block „Spieldaten“ dabei): selbst aufteilen
     var zeilenAnzahl = t.split(/\n/).filter(function (z) { return z.trim(); }).length;
-    if (zeilenAnzahl >= 4 && (form.rubrik.value === 'Spielbericht' || zeilenAus(t).some(istSpieldatenZeile)) &&
+    var leer = !textfeld.textContent.trim() || (unberuehrt !== null && stand() === unberuehrt);
+    var rubrikPasst = ['Spielbericht', 'News', 'Nachwuchs'].indexOf(form.rubrik.value) >= 0;
+    if (zeilenAnzahl >= 4 && (form.rubrik.value === 'Spielbericht' || zeilenAus(t).some(istSpieldatenZeile) ||
+        (leer && rubrikPasst && wieSpielbericht(t))) &&
         spielberichtEinsetzen(t)) return;
     var absaetze = t.replace(/\r/g, '').split(/\n{2,}/).map(function (a) {
       var esc = a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
