@@ -6,7 +6,14 @@
 // 07.10.2026, AB3-2); im Repo ist instagram-daten.js leer. Beim Anschauen geht keine Anfrage an Meta.
 // Muss VOR sections.js laufen (die Pfeile messen die Breite der Spur).
 (() => {
- const daten = Array.isArray(window.SCH_INSTAGRAM) ? window.SCH_INSTAGRAM : [];
+ // Startseite: Vereins- und Nachwuchskonto zusammen (Gemeinschaftsbeitraege stehen auf Instagram in beiden
+ // Profilen, die Schnittstelle liefert sie aber nur dem Konto, das sie erstellt hat). Doppelte raus, neueste zuerst.
+ const liste = (v, konto) => (Array.isArray(v) ? v : []).map(b => Object.assign({}, b, { konto }));
+ const gesehen = new Set();
+ const daten = liste(window.SCH_INSTAGRAM, 'sc1911heiligenstadt').concat(liste(window.SCH_INSTAGRAM_NACHWUCHS, 'sc1911heiligenstadt_nachwuchs'))
+  .filter(b => b && b.href && !gesehen.has(b.href.replace(/[?#].*$/, '')) && gesehen.add(b.href.replace(/[?#].*$/, '')))
+  .sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || '')))
+  .slice(0, 6);
  const track = document.querySelector('.sch-social .sch-socialtrack');
  if (!track || !daten.length) return;
  const el = (tag, attrs, kinder) => {
@@ -27,7 +34,7 @@
   const vom = 'Instagram-Beitrag vom ' + (b.datum || '');
   const kurz = kuerzen(b.text, 100);
   const bild = el('img', { src: 'assets/instagram/' + b.bild, alt: (b.art && b.art !== 'Bild' ? b.art + ': ' : '') + (kurz || vom), loading: 'lazy' });
-  const fuss = el('div', { class: 'sch-socialfooter' }, [el('img', { src: 'assets/logo.png', alt: '' }), el('span', {}, ['sc1911heiligenstadt']), el('b', { class: 'sch-ig-logo', 'aria-hidden': 'true' }, [])]);
+  const fuss = el('div', { class: 'sch-socialfooter' }, [el('img', { src: 'assets/logo.png', alt: '' }), el('span', {}, [b.konto]), el('b', { class: 'sch-ig-logo', 'aria-hidden': 'true' }, [])]);
   track.append(el('a', { class: 'sch-socialcard sch-igpost', href: b.href, 'aria-label': vom + ' auf Instagram ansehen' + (kurz ? ': ' + kurz : '') }, [el('div', { class: 'sch-socialvisual' }, [bild, caption]), fuss]));
  });
 })();
