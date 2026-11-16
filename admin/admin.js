@@ -917,6 +917,12 @@
     });
   }
 
+  // Darf ein eingefügter Bericht Titel/Anreißer/Text ohne Rückfrage ersetzen? Nur wenn alles leer bzw.
+  // eine unberührte Vorlage ist und kein schon veröffentlichter Beitrag bearbeitet wird (H2-2).
+  function berichtFrei(unberuehrtJetzt, b) {
+    return !!unberuehrtJetzt && !(b && b.daten && !b.daten.entwurf);
+  }
+
   // Sieht der eingefügte Text nach einem Spielbericht aus? (Ergebnis + mehrere Absätze)
   function wieSpielbericht(t) {
     var zeilen = t.split(/\n/).filter(function (z) { return z.trim(); }).length;
@@ -932,8 +938,13 @@
     var zeilenAnzahl = t.split(/\n/).filter(function (z) { return z.trim(); }).length;
     var leer = !textfeld.textContent.trim() || (unberuehrt !== null && stand() === unberuehrt);
     var rubrikPasst = ['Spielbericht', 'News', 'Nachwuchs'].indexOf(form.rubrik.value) >= 0;
+    // Ersetzt Titel/Anreißer/Text nur ungefragt, wenn alles leer ist (Bugjagd 16.11.2026 H2-2);
+    // sonst Rückfrage, Abbrechen fügt den Text normal an der Schreibmarke ein.
     if (zeilenAnzahl >= 4 && (form.rubrik.value === 'Spielbericht' || zeilenAus(t).some(istSpieldatenZeile) ||
-        (leer && rubrikPasst && wieSpielbericht(t))) &&
+        (leer && rubrikPasst && wieSpielbericht(t))) && spielberichtZerlegen(t) &&
+        (berichtFrei(istUnberuehrt(), aktuell) ||
+          confirm('Als ganzen Spielbericht übernehmen?\n\nTitel, Anreißer und der bisherige Text werden dann ersetzt. ' +
+            'Abbrechen fügt den Text nur an der Schreibmarke ein.')) &&
         spielberichtEinsetzen(t)) return;
     var absaetze = t.replace(/\r/g, '').split(/\n{2,}/).map(function (a) {
       var esc = a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
