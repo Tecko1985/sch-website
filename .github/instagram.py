@@ -31,7 +31,7 @@ from PIL import Image
 STAMM = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ZIEL = os.environ.get('IG_ZIEL', '').strip()
 ORDNER = os.path.join(ZIEL, 'assets', 'instagram')
-ANZAHL = 6
+ANZAHL = 9
 INSTAGRAM = 'https://graph.instagram.com'
 FACEBOOK = 'https://graph.facebook.com'
 FELDER = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp'
@@ -83,6 +83,8 @@ def karte(b, datei):
         'datum': zeit.strftime('%d.%m.%Y'),
         'iso': zeit.isoformat(),
         'text': kurz(b.get('caption')),
+        # Ganzer Text fuer die Grossansicht (instagram.js), Instagram erlaubt hoechstens 2200 Zeichen
+        'voll': (b.get('caption') or '').strip()[:2200],
     }
 
 
