@@ -40,9 +40,8 @@ concurrency:
   queue: max
 
 jobs:
-  # Bauen und Veroeffentlichen in EINEM Job: das Repo ist privat, Actions-Minuten zaehlen gegen das
-  # Kontingent, und jeder Job wird auf eine volle Minute aufgerundet (16.11.2026). Vorher eigener Job
-  # "veroeffentlichen" -- kostete bei ~33 Laeufen am Tag rund 30 Minuten taeglich zusaetzlich.
+  # Bauen und Veroeffentlichen (Pages) in EINEM Job: jeder Job wird auf eine volle Minute aufgerundet
+  # (16.11.2026). Die Hetzner-Kopie laeuft dagegen bewusst getrennt (Job "hetzner", ohne Repo-Code).
   bauen:
     runs-on: ubuntu-latest
     permissions:
@@ -150,24 +149,45 @@ jobs:
         if: steps.entscheiden.outputs.veroeffentlichen == '1'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
-      # Test-Kopie auf dem Webspace bei Hetzner: www.sc1911-heiligenstadt.de/neu-test/ (UMZUG.md).
-      # Das WordPress daneben bleibt unberuehrt; --delete wirkt nur im Ordner neu-test.
-      # Tut nichts, solange das Secret HETZNER_SSH_KEY fehlt. Host-Schluessel fest eingetragen
-      # (ssh-keyscan -p 222 dedi1977.your-server.de, 16.11.2026), kein blindes Vertrauen.
-      # .htaccess bleibt draussen: ihre Weiterleitungen gelten erst fuer die echte Seite im Hauptordner.
+  # Test-Kopie auf dem Webspace bei Hetzner: www.sc1911-heiligenstadt.de/neu-test/ (UMZUG.md).
+  # EIGENER Job (Bugjagd 16.11.2026 H2-1): Im Job "bauen" laufen Skripte aus dem Repo (werkzeuge/,
+  # .github/instagram.py), die jeder mit Schreibrecht aendern kann -- ein geaendertes Skript koennte ueber
+  # GITHUB_PATH/GITHUB_ENV spaetere Schritte unterwandern. Darum kommt HETZNER_SSH_KEY nur in diesen Job:
+  # kein checkout, kein Repo-Code, nur das fertige Pages-Artefakt herunterladen, entpacken, rsync.
+  # Das WordPress daneben bleibt unberuehrt; --delete wirkt nur im Ordner neu-test.
+  # Tut nichts, solange das Secret HETZNER_SSH_KEY fehlt. Host-Schluessel fest eingetragen
+  # (ssh-keyscan -p 222 dedi1977.your-server.de, 16.11.2026), kein blindes Vertrauen.
+  # .htaccess bleibt draussen: ihre Weiterleitungen gelten erst fuer die echte Seite im Hauptordner.
+  # Symlinks werden nicht mitgenommen (rsync ohne -l).
+  hetzner:
+    needs: [bauen]
+    if: needs.bauen.outputs.veroeffentlichen == '1'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artefakt
+
       - name: Test-Kopie zu Hetzner
-        if: steps.entscheiden.outputs.veroeffentlichen == '1'
         env:
           HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
           ZIEL: public_html/neu-test/
         run: |
           if [ -z "$HETZNER_SSH_KEY" ]; then echo "Kein HETZNER_SSH_KEY -- Test-Kopie uebersprungen."; exit 0; fi
+          tarball=$(find "$RUNNER_TEMP/artefakt" -type f -name '*.tar' | head -n 1)
+          if [ -z "$tarball" ]; then echo "::error::Pages-Artefakt ohne .tar"; ls -laR "$RUNNER_TEMP/artefakt"; exit 1; fi
+          mkdir "$RUNNER_TEMP/seite"
+          tar -xf "$tarball" -C "$RUNNER_TEMP/seite" --no-same-owner --no-same-permissions
+          echo "$(find "$RUNNER_TEMP/seite" -type f | wc -l) Dateien"
           install -m 600 /dev/null "$RUNNER_TEMP/hetzner"
           printf '%s\n' "$HETZNER_SSH_KEY" > "$RUNNER_TEMP/hetzner"
           echo '[dedi1977.your-server.de]:222 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8yCL+qtrE6fn3yHRsto9z6C/Y6q4S7K4G7mdOTI9q51ZPRZAayP3jHoUnqbYOgtaJQrkcdRqJ3GOW7wMh2Y6jLCSmRoVIBqNmtNPdLIXvWmVfJapXExf30SRb0cIAgtbGx30+ejY5GvgJiQyxdQen563yVc0E/dIWfgXlrXJFwS5RbA7mJQ5NtB2TQs38HH8U1uVLVBJ4knFP2ga3E00+lRvnedXhMeFZx+bXwuAf0CBd8ZZDBGPtgC7wZM8z4uY0HFhK9hUgB4k/cM+tK/u8XIJwTXxn8/P2kz49RUNgEEcPnd5l3BcEHpIr/FO+UFWFmovmsC3CbG9eimJy7wcp' > "$RUNNER_TEMP/known_hosts"
-          rsync -rlt --delete --exclude .htaccess \
+          rsync -rt --delete --exclude .htaccess \
             -e "ssh -p 222 -i $RUNNER_TEMP/hetzner -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes" \
-            _site/ "sccnld@dedi1977.your-server.de:$ZIEL"
+            "$RUNNER_TEMP/seite/" "sccnld@dedi1977.your-server.de:$ZIEL"
           rm -f "$RUNNER_TEMP/hetzner"
           echo "Test-Kopie liegt unter https://www.sc1911-heiligenstadt.de/neu-test/"
 
