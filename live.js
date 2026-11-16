@@ -209,11 +209,16 @@
     return alle.some(function (x) { return x.status !== 'ende'; });
   }
 
-  var daten = null, zeitgeber = null;
+  var daten = null, zeitgeber = null, weiterZuletzt = true;
   function runde() {
     holen().then(function (d) {
       daten = d;
-      var weiter = seite ? zeigeSeite(d) : zeigeLeiste(d);
+      return seite ? zeigeSeite(d) : zeigeLeiste(d);
+    }).catch(function () {
+      // Funkloch oder Anzeigefehler: nicht stehen bleiben, beim nächsten Takt neu versuchen (Bugjagd 16.11.2026 H2-3)
+      return weiterZuletzt;
+    }).then(function (weiter) {
+      weiterZuletzt = !!weiter;
       clearTimeout(zeitgeber);
       // Nur weiter abfragen, solange ein Spiel ansteht oder läuft
       if (weiter) zeitgeber = setTimeout(runde, TAKT);

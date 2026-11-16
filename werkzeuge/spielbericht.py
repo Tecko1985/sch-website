@@ -694,7 +694,7 @@ def live_seite(vorlage, adresse):
     kopf = kopf.replace("</head>", '<link rel="stylesheet" href="live.css?v=3">\n</head>', 1)
     main = ('<main class="sb lv-seite">\n<header class="lv-kopf"><p>1. SC 1911 Heiligenstadt</p><h1 class="stitel">Liveticker</h1></header>\n'
             '<div id="sch-live-seite"><noscript><p>Der Liveticker braucht JavaScript.</p></noscript></div>\n'
-            '<script src="live.js?v=3" data-basis="../" defer></script>\n</main>')
+            '<script src="live.js?v=4" data-basis="../" defer></script>\n</main>')
     return pfade_fuer_seiten(kopf + main + fuss)
 
 
