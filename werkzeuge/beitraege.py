@@ -495,6 +495,48 @@ def neu_karten(ziel, liste):
 
 
 # ---------------------------------------------------------------- Ablauf
+# ---------------------------------------------------------------- Wanderseite
+# Redaktionsbeiträge über das Wandern erscheinen zusätzlich oben in „News der Abteilung“ auf seiten/wandern.html
+# (neuester zuerst, die festen Einträge rücken nach unten). Erkannt am Inhalt, keine eigene Rubrik nötig.
+WANDER_FEST = re.compile(r"wanderabteilung|abteilung wandern|wanderfreund|wandertag|wimpelwander|wanderführ|wanderplan", re.I)
+WANDER_WORT = re.compile(r"\bwander(?!pokal)\w*", re.I)
+
+
+def ist_wandern(d):
+    rubrik = (d.get("rubrik") or "").lower()
+    if rubrik == "wandern":
+        return True
+    if rubrik in ("spielbericht", "vorbericht"):
+        return False
+    titel = d.get("titel") or ""
+    text = html.unescape(re.sub(r"<[^>]+>", " ", d.get("text") or ""))
+    if WANDER_FEST.search(titel + " " + text):
+        return True
+    im_text = len(WANDER_WORT.findall(text))
+    return (bool(WANDER_WORT.search(titel)) and im_text >= 1) or im_text >= 3
+
+
+def schreibe_wandern(ziel, beitraege):
+    pfad = os.path.join(ziel, "seiten", "wandern.html")
+    if not os.path.exists(pfad):
+        return 0
+    liste = sorted((d for d in beitraege if ist_wandern(d)), key=lambda d: (d["datum"], d.get("zeit", "")), reverse=True)
+    if not liste:
+        return 0
+    karten = "".join(
+        f'<a class="sp-newskarte" href="{d["seite"]}">'
+        + (f'<img src="../{d["bild"]}" alt="" loading="lazy">' if d.get("bild") else "")
+        + f'<span>{html.escape(d["titel"], quote=False)}</span></a>\n'
+        for d in liste)
+    t = open(pfad, encoding="utf-8").read()
+    start = '<div class="sp-newsliste">'
+    if start not in t:
+        return 0
+    t = t.replace(start, start + "\n" + karten, 1)
+    open(pfad, "w", encoding="utf-8").write(t)
+    return len(liste)
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit("Aufruf: python3 werkzeuge/beitraege.py ZIELORDNER")
@@ -526,6 +568,9 @@ def main():
     schreibe_news(ziel, news, liste)
     schreibe_start(ziel, liste)
     schreibe_neu_start(ziel, liste)
+    n = schreibe_wandern(ziel, sichtbar)
+    if n:
+        print(f"{n} Wanderbeiträge oben auf der Wanderseite.")
     # „Aktuelle Spiele“: Karte zum Spielbericht bekommt Ergebnis und Link
     p = os.path.join(ziel, "index.html")
     start = open(p, encoding="utf-8").read()
