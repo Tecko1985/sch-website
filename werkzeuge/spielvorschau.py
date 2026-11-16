@@ -95,7 +95,7 @@ def tabelle_html(zeilen, hervor):
             '<thead><tr><th>Pl.</th><th class="sb-verein">Mannschaft</th><th title="Spiele">Sp.</th><th class="sb-breit" title="Siege">S</th>'
             '<th class="sb-breit" title="Unentschieden">U</th><th class="sb-breit" title="Niederlagen">N</th><th class="sb-breit">Tore</th>'
             '<th title="Tordifferenz">Diff.</th><th title="Punkte">Pkt.</th></tr></thead>\n<tbody>' + "".join(reihen) + '</tbody></table></div>\n'
-            f'<p class="sb-hinweis">Quelle: FuPa, Stand {datetime.date.today().strftime("%d.%m.%Y")}.</p>\n</div>')
+            '</div>')
 
 
 def vorbericht(slug, spieldatum, gegner, beitraege):

@@ -540,8 +540,7 @@ def statistik(s):
         dl += (f'<dl class="sb-stat" data-a="{a}" data-b="{b}"><dt>{name}</dt><dd class="wert">{a}</dd><dd class="sb-balken links"><i></i></dd>'
                f'<dd class="sb-balken rechts"><i></i></dd><dd class="wert rechts">{b}</dd></dl>')
     return (f'<div class="sb-statkopf"><div><img src="{w1}" alt="">{e(n1)}</div><div>{e(n2)}<img src="{w2}" alt=""></div></div>\n'
-            f'<div class="sb-statliste"><h3 class="stitel">Allgemein</h3>{dl}</div>\n'
-            '<p class="sb-stathinweis">Quelle: Spieldaten des Spielberichts. Weitere Werte wie Ballbesitz oder Torschüsse liegen für dieses Spiel nicht vor.</p>')
+            f'<div class="sb-statliste"><h3 class="stitel">Allgemein</h3>{dl}</div>')
 
 
 def elf_html(name, wappen, elf, karten):
