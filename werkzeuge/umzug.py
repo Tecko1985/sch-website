@@ -259,7 +259,10 @@ def main():
     ja = "--ja" in sys.argv
     if not os.path.isfile(SCHLUESSEL):
         sys.exit(f"SSH-Schlüssel fehlt: {SCHLUESSEL}")
-    bau = os.path.join(UMZUG, "bau")
+    # Jedes Mal ein frischer Bauordner: unter Windows kann ein alter noch gesperrt sein (Explorer, Shell)
+    for alt in [n for n in os.listdir(UMZUG) if n == "bau" or n.startswith("bau-")]:
+        shutil.rmtree(os.path.join(UMZUG, alt), ignore_errors=True)
+    bau = os.path.join(UMZUG, "bau-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     if art == "sichern":
         sichern()
     elif art == "probe":
