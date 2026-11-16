@@ -121,7 +121,7 @@ body{margin:0;background:#fff}
 
 /* ---------- Feinschliff 23.10.2026 ---------- */
 /* Vorstand: breitere Karten, E-Mail-Adressen brechen nicht mehr Zeichen für Zeichen um */
-.sp-vorstand{grid-template-columns:repeat(auto-fill,minmax(310px,1fr))}
+.sp-vorstand{grid-template-columns:repeat(auto-fill,minmax(min(310px,100%),1fr))}
 .sp-person span a{overflow-wrap:anywhere;word-break:normal}
 /* Termine: „Zum Spiel“ als ausreichend große Tippfläche */
 .tm-info a{display:inline-flex;align-items:center;min-height:40px;padding:0 4px}

@@ -241,7 +241,7 @@ def tafel(s):
     return f"""<section class="sb-tafel" aria-label="Ergebnis">
 <div class="sb-tafel-innen">
 <div class="sb-meta"><span class="sb-meta-icon">{POKAL}</span><p><b>{oben}</b>{zweite}{"<br>" if zweite else ""}{zeit}</p></div>
-<div class="sb-paar"><span class="sb-team stitel">{e(n1)}</span><img class="sb-wappen" src="{w1}" alt=""><div class="sb-stand">{stand}{hz}</div><img class="sb-wappen" src="{w2}" alt=""><span class="sb-team stitel">{e(n2)}</span></div>
+<div class="sb-paar"><span class="sb-team stitel">{e(n1).replace("/", "/<wbr>")}</span><img class="sb-wappen" src="{w1}" alt=""><div class="sb-stand">{stand}{hz}</div><img class="sb-wappen" src="{w2}" alt=""><span class="sb-team stitel">{e(n2).replace("/", "/<wbr>")}</span></div>
 <span class="sb-status">{"Beendet" if s.end else "Spielbericht"}</span>{tore_html}
 </div>
 </section>"""
