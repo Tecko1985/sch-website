@@ -130,9 +130,9 @@ def seitenname(m):
 
 
 def wir_name(team):
-    """Kurzbezeichnung für Titel und Tabelle: SCH, SCH II, SCH U17 …"""
+    """Kurzbezeichnung für Titel und Tabelle: SCH, 1. SC 1911 Heiligenstadt II, SCH U17 …"""
     if team == "m2":
-        return "SCH II"
+        return fupa_ticker.ZWEITE
     if team == "m1":
         return "SCH"
     return f"SCH {sb.MANNSCHAFTEN.get(team, '')}".strip()

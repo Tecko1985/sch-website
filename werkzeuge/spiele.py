@@ -153,6 +153,8 @@ def lade_wappen(team):
 
 
 def teamname(t):
+    if (t.get("slug") or "").startswith(f"{CLUB}-m2-"):
+        return "1. SC 1911 Heiligenstadt II"  # zweite Mannschaft überall mit vollem Namen
     n = t.get("name")
     return (n.get("full") or n.get("middle")) if isinstance(n, dict) else n
 

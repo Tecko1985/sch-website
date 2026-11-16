@@ -31,6 +31,7 @@ PAARUNG = re.compile(r"^(.+?)\s+vs\.?\s+(.+?)\.?$", re.I)
 # Mannschaft am Zeilenanfang, wenn sie mit der Paarung in einer Zeile steht („U13 / D1 SCH vs. JFC Gera“)
 TEAM_VORN = re.compile(r"^((?:U\s?\d{1,2}|Reserve|Herren|Frauen|Alte Herren|Bambini)"
                        r"(?:\s*[|/]\s*[A-Z]\d(?:-Junioren)?)?)\s+(.+\svs\.?\s.+)$", re.I)
+ZWEITE = "1. SC 1911 Heiligenstadt II"
 WIR = re.compile(r"^(?:1\.\s*)?SC(?:H| 1911 Heiligenstadt| Heiligenstadt)(?:\s+(?:II|III|IV|2|3))?$", re.I)
 
 
@@ -126,6 +127,9 @@ def _karte(s):
     e = lambda x: html.escape(x, quote=True)
     label, zusatz = _team_label(s["team"])
     heim, gast = s["paarung"]
+    # Zweite Mannschaft (Herren) mit vollem Namen; „SCH II“ beim Nachwuchs (z. B. U17 B2) bleibt
+    if re.match(r"(?i)(reserve|2\. mannschaft|herren)", s["team"]):
+        heim, gast = (ZWEITE if WIR.match(n) and re.search(r"(II|2)$", n) else n for n in (heim, gast))
     wir_heim, wir_gast = _seite(heim), _seite(gast)
     art = "heim" if wir_heim and not wir_gast else "auswaerts" if wir_gast and not wir_heim else ""
     namen = "".join(f'<span class="sp-wir">{e(n)}</span>' if _seite(n) else f"<span>{e(n)}</span>" for n in (heim, gast))

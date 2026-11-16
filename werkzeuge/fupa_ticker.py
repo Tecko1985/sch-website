@@ -46,9 +46,15 @@ def _name(rolle):
     return " ".join(x for x in (p.get("firstName"), p.get("lastName")) if x).strip()
 
 
+# Unsere zweite Mannschaft heißt auf der Seite überall so (FuPa: „1. SC Heiligenstadt II“ o. ä.)
+ZWEITE = "1. SC 1911 Heiligenstadt II"
+
+
 def _teamname(t):
     if not isinstance(t, dict):
         return ""
+    if (t.get("slug") or "").startswith("1-sc-1911-heiligenstadt-m2-"):
+        return ZWEITE
     n = t.get("name")
     if isinstance(n, dict):
         return n.get("full") or n.get("middle") or ""

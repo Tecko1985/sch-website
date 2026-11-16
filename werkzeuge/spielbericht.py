@@ -146,6 +146,7 @@ class Spiel:
         self.da = bool(self.gegner)
         self.team = sp.get("mannschaft") if sp.get("mannschaft") in MANNSCHAFTEN else "m1"
         self.jugend = self.team not in ("m1", "m2")
+        self.wir = SCH + " II" if self.team == "m2" else SCH  # Name auf Tafel und in den Spieldaten
         self.heim = sp.get("ort_art", "heim") != "auswaerts"
         self.tore = sorted(ereignisse(sp.get("tore_sch"), "sch") + ereignisse(sp.get("tore_geg"), "geg"), key=lambda x: x["min"])
         self.tore = self.teams_aus_spielstand(sp) or self.tore
@@ -195,7 +196,7 @@ class Spiel:
         return f"{h} : {g}"
 
     def teams(self):
-        a = (SCH, SCH_WAPPEN, self.elf_sch)
+        a = (self.wir, SCH_WAPPEN, self.elf_sch)
         b = (self.gegner, self.wappen, self.elf_geg)
         return (a, b) if self.heim else (b, a)
 
@@ -347,7 +348,7 @@ def spieldaten(s):
     if not s.da:
         return ""
     zeilen_ = []
-    teams = ((SCH, s.elf_sch), (s.gegner, s.elf_geg))
+    teams = ((s.wir, s.elf_sch), (s.gegner, s.elf_geg))
     for name, elf in (teams if s.heim else teams[::-1]):   # Heimmannschaft immer zuerst
         if elf:
             zeilen_.append(f'<p><b>{e(name)}:</b> {" – ".join(e(x["roh"]) for x in elf)}</p>')
