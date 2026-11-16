@@ -388,7 +388,7 @@ def spielinfo(s):
 
 
 def galerie(bilder, titel):
-    if not bilder:
+    if len(bilder) < 2:  # ein einzelnes Bild steht schon oben im Kopf
         return ""
     knoepfe = "".join(f'<button type="button" data-gross="{b}"><img src="{b}" alt="{e(titel)}, Bild {i}" loading="lazy"></button>'
                       for i, b in enumerate(bilder, 1))
@@ -640,7 +640,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
     reiter = [
         ("spielinfo", "Spielinfo", spielinfo(s), ""),
         ("spielbericht", "Spielbericht", bericht, ""),
-        ("galerie", "Galerie", galerie(fuer_galerie, titel), ""),
+        ("galerie", "Galerie", galerie(alle, titel), ""),  # alle Bilder des Spiels, auch Titel- und Textbilder
         ("liveticker", "Liveticker", ticker(s, teaser), ""),
         ("stimmen", "Stimmen", stimmen(s), ""),
         ("statistiken", "Statistiken", statistik(s), "grau"),
