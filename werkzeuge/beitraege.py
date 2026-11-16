@@ -578,6 +578,8 @@ def main():
     spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, sichtbar)
     # Nachwuchs: Spielinfo- bzw. Ergebnisseite für jede Nachwuchskarte (nicht in den News)
     spielinfo.update(spielvorschau.baue_jugend(ziel, start, sb_vorlage, ADRESSE, sichtbar))
+    # … und für die ganze Saison, mit „Nächste Spiele“ / „Ergebnisse der Saison“ auf den Mannschaftsseiten
+    spielinfo = spielvorschau.baue_saison(ziel, sb_vorlage, ADRESSE, sichtbar, spielinfo)
     spielvorschau.vereinsspiele(ziel)  # für die Redaktion: Mannschaft aus Spieltag und Gegner erkennen
     start = spielvorschau.verlinke_karten(start, spielinfo)
     spielvorschau.verlinke_mannschaftsseiten(ziel, spielinfo)  # „Nächste Spiele“ -> eigene Spielinfo-Seiten

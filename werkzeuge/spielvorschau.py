@@ -55,6 +55,11 @@ def tabelle(liga_slug):
     return []
 
 
+def teamname(t):
+    """Vereinsname von FuPa; doppelte Vorsilbe („SG SG Birkungen“) bereinigt."""
+    return re.sub(r"^(\S+)\s+\1\s", r"\1 ", fupa_ticker._teamname(t))
+
+
 def ist_sch(team):
     return (team.get("slug") or "").startswith(CLUB + "-")
 
@@ -62,7 +67,7 @@ def ist_sch(team):
 def wappen(team):
     if ist_sch(team):
         return sb.SCH_WAPPEN
-    return sb.wappen_fuer(fupa_ticker._teamname(team)) or sb.LEER_WAPPEN
+    return sb.wappen_fuer(teamname(team)) or sb.LEER_WAPPEN
 
 
 def tabelle_html(zeilen, hervor):
@@ -74,7 +79,7 @@ def tabelle_html(zeilen, hervor):
         klasse = ' class="sb-wir"' if ist_sch(t) else ' class="sb-gegner"' if t.get("slug") in hervor else ""
         reihen.append(
             f'<tr{klasse}><td class="sb-platz">{z["rank"]}</td>'
-            f'<td class="sb-verein"><img src="{wappen(t)}" alt="" width="28" height="28" loading="lazy"><span>{e(fupa_ticker._teamname(t))}</span></td>'
+            f'<td class="sb-verein"><img src="{wappen(t)}" alt="" width="28" height="28" loading="lazy"><span>{e(teamname(t))}</span></td>'
             f'<td>{z["matches"]}</td><td class="sb-breit">{z["wins"]}</td><td class="sb-breit">{z["draws"]}</td><td class="sb-breit">{z["defeats"]}</td>'
             f'<td class="sb-breit">{z["ownGoals"]}:{z["againstGoals"]}</td><td>{z["goalDifference"]:+d}</td><td class="sb-punkte">{z["points"]}</td></tr>')
     return ('<div class="sb-schmal">\n<h2 class="sb-h2 stitel">Tabelle</h2>\n<div class="sb-tabelle-rahmen"><table class="sb-tabelle">'
@@ -129,6 +134,7 @@ def wettbewerb_name(liga, team):
     name = liga.get("middleName") or liga.get("name") or ""
     if team not in ("m1", "m2"):
         name = re.sub(r"^[A-G]-Jun(?:ioren)?\.?\s+", "", name)
+        name = re.sub(r"\s+[A-G]-Jun(?:ioren)?\.?$", "", name)  # „Landespokal B-Jun“
         name = re.sub(r"\bVL\b", "Verbandsliga", name)
         name = re.sub(r"\bKOL\b", "Kreisoberliga", name)
         name = re.sub(r"\bSt\.\s*(\d)", r"Staffel \1", name)
@@ -143,7 +149,7 @@ def titelbild(team):
 def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     heim = ist_sch(m["homeTeam"])
     gegner_t = m["awayTeam"] if heim else m["homeTeam"]
-    gegner = fupa_ticker._teamname(gegner_t)
+    gegner = teamname(gegner_t)
     runde = d.get("round") or {}
     liga = runde.get("competitionSeason") or {}
     venue = d.get("venue") or {}
@@ -213,7 +219,7 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
                 liste_fuer_redaktion.append({
                     "slug": m["slug"], "anstoss": m["kickoff"], "heim": heim,
                     "mannschaft": sb.MANNSCHAFTEN.get(team_von(m), ""),
-                    "gegner": fupa_ticker._teamname(m["awayTeam"] if heim else m["homeTeam"]),
+                    "gegner": teamname(m["awayTeam"] if heim else m["homeTeam"]),
                     "wettbewerb": (runde.get("competitionSeason") or {}).get("middleName") or "",
                     "seite": "seiten/" + seitenname(m)})
             except Exception as fehler:
@@ -235,11 +241,13 @@ def baue_alle(ziel, vorlage, adresse, beitraege):
 
 def _mit_artikel(name, art):
     """„beim FSV Waltershausen“ / „bei der SG …“, „dem SV …“ / „der JSG …“, „vom …“ / „von der …“."""
-    weiblich = bool(re.match(r"^(J?SG|JFG|Spielgemeinschaft)\b", name or ""))
+    weiblich = bool(re.match(r"^(J?SG|JFG|BSG|ESG|SpG|Spielgemeinschaft)\b", name or ""))
     if art == "bei":
         return f"bei der {name}" if weiblich else f"beim {name}"
     if art == "von":
         return f"von der {name}" if weiblich else f"vom {name}"
+    if art == "gegen":
+        return f"gegen die {name}" if weiblich else f"gegen den {name}"
     return f"der {name}" if weiblich else f"dem {name}"
 
 
@@ -247,12 +255,15 @@ def kurztext(team, heim, gegner, es, eg, hz, sch_tore):
     """Kurzer, sachlicher Spielbericht aus den Daten (keine erfundenen Szenen)."""
     wer = f"Die {sb.MANNSCHAFTEN.get(team, '')} des SCH".replace("  ", " ")
     if es > eg:
-        satz = f"{wer} gewann {'zu Hause gegen ' + gegner if heim else 'auswärts ' + _mit_artikel(gegner, 'bei')} mit {es}:{eg}."
+        satz = f"{wer} gewann {'zu Hause ' + _mit_artikel(gegner, 'gegen') if heim else 'auswärts ' + _mit_artikel(gegner, 'bei')} mit {es}:{eg}."
     elif es < eg:
         satz = f"{wer} musste sich {'zu Hause ' if heim else 'auswärts '}{_mit_artikel(gegner, 'dem')} mit {es}:{eg} geschlagen geben."
     else:
         satz = f"{wer} trennte sich {'zu Hause ' if heim else 'auswärts '}{_mit_artikel(gegner, 'von')} {es}:{eg} unentschieden."
     saetze = [satz]
+    # Pausenstand nur, wenn er zum Endstand passt (Talenteliga: Wertung nach Halbzeiten, kein normaler Spielstand)
+    if hz and (hz[0] > es or hz[1] > eg):
+        hz = None
     if hz:
         saetze.append(f"Zur Pause stand es {hz[0]}:{hz[1]}.")
     if sch_tore:
@@ -301,7 +312,7 @@ def tore_und_pause(slug, heim, gegner, end):
 def baue_ergebnis(m, d, standings, vorlage, adresse):
     heim = ist_sch(m["homeTeam"])
     gegner_t = m["awayTeam"] if heim else m["homeTeam"]
-    gegner = fupa_ticker._teamname(gegner_t)
+    gegner = teamname(gegner_t)
     team = team_von(m)
     runde = d.get("round") or {}
     liga = runde.get("competitionSeason") or {}
@@ -311,6 +322,8 @@ def baue_ergebnis(m, d, standings, vorlage, adresse):
         int(d.get("awayGoal") if d.get("awayGoal") is not None else m["awayGoal"])
     es, eg = (hg, ag) if heim else (ag, hg)
     tore, sch_namen, hz = tore_und_pause(m["slug"], heim, gegner, (hg, ag))
+    if hz and (hz[0] > es or hz[1] > eg):
+        hz = None  # passt nicht zum Endstand (z. B. Talenteliga mit Wertung nach Halbzeiten)
     sp = {"gegner": gegner, "ort_art": "heim" if heim else "auswaerts", "mannschaft": team,
           "wettbewerb": wettbewerb_name(liga, team),
           "runde": f'{runde["number"]}. Spieltag' if runde.get("type") == "league" and runde.get("number") else "",
@@ -392,6 +405,127 @@ def baue_jugend(ziel, start, vorlage, adresse, beitraege):
     return links
 
 
+# Nachwuchs-Mannschaftsseiten und ihre FuPa-Mannschaft (U16 = u17-2 und U13 III haben keine eigene Seite)
+JUGEND_SEITEN = {"seiten/u19.html": "u19-1", "seiten/u17.html": "u17-1", "seiten/u15.html": "u15-1",
+                 "seiten/u13.html": "u13-1", "seiten/u12.html": "u12-2", "seiten/e1.html": "u11-1", "seiten/e2.html": "u11-2"}
+KURZTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+
+
+def bericht_fuer(team, datum, gegner, beitraege):
+    """Spielbericht aus der Redaktion zu diesem Spiel (gleiche Mannschaft, gleicher Tag oder gleicher Gegner bis 10 Tage danach)."""
+    worte = sb.gegner_worte(gegner)
+    for d in sorted(beitraege, key=lambda x: (x["datum"], x.get("zeit") or ""), reverse=True):
+        sp = d.get("spiel") or {}
+        if d.get("rubrik") != "Spielbericht" or (sp.get("mannschaft") or "m1") != team:
+            continue
+        if sp.get("spieldatum") == datum or (any(w in (sp.get("gegner") or "").lower() for w in worte)
+                                             and 0 <= (datetime.date.fromisoformat(d["datum"]) - datetime.date.fromisoformat(datum)).days <= 10):
+            return d
+    return None
+
+
+def _listeneintrag(m, href, ergebnis=None):
+    heim = ist_sch(m["homeTeam"])
+    tag = datetime.date.fromisoformat(m["kickoff"][:10])
+    liga = wettbewerb_name(((m.get("round") or {}).get("competitionSeason") or m.get("competition") or {}), team_von(m))
+    h_name = "1. SC 1911 Heiligenstadt" if heim else teamname(m["homeTeam"])
+    g_name = teamname(m["awayTeam"]) if heim else "1. SC 1911 Heiligenstadt"
+    if ergebnis:
+        es, eg = ergebnis
+        art = "Sieg" if es > eg else "Niederlage" if es < eg else "Remis"
+        marke = f'<em class="tm-marke{"" if es >= eg else " aus"}">{art}</em>'
+        links = f'{m["homeGoal"]}:{m["awayGoal"]}'
+        wort = "Zum Bericht" if "beitrag-" in href else "Zum Ergebnis"
+    else:
+        marke = '<em class="tm-marke">Heimspiel</em>' if heim else '<em class="tm-marke aus">Auswärts</em>'
+        links = m["kickoff"][11:16]
+        wort = "Zum Spiel"
+    return (f'<li class="tm-spiel{" heim" if heim else ""}"><span class="tm-zeit">{links}</span>'
+            f'<span class="tm-team"><b>{KURZTAGE[tag.weekday()]}, {tag.day:02d}.{tag.month:02d}.</b><small>{e(liga)}</small></span>'
+            f'<span class="tm-paar"><span class="tm-gegner"><span>{e(h_name)}</span><i aria-hidden="true">:</i>'
+            f'<span>{e(g_name)}</span></span></span><span class="tm-info">{marke}'
+            f'<a href="{e(href)}">{wort}<span class="tm-sr"> {e(h_name)} gegen {e(g_name)}</span></a></span></li>')
+
+
+def baue_saison(ziel, vorlage, adresse, beitraege, schon):
+    """Ganze Saison des Nachwuchs: Ergebnisseite für jedes gespielte Spiel (ohne Redaktionsbericht),
+    Spielinfo-Seite für die nächsten Spiele; auf den Mannschaftsseiten „Nächste Spiele“ und
+    „Ergebnisse der Saison“ erneuern. `schon`: bereits gebaute Seiten {Slug: Pfad}. Liefert alle Links."""
+    links, tabellen = dict(schon), {}
+    beginn = saison().split("-")[0] + "-07-01"
+    heute = datetime.date.today().isoformat()
+    for datei, team in JUGEND_SEITEN.items():
+        spiele = {}
+        for art in ("past&limit=40", "current"):
+            try:
+                for x in fupa_ticker.hole_json(f"{fupa_ticker.API}/v1/teams/{CLUB}-{team}-{saison()}/matches?flavor={art}") or []:
+                    if team_von(x) == team and x.get("kickoff", "")[:10] >= beginn:
+                        spiele[x["slug"]] = x
+            except Exception as fehler:
+                print(f"  Spielplan {team}: {fehler}")
+        gespielt = sorted((x for x in spiele.values() if x.get("homeGoal") is not None and x.get("awayGoal") is not None),
+                          key=lambda x: x["kickoff"], reverse=True)
+        kommend = sorted((x for x in spiele.values() if x.get("homeGoal") is None and x["kickoff"][:10] >= heute),
+                         key=lambda x: x["kickoff"])[:5]
+        eintraege_g, eintraege_k = [], []
+        for m in gespielt + kommend:
+            try:
+                ist_fertig = m.get("homeGoal") is not None
+                heim = ist_sch(m["homeTeam"])
+                gegner = teamname(m["awayTeam"] if heim else m["homeTeam"])
+                bericht = bericht_fuer(team, m["kickoff"][:10], gegner, beitraege) if ist_fertig else None
+                if bericht:
+                    href = bericht["seite"]
+                else:
+                    if m["slug"] not in links:
+                        d = fupa_ticker.spiel(m["slug"])
+                        if not ((d.get("round") or {}).get("competitionSeason")) and (m.get("round") or {}).get("competitionSeason"):
+                            d["round"] = m["round"]
+                        liga = ((d.get("round") or {}).get("competitionSeason") or {}).get("slug")
+                        if liga and liga not in tabellen:
+                            try:
+                                tabellen[liga] = tabelle(liga)
+                            except Exception:
+                                tabellen[liga] = []
+                        stand = tabellen.get(liga) or []
+                        seite = (baue_ergebnis(m, d, stand, vorlage, adresse) if ist_fertig
+                                 else baue_seite(m, d, stand, vorlage, adresse, beitraege))
+                        open(os.path.join(ziel, "seiten", seitenname(m)), "w", encoding="utf-8").write(seite)
+                        links[m["slug"]] = "seiten/" + seitenname(m)
+                    href = links[m["slug"]].split("/")[-1]
+                if ist_fertig:
+                    es, eg = (m["homeGoal"], m["awayGoal"]) if heim else (m["awayGoal"], m["homeGoal"])
+                    eintraege_g.append(_listeneintrag(m, href, (es, eg)))
+                else:
+                    eintraege_k.append(_listeneintrag(m, href))
+            except Exception as fehler:
+                print(f"  Nachwuchs {m.get('slug')}: {fehler}")
+        mannschaftsseite(ziel, datei, eintraege_k, eintraege_g)
+    neu = len(links) - len(schon)
+    print(f"{neu} weitere Nachwuchs-Spielseiten (ganze Saison) gebaut.")
+    return links
+
+
+def mannschaftsseite(ziel, datei, kommend, gespielt):
+    """„Nächste Spiele“ ersetzen und „Ergebnisse der Saison“ direkt dahinter einfügen (im gebauten Ordner)."""
+    pfad = os.path.join(ziel, datei)
+    if not os.path.exists(pfad):
+        return
+    t = open(pfad, encoding="utf-8").read()
+    k = t.find("<h2>Nächste Spiele</h2>")
+    a = t.find('<ul class="tm-liste">', k)
+    b = t.find("</ul>", a)
+    if k < 0 or a < 0 or b < 0:
+        return
+    if kommend:
+        liste = '<ul class="tm-liste">' + "".join(kommend) + "</ul>"
+    else:
+        liste = '<p class="tm-leer">Zurzeit stehen keine Spiele an.</p>'
+    ergebnisse = ('\n<h2>Ergebnisse der Saison</h2><ul class="tm-liste">' + "".join(gespielt) + "</ul>") if gespielt else ""
+    t = t[:a] + liste + ergebnisse + t[b + 5:]
+    open(pfad, "w", encoding="utf-8").write(t)
+
+
 MANNSCHAFTSSEITEN = {"seiten/erste-mannschaft.html": "", "seiten/zweite-mannschaft.html": "zweite-"}
 
 
@@ -460,7 +594,7 @@ def vereinsspiele(ziel):
                 heim = ist_sch(m["homeTeam"])
                 alle[m["slug"]] = {"slug": m["slug"], "team": team, "mannschaft": sb.MANNSCHAFTEN[team],
                                    "datum": m["kickoff"][:10], "anstoss": m["kickoff"][11:16], "heim": heim,
-                                   "gegner": fupa_ticker._teamname(m["awayTeam"] if heim else m["homeTeam"])}
+                                   "gegner": teamname(m["awayTeam"] if heim else m["homeTeam"])}
     liste = sorted(alle.values(), key=lambda x: (x["datum"], x["anstoss"]))
     with open(os.path.join(ziel, "assets", "vereinsspiele.json"), "w", encoding="utf-8") as f:
         json.dump(liste, f, ensure_ascii=False, indent=1)
