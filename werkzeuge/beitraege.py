@@ -288,8 +288,8 @@ def lade_beitraege():
         d["teaser"] = kurz(d.get("teaser") or d.get("text"), 300)
         d["text"] = saeubern(d.get("text"))
         d["bild"] = d.get("bild") or ""
-        d["galerie"] = [g for g in d.get("galerie", []) if re.match(r"^assets/beitraege/[a-z0-9._-]+$", g)]
-        if d["bild"] and not re.match(r"^assets/beitraege/[a-z0-9._-]+$", d["bild"]):
+        d["galerie"] = [g for g in d.get("galerie", []) if re.match(r"^assets/(?:beitraege|seiten)/[a-z0-9._-]+$", g)]
+        if d["bild"] and not re.match(r"^assets/(?:beitraege|seiten)/[a-z0-9._-]+$", d["bild"]):
             d["bild"] = ""
         if not isinstance(d.get("spiel"), dict):
             d["spiel"] = {}

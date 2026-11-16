@@ -31,7 +31,7 @@ SCH_WAPPEN = "sch-startseite/assets/logo.png"
 LEER_WAPPEN = "assets/wappen-leer.svg"
 TAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
-BILDPFAD = re.compile(r"^assets/beitraege/[a-z0-9._-]+$")
+BILDPFAD = re.compile(r"^assets/(?:beitraege|seiten)/[a-z0-9._-]+$")
 
 BALL = ('<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/>'
         '<path d="m8 4.5 3 2.2-1.2 3.6H6.2L5 6.7z" fill="currentColor"/></svg>')
