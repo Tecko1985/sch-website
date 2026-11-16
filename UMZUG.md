@@ -59,8 +59,10 @@ Danach von Hand:
   was nicht im GitHub-Bau steckt – auch die **Beiträge aus 2025** (nicht im Repo) und ihre Karten in den News.
   Erst umstellen, wenn diese Frage gelöst ist (z. B. ohne `--delete` und mit Ausnahme für die 2025-Dateien).
 - WordPress-Sicherung einige Wochen aufheben.
-- **Instagram-Beiträge einschalten** (zurückgestellt am 16.11.2026): Abholen ist fertig gebaut (`.github/instagram.py`),
-  es fehlen nur die Secrets `IG_TOKEN` (Instagram API with Instagram Login, professionelles Konto, Meta-Entwickler-App)
-  und `SECRETS_PAT` (für die automatische 60-Tage-Verlängerung). Bis dahin zeigt die Startseite die zwei festen Profil-Karten.
+- **Instagram-Beiträge** (16.11.2026): Meta-App „SCH Webseite“ (Business-Portfolio „SCH Webseite“, das Vereins-Portfolio
+  ist für Werbung gesperrt), Anwendungsfall „Instagram API with Unified Login“, beide Konten als Instagram-Tester.
+  Secrets `IG_TOKEN` (Verein → Startseite) und `IG_TOKEN_NACHWUCHS` (Nachwuchs → seiten/nachwuchs.html),
+  Systemnutzer-Tokens ohne Ablauf. Findet `.github/instagram.py` die Konto-ID nicht, Repo-Variable `IG_ID` bzw.
+  `IG_ID_NACHWUCHS` setzen (Nummer 1784… aus der Meta-App).
 - Offene Punkte im Impressum klären: Telefonnummer (612202 oder 612206), „USt-IdNr.“ (sieht aus wie eine Steuernummer).
 - Auftragsverarbeitungsvertrag mit Hetzner prüfen (in der konsoleH abschließbar).

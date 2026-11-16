@@ -31,3 +31,32 @@
   track.append(el('a', { class: 'sch-socialcard sch-igpost', href: b.href, 'aria-label': vom + ' auf Instagram ansehen' + (kurz ? ': ' + kurz : '') }, [el('div', { class: 'sch-socialvisual' }, [bild, caption]), fuss]));
  });
 })();
+
+// Nachwuchs-Konto (window.SCH_INSTAGRAM_NACHWUCHS) im Block "Neu auf Instagram" auf seiten/nachwuchs.html.
+// Ohne Daten bleibt der Block verborgen (hidden).
+(() => {
+ const daten = Array.isArray(window.SCH_INSTAGRAM_NACHWUCHS) ? window.SCH_INSTAGRAM_NACHWUCHS : [];
+ const block = document.querySelector('.nw-insta');
+ const raster = block && block.querySelector('.nw-instaraster');
+ if (!raster || !daten.length) return;
+ const pfad = block.getAttribute('data-pfad') || '';
+ const el = (tag, attrs, kinder) => {
+  const e = document.createElement(tag);
+  for (const k in attrs || {}) e.setAttribute(k, attrs[k]);
+  (kinder || []).forEach(c => e.append(c));
+  return e;
+ };
+ const kuerzen = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length <= n ? t : t.slice(0, n).replace(/\s+\S*$/, '') + ' …'; };
+ let anzahl = 0;
+ daten.forEach(b => {
+  if (!b || !b.href || !b.bild || !/^https:\/\/(www\.)?instagram\.com\//.test(b.href) || !/^[0-9A-Za-z_]+\.webp$/.test(b.bild)) return;
+  const vom = 'Instagram-Beitrag vom ' + (b.datum || '');
+  const kurz = kuerzen(b.text, 100);
+  const bild = el('img', { src: pfad + 'assets/instagram/' + b.bild, alt: (b.art && b.art !== 'Bild' ? b.art + ': ' : '') + (kurz || vom), loading: 'lazy' });
+  const text = el('span', { class: 'nw-instatext' }, [el('time', { datetime: b.iso || '' }, [b.datum || ''])]);
+  if (b.text) text.append(el('span', {}, [kuerzen(b.text, 90)]));
+  raster.append(el('a', { class: 'nw-instakarte', href: b.href, rel: 'noopener', 'aria-label': vom + ' auf Instagram ansehen' + (kurz ? ': ' + kurz : '') }, [bild, text]));
+  anzahl++;
+ });
+ if (anzahl) block.hidden = false;
+})();

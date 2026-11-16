@@ -7,7 +7,9 @@
 # wenn sich die Instagram-Daten gegenueber live geaendert haben (sonst bleibt die Seite, wie sie ist).
 # Montags frueh wird zusaetzlich der Instagram-Schluessel um 60 Tage verlaengert und der Zeitplan
 # selbst aktiv gehalten (Job wach-halten, ohne Commit).
-# Secrets: IG_TOKEN (Instagram), SECRETS_PAT (darf Secrets dieses Repos schreiben, fuer die Verlaengerung)
+# Secrets: IG_TOKEN (Instagram Verein), IG_TOKEN_NACHWUCHS (Instagram Nachwuchs), SECRETS_PAT (darf Secrets
+# dieses Repos schreiben, nur fuer die Verlaengerung alter "IG..."-Schluessel; Systemnutzer-Tokens laufen nie ab).
+# Optional Repo-Variablen IG_ID / IG_ID_NACHWUCHS (Instagram-Konto-ID), falls das Skript sie nicht selbst findet.
 # Pages-Quelle muss "GitHub Actions" sein (build_type workflow); steht sie auf einem Branch,
 # baut der Lauf nur und veroeffentlicht nichts.
 name: Seite bauen
@@ -88,12 +90,16 @@ jobs:
         continue-on-error: true
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_TOKEN_NACHWUCHS: ${{ secrets.IG_TOKEN_NACHWUCHS }}
+          IG_ID: ${{ vars.IG_ID }}
+          IG_ID_NACHWUCHS: ${{ vars.IG_ID_NACHWUCHS }}
           IG_ERNEUERN: ${{ (github.event.schedule == '41 3 * * 1' || inputs.erneuern) && '1' || '0' }}
           IG_ZIEL: _site
         run: python .github/instagram.py
 
+      # Hat nur ein Konto nicht geklappt (ig=neu), bleiben die Karten des anderen drin.
       - name: Bei Fehler ohne Instagram-Karten
-        if: steps.instagram.outcome == 'failure'
+        if: steps.instagram.outcome == 'failure' && steps.instagram.outputs.ig != 'neu'
         run: |
           rm -rf _site/assets/instagram
           cp instagram-daten.js _site/instagram-daten.js
@@ -103,11 +109,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.SECRETS_PAT }}
         run: |
-          if [ -f "$RUNNER_TEMP/ig_token" ]; then
-            if [ -z "$GH_TOKEN" ]; then echo "::warning::SECRETS_PAT fehlt, Schluessel nicht gespeichert"; rm -f "$RUNNER_TEMP/ig_token"; exit 0; fi
-            gh secret set IG_TOKEN --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/ig_token"
-            rm -f "$RUNNER_TEMP/ig_token"
-          fi
+          for name in IG_TOKEN IG_TOKEN_NACHWUCHS; do
+            [ -f "$RUNNER_TEMP/$name" ] || continue
+            if [ -z "$GH_TOKEN" ]; then echo "::warning::SECRETS_PAT fehlt, $name nicht gespeichert"; rm -f "$RUNNER_TEMP/$name"; continue; fi
+            gh secret set "$name" --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/$name"
+            rm -f "$RUNNER_TEMP/$name"
+          done
 
       - name: Veroeffentlichen?
         id: entscheiden
