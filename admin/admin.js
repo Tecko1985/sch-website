@@ -836,9 +836,9 @@
       titel: '[Sieg/Remis/Niederlage] gegen [Gegner]',
       teaser: '[Ergebnis in einem Satz: Wer hat wie gespielt?]',
       // Ergebnis, Tore, Aufstellung und Stimmen kommen aus den Spieldaten unter dem Text.
-      text: '<h2>1. Halbzeit</h2><p>[Zwischenüberschrift]<br>[Wie lief die erste Halbzeit?]</p>' +
-        '<h2>2. Halbzeit</h2><p>[Zwischenüberschrift]<br>[Wie lief die zweite Halbzeit?]</p>' +
-        '<h2>Nach dem Spiel</h2><p>[Zwischenüberschrift]<br>[Einordnung, Stimmen]</p>' +
+      text: '<p>[Einstieg: Ergebnis, Stimmung, wichtigste Szene]</p>' +
+        '<h2>[Überschrift zur 1. Halbzeit]</h2><p>[Wie lief die erste Halbzeit?]</p>' +
+        '<h2>[Überschrift zur 2. Halbzeit]</h2><p>[Wie lief die zweite Halbzeit?]</p>' +
         '<h2>Ausblick</h2><p>[Nächstes Spiel: Tag, Datum, Uhrzeit, Gegner, Ort]</p>' },
     { id: 'grund-vorbericht', name: 'Vorbericht', rubrik: 'Vorbericht', standard: false,
       titel: 'Vorschau: SCH gegen [Gegner]',
@@ -899,16 +899,11 @@
     var alt = vorlageWahl.value, rubrik = form.rubrik.value;
     var sortiert = vorlagen.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
     vorlageWahl.innerHTML = '';
-    vorlageWahl.appendChild(new Option(vorlagen.length ? '– Vorlage einsetzen –' : '– noch keine Vorlagen –', ''));
-    [[rubrik, true], ['Andere Rubriken', false]].forEach(function (g) {
-      var teil = sortiert.filter(function (v) { return (v.rubrik === rubrik) === g[1]; });
-      if (!teil.length) return;
-      var og = document.createElement('optgroup');
-      og.label = g[0];
-      teil.forEach(function (v) {
-        og.appendChild(new Option(v.name + (g[1] ? (v.standard ? ' (Standard)' : '') : ' · ' + v.rubrik), v.id));
-      });
-      vorlageWahl.appendChild(og);
+    // Nur die Vorlagen der gewählten Rubrik (16.11.2026: andere Rubriken stiften nur Verwirrung)
+    var teil = sortiert.filter(function (v) { return v.rubrik === rubrik; });
+    vorlageWahl.appendChild(new Option(teil.length ? '– Vorlage einsetzen –' : '– keine Vorlage für ' + rubrik + ' –', ''));
+    teil.forEach(function (v) {
+      vorlageWahl.appendChild(new Option(v.name + (v.standard ? ' (Standard)' : ''), v.id));
     });
     vorlageWahl.value = vorlageNach(alt) ? alt : '';
     $('[data-vorlageweg]').hidden = !vorlageWahl.value;
@@ -944,6 +939,11 @@
   form.rubrik.addEventListener('change', function () {
     var rubrik = form.rubrik.value;
     var v = vorlagen.filter(function (x) { return x.rubrik === rubrik && x.standard; })[0];
+    // Unverändertes Gerüst einer anderen Rubrik nicht stehen lassen
+    if (!aktuell && unberuehrt !== null && stand() === unberuehrt) {
+      form.titel.value = ''; form.teaser.value = ''; textfeld.innerHTML = '';
+      unberuehrt = null; vorlageWahl.value = '';
+    }
     if (v && !aktuell && istUnberuehrt()) { setzeVorlage(v); return; }
     zeichneVorlagen();
   });
