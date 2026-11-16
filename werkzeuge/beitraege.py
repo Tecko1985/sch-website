@@ -129,6 +129,50 @@ def zwischentitel(t):
     return re.sub(r"<p>\s*<strong>([^<]+)(?:<br>\s*)?</strong>\s*(?:<br\s*/?>\s*((?:(?!</p>).)*?))?</p>", ersetze, t, flags=re.S)
 
 
+def spieldaten_aus_text(d):
+    """Spielbericht mit „Spieldaten“ als Fließtext am Ende (Überschrift „Spieldaten“, danach z. B.
+    „FSV Waltershausen<br>Köllner - Smudzinski …“, „Schiedsrichter<br>Lenz“): Angaben in die Spieldaten-Felder
+    übernehmen und den Block aus dem Text nehmen. So erscheint er im einheitlichen Format
+    („Verein: Spieler – Spieler …“, spielbericht.spieldaten). Von Hand ausgefüllte Felder haben Vorrang."""
+    m = re.search(r"<h[23]>\s*Spieldaten:?\s*</h[23]>", d["text"])
+    if not m:
+        return
+    rest = d["text"][m.end():]
+    sp, gegner = d["spiel"], (d["spiel"].get("gegner") or "").strip().lower()
+    erkannt = {}
+    # Blöcke: Überschriften und Absätze; „Label<br>Wert“ oder „Label: Wert“
+    for block in re.findall(r"<(?:p|h[23])>(.*?)</(?:p|h[23])>", rest, re.S):
+        teile = [html.unescape(re.sub(r"<[^>]+>", "", x)).strip() for x in re.split(r"<br\s*/?>", block)]
+        teile = [x for x in teile if x]
+        if not teile:
+            continue
+        if len(teile) == 1:
+            mm = re.match(r"^([^:]{2,60}):\s*(.+)$", teile[0])
+            if not mm:
+                continue   # z. B. „FSV Waltershausen - 1. SC 1911 Heiligenstadt“ (Paarung)
+            teile = [mm.group(1), mm.group(2)]
+        label, wert = teile[0].strip(" :"), " ".join(teile[1:]).strip()
+        l = label.lower()
+        if l.startswith("schiedsrichter"):
+            erkannt["schiedsrichter"] = wert
+        elif l.startswith("zuschauer"):
+            erkannt["zuschauer"] = wert
+        elif l.startswith("trainer"):
+            erkannt["trainer"] = wert
+        elif l.startswith("tore"):
+            erkannt["tore_sch"] = "\n".join(x.strip() for x in re.split(r",\s*(?![^()]*\))", wert) if x.strip())
+        elif re.search(r"heiligenstadt|^sch\b", l):
+            erkannt["aufstellung_sch"] = re.sub(r"\s+-\s+", " – ", wert)
+        elif gegner and (l in gegner or gegner in l or any(w in l for w in gegner.split() if len(w) > 3)):
+            erkannt["aufstellung_geg"] = re.sub(r"\s+-\s+", " – ", wert)
+    if not erkannt:
+        return
+    for k, v in erkannt.items():
+        if not str(sp.get(k) or "").strip():
+            sp[k] = v
+    d["text"] = d["text"][:m.start()].rstrip()
+
+
 # ---------------------------------------------------------------- Hilfen
 def datum_de(iso):
     j, m, t = iso.split("-")
@@ -249,6 +293,8 @@ def lade_beitraege():
             d["bild"] = ""
         if not isinstance(d.get("spiel"), dict):
             d["spiel"] = {}
+        if d.get("rubrik") == "Spielbericht":
+            spieldaten_aus_text(d)
         # Spielbericht ohne eigenes Titelbild: das erste Galeriebild ist Bild 1 (auch für die News-Karte)
         if d.get("rubrik") == "Spielbericht" and not d["bild"] and d["galerie"]:
             d["bild"], d["galerie"] = d["galerie"][0], d["galerie"][1:]
