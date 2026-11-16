@@ -26,6 +26,9 @@ MAIL = SVG.format("M3 5h18v14H3zM3 5l9 8 9-8")
 BURGER = ('<svg aria-hidden="true" viewBox="0 0 24 24"><path class="sp-zu" d="M3 6h18M3 12h18M3 18h18"/>'
           '<path class="sp-auf" d="M5 5l14 14M19 5 5 19"/></svg>')
 TV_URL = "https://staige.tv/team/6272785350393856"
+# Escape schließt das offene Menü und gibt den Fokus an den Knopf zurück (Abnahme 16.11.2026 H3-D1)
+ESCAPE = ("if(event.key=='Escape')if(this.classList.contains('offen'))"
+          "{var b=this.querySelector('.sp-menueknopf');b.click();b.focus()}")
 UMSCHALTEN = ("var o=this.parentNode.classList.toggle('offen');"
               "this.setAttribute('aria-expanded',o);this.setAttribute('aria-label',o?'Menü schließen':'Menü öffnen')")
 
@@ -43,12 +46,14 @@ def menue(alt, kontakt):
                  f'<a class="sp-tool" href="{news}fanshop.html">{SHOP}<span>Shop</span></a>'
                  f'<a class="sp-tool" href="{TV_URL}" rel="noopener">{TV}<span>TV</span></a>'
                  f'<a class="sp-tool" href="{kontakt}">{MAIL}<span>Kontakt</span></a>')
-    return (f'<nav class="sch-reportnav sp-nav" aria-label="Hauptmenü">'
+    # Knopf im DOM VOR dem Menü: nach „Menü öffnen“ führt Tab direkt zum ersten Menüpunkt (H3-D1).
+    # Optik unverändert: am Handy liegt .sp-links absolut, am Desktop ist der Knopf ausgeblendet.
+    return (f'<nav class="sch-reportnav sp-nav" aria-label="Hauptmenü" onkeydown="{ESCAPE}">'
             f'<a class="sp-marke" href="{start}index.html"><img src="{start}sch-startseite/assets/logo.png" alt="SCH">'
             f'<span>1. SC 1911 HEILIGENSTADT</span></a>'
-            f'<div class="sp-links" id="sp-menue">{links}{werkzeuge}</div>'
             f'<button class="sp-menueknopf" type="button" aria-expanded="false" aria-controls="sp-menue" '
-            f'aria-label="Menü öffnen" onclick="{UMSCHALTEN}">{BURGER}<span>Menü</span></button></nav>')
+            f'aria-label="Menü öffnen" onclick="{UMSCHALTEN}">{BURGER}<span>Menü</span></button>'
+            f'<div class="sp-links" id="sp-menue">{links}{werkzeuge}</div></nav>')
 
 
 def main():
