@@ -91,14 +91,14 @@ def konto_id(token, konto, id_variable):
     fest = os.environ.get(id_variable, '').strip()
     if fest:
         return fest
-    kandidaten = []
+    kandidaten, gruende = [], []
     # 1) Das Token gehoert direkt zum Instagram-Konto
     try:
         ich = abfrage(FACEBOOK, 'me', token, fields='id,username')
         if ich.get('username'):
             kandidaten.append((ich['id'], ich['username']))
     except RuntimeError as fehler:
-        print('  me:', fehler)
+        print('  me:', fehler); gruende.append(str(fehler))
     # 2) Freigegebene Konten aus den Berechtigungen des Tokens
     try:
         info = abfrage(FACEBOOK, 'debug_token', token, input_token=token).get('data', {})
@@ -111,7 +111,7 @@ def konto_id(token, konto, id_variable):
                         name = ''
                     kandidaten.append((str(i), name))
     except RuntimeError as fehler:
-        print('  debug_token:', fehler)
+        print('  debug_token:', fehler); gruende.append(str(fehler))
     # 3) Ueber eine verknuepfte Facebook-Seite
     try:
         for seite in abfrage(FACEBOOK, 'me/accounts', token, fields='instagram_business_account{id,username}').get('data', []):
@@ -119,7 +119,7 @@ def konto_id(token, konto, id_variable):
             if ig.get('id'):
                 kandidaten.append((ig['id'], ig.get('username', '')))
     except RuntimeError as fehler:
-        print('  me/accounts:', fehler)
+        print('  me/accounts:', fehler); gruende.append(str(fehler))
     for i, name in kandidaten:
         if name.lower() == konto:
             return i
@@ -127,7 +127,7 @@ def konto_id(token, konto, id_variable):
     if len(ids) == 1:
         return ids.pop()
     raise RuntimeError(f'Instagram-Konto-ID fuer {konto} nicht gefunden ({len(ids)} Kandidaten) -- '
-                       f'Repo-Variable {id_variable} setzen.')
+                       f'Repo-Variable {id_variable} setzen. ' + ' | '.join(gruende))
 
 
 def beitraege_holen(secret, konto, id_variable):
@@ -139,9 +139,16 @@ def beitraege_holen(secret, konto, id_variable):
             open(os.path.join(os.environ.get('RUNNER_TEMP', STAMM), secret), 'w').write(neu['access_token'])
             print('  Schluessel verlaengert, gueltig noch', neu.get('expires_in', 0) // 86400, 'Tage.')
         return abfrage(INSTAGRAM, 'me/media', token, fields=FELDER, limit=ANZAHL * 3)
-    ig_id = konto_id(token, konto, id_variable)
-    print('  Konto-ID gefunden.')
-    return abfrage(FACEBOOK, f'{ig_id}/media', token, fields=FELDER, limit=ANZAHL * 3)
+    try:
+        ig_id = konto_id(token, konto, id_variable)
+        print('  Konto-ID gefunden.')
+        return abfrage(FACEBOOK, f'{ig_id}/media', token, fields=FELDER, limit=ANZAHL * 3)
+    except RuntimeError as fehler:
+        # Letzter Versuch: manche neuen Schluessel gelten auch direkt bei graph.instagram.com
+        try:
+            return abfrage(INSTAGRAM, 'me/media', token, fields=FELDER, limit=ANZAHL * 3)
+        except RuntimeError as zweiter:
+            raise RuntimeError(f'{fehler} | {zweiter}') from None
 
 
 def karten_bauen(antwort, behalten):
