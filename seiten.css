@@ -375,3 +375,7 @@ body{margin:0;background:#fff}
 .sz-ort{margin:34px 0 0!important;padding-top:20px;border-top:1px solid #dce3ec;color:#5f6a7b!important;font-size:16px!important}
 @media(max-width:767px){.sz-inhalt{padding:18px 16px 12px}.sz-punkte>li{padding-left:30px}.sz-par h2{gap:10px}}
 .sz-seite p,.sz-seite li{overflow-wrap:break-word}
+/* Nachwuchsseiten: Kopf wie bei den Herren, Mannschaftsfoto ganz (16:9 mit Titelzeile im Bild) */
+.nw-seite .kd-held>img{aspect-ratio:1400/786;max-height:88vh}
+.nw-seite .kd-held>img.nw-ohnefoto{aspect-ratio:2048/978;object-position:50% 8%}
+.nw-seite .sp-inhalt>h2:first-child,.nw-seite .sp-inhalt>h3:first-child{margin-top:0}
