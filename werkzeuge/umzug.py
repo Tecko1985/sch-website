@@ -103,6 +103,10 @@ def sichern():
 
 
 # ---------------------------------------------------------------- bauen
+NICHT_AUSLIEFERN = ["werkzeuge", "wordpress-plugin", "UMZUG.md", "hochladen.ps1", "hochladen.bat", "ANLEITUNG.txt", ".gitignore",
+                    "inhalte/LIESMICH.md"]
+
+
 def bauen(ziel, domain, probe_pfad):
     if os.path.exists(ziel):
         shutil.rmtree(ziel)
@@ -178,6 +182,11 @@ def bauen(ziel, domain, probe_pfad):
 
     schritt("Umzugs-Schalter")
     subprocess.run([py, os.path.join(REPO, "werkzeuge", "umzug_schalter.py"), ziel, domain], check=True)
+
+    # Werkzeugdateien nicht auf den Webspace (Abnahme 16.11.2026 H3), wie im Pages-Bau (seite.yml)
+    for rel in NICHT_AUSLIEFERN:
+        p = os.path.join(ziel, rel)
+        shutil.rmtree(p) if os.path.isdir(p) else os.path.exists(p) and os.remove(p)
 
 
 # ---------------------------------------------------------------- hochladen

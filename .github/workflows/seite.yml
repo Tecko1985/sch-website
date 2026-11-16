@@ -84,6 +84,14 @@ jobs:
           python _site/werkzeuge/neu_seiten.py
           rm -rf _site/werkzeuge/__pycache__
 
+      # Werkzeugdateien nicht ausliefern (Abnahme 16.11.2026 H3): Skripte, Umzugs-/Hochlade-Anleitungen und
+      # WordPress-Plugin-Quellen sind keine Seiten (auf Hetzner antwortete /neu-test/werkzeuge/*.py mit 500).
+      # Liste gleich in werkzeuge/umzug.py (NICHT_AUSLIEFERN).
+      - name: Werkzeugdateien entfernen
+        run: |
+          rm -rf _site/werkzeuge _site/wordpress-plugin
+          rm -f _site/UMZUG.md _site/hochladen.ps1 _site/hochladen.bat _site/ANLEITUNG.txt _site/.gitignore _site/inhalte/LIESMICH.md
+
       - name: Instagram-Beitraege holen
         id: instagram
         continue-on-error: true
