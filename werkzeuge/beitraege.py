@@ -99,9 +99,15 @@ class Saeuberer(HTMLParser):
         return t.strip()
 
 
+ZEILENTRENNER = re.compile("[\\u2028\\u2029]")
+
+
 def saeubern(roh):
+    # Zeilentrenner U+2028/U+2029 (kommen beim Kopieren aus Word/Facebook mit) zeigt kein Browser an:
+    # Wörter kleben sonst zusammen („FSV WaltershausenKöllner“). Als echten Zeilenumbruch übernehmen.
+    roh = ZEILENTRENNER.sub("<br>", roh or "")
     s = Saeuberer()
-    s.feed(roh or "")
+    s.feed(roh)
     s.close()
     t = s.ergebnis()
     if t and not t.startswith("<"):
@@ -120,7 +126,7 @@ def zwischentitel(t):
         if not titel or len(titel) > 110 or titel[0] in "„\"»“'" or titel.endswith((".", "!", "?")) and len(titel) > 70:
             return m.group(0)
         return f"<h3>{titel}</h3>\n" + (f"<p>{rest}</p>" if rest else "")
-    return re.sub(r"<p>\s*<strong>([^<]+)</strong>\s*(?:<br\s*/?>\s*((?:(?!</p>).)*?))?</p>", ersetze, t, flags=re.S)
+    return re.sub(r"<p>\s*<strong>([^<]+)(?:<br>\s*)?</strong>\s*(?:<br\s*/?>\s*((?:(?!</p>).)*?))?</p>", ersetze, t, flags=re.S)
 
 
 # ---------------------------------------------------------------- Hilfen

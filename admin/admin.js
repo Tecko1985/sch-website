@@ -925,7 +925,7 @@
 
   // Einfügen nur als reiner Text (kein Word-/Webseiten-Ballast); Absätze bleiben erhalten
   textfeld.addEventListener('paste', function (e) {
-    var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+    var t = (e.clipboardData || window.clipboardData).getData('text/plain').replace(/[\u2028\u2029]/g, '\n');   // Zeilentrenner aus Word/Facebook
     if (!t) return;
     e.preventDefault();
     // Ganzer Spielbericht (Rubrik Spielbericht oder Block „Spieldaten“ dabei): selbst aufteilen
