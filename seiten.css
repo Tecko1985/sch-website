@@ -139,7 +139,7 @@ body{margin:0;background:#fff}
 .kd-seite .kd-held::after,.kd-seite .kd-held:after{display:none}
 .kd-seite .kd-held>img{position:static;display:block;width:100%;height:auto;max-height:none;aspect-ratio:2048/978;object-fit:cover}
 .kd-seite .kd-held>div{position:static;max-width:calc(1640px + 2*clamp(18px,4vw,64px));margin:0 auto;padding:clamp(22px,3vw,44px) clamp(18px,4vw,64px) 0;color:#1b2d4f}
-.kd-seite .kd-held span{color:#517ebd;font-size:clamp(12px,1vw,15px)}
+.kd-seite .kd-held span{color:#4a75b0;font-size:clamp(12px,1vw,15px)}
 .kd-seite .kd-held h1{color:#1b2d4f;font-size:clamp(40px,6vw,96px);letter-spacing:.5px}
 
 /* Inhalt breit wie die Seite */
