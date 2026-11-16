@@ -36,6 +36,10 @@ ALT = "https://www.sc1911-heiligenstadt.de"
 UA = {"User-Agent": "SCH-Website"}
 BILDORDNER = "assets/seiten"
 QUALITAET = 62  # WebP-Qualität: Fotos bleiben scharf, Dateien klein
+# Alte Beiträge, die bewusst nicht übernommen werden (Slug), z. B. weil es sie schon aus der Redaktion gibt
+AUSLASSEN = {
+    "weiter-gehts",  # Spielbericht SCH – Wacker Nordhausen 4:0, liegt als Redaktionsbeitrag vor
+}
 
 try:
     from PIL import Image, ImageOps
@@ -137,7 +141,7 @@ def main():
     seiten = {os.path.basename(p) for p in glob.glob(os.path.join(REPO, "seiten/beitrag-*.html"))}
 
     def doppelt(p):
-        if f'beitrag-{p["slug"]}.html' in seiten:
+        if p["slug"] in AUSLASSEN or f'beitrag-{p["slug"]}.html' in seiten:
             return True
         tag = datetime.date.fromisoformat(p["date"][:10])
         for d in bekannt.get(schluessel(titel_von(p)), []):
