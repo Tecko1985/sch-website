@@ -1339,4 +1339,158 @@
   } else {
     route();
   }
+
+  // ---------------------------------------------------------------- Vorschau (16.11.2026)
+  // Zeigt den Beitrag so, wie ihn der Seitenbau (werkzeuge/beitraege.py, spielbericht.py) erzeugt:
+  // gleiche Seitenvorlage, gleiche Stile. Spielberichte mit Kopfbild, Ergebnistafel und Text.
+  var vorschauDialog = $('[data-vorschaudialog]');
+  var vorschauRahmen = $('[data-vorschaurahmen]');
+  var vorschauAnsicht = 'computer';
+  var seitenCache = {};
+  var BEITRAG_VORLAGE = 'seiten/beitrag-serie-haelt-weiter.html';
+  var SB_VORLAGE = 'spielbericht-erfurt.html';
+  var WOCHENTAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  var MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+
+  function holeSeite(pfad) {
+    if (seitenCache[pfad]) return Promise.resolve(seitenCache[pfad]);
+    return fetch('../' + pfad, { cache: 'no-cache' }).then(function (r) {
+      if (!r.ok) throw new Error('Vorlage ' + pfad + ' nicht gefunden');
+      return r.text();
+    }).then(function (t) { seitenCache[pfad] = t; return t; });
+  }
+  function eh(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function bildFuer(pfad) { return pfad ? rohUrl(pfad) : new URL('../assets/hero.jpg', location.href).href; }
+  // wie beitraege.zwischentitel: fette Zeile am Absatzanfang wird Zwischenüberschrift
+  function vorschauText(html) {
+    return html.replace(/<p>\s*<(?:strong|b)>([^<]+)<\/(?:strong|b)>\s*(?:<br\s*\/?>\s*((?:(?!<\/p>)[\s\S])*?))?<\/p>/g, function (m, titel, rest) {
+      titel = titel.replace(/\u2028/g, ' ').trim();
+      if (!titel || titel.length > 110 || /^[„"»“']/.test(titel) || (/[.!?]$/.test(titel) && titel.length > 70)) return m;
+      return '<h3>' + titel + '</h3>' + (rest && rest.trim() ? '<p>' + rest.trim() + '</p>' : '');
+    });
+  }
+  function datumLang(iso) {
+    var t = (iso || '').split('-');
+    return t.length === 3 ? t[2] + '. ' + MONATE[+t[1] - 1] + ' ' + t[0] : '';
+  }
+  function datumTag(iso) {
+    if (!iso) return '';
+    var d = new Date(iso + 'T12:00:00');
+    return WOCHENTAG[d.getDay()] + ', ' + datumDe(iso);
+  }
+  function wappenSlug(name) {
+    return (name || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+  // Seitenvorlage nehmen, <main> austauschen, Skripte raus (Vorschau läuft ohne Skripte)
+  function seiteMit(vorlage, basis, mainHtml, zusatzCss) {
+    var doc = new DOMParser().parseFromString(vorlage, 'text/html');
+    var base = doc.createElement('base');
+    base.href = new URL(basis, location.href).href;
+    doc.head.insertBefore(base, doc.head.firstChild);
+    var huelle = doc.createElement('div');
+    huelle.innerHTML = mainHtml;
+    doc.querySelector('main').replaceWith(huelle.firstElementChild);
+    Array.prototype.forEach.call(doc.querySelectorAll('script'), function (s) { s.remove(); });
+    var st = doc.createElement('style');
+    st.textContent = 'a{pointer-events:none}' + (zusatzCss || '');
+    doc.head.appendChild(st);
+    return '<!doctype html>' + doc.documentElement.outerHTML;
+  }
+
+  function vorschauBeitrag(d) {
+    return holeSeite(BEITRAG_VORLAGE).then(function (vorlage) {
+      var held = '<div class="sch-reporthero sp-held sp-kopfbild"><img src="' + eh(bildFuer(d.bild)) + '" alt=""><div><span>' +
+        eh(d.rubrik || 'News') + '</span><h1>' + eh(d.titel) + '</h1><p class="sp-datum">' + eh(datumDe(d.datum)) + '</p></div></div>';
+      var inhalt = vorschauText(d.text);
+      if (d.galerie.length) inhalt += '<div class="sp-galerie">' + d.galerie.map(function (g) { return '<img src="' + eh(rohUrl(g)) + '" alt="">'; }).join('') + '</div>';
+      return seiteMit(vorlage, '../seiten/', '<main class="sch-report sp-seite">' + held + '<article class="sp-inhalt">' + inhalt + '</article></main>');
+    });
+  }
+
+  function vorschauSpielbericht(d) {
+    return holeSeite(SB_VORLAGE).then(function (vorlage) {
+      var sp = spielFelder();
+      var team = form.sp_mannschaft.value || 'm1';
+      var opt = form.sp_mannschaft.selectedOptions && form.sp_mannschaft.selectedOptions[0];
+      var teamName = opt ? opt.textContent : '';
+      var heim = form.sp_ort_art.value !== 'auswaerts';
+      var sch = { name: '1. SC 1911 Heiligenstadt' + (team === 'm2' ? ' II' : ''), wappen: 'sch-startseite/assets/logo.png' };
+      var geg = { name: sp.gegner || 'Gegner', wappen: wappen ? rohUrl(wappen) : 'assets/wappen/' + wappenSlug(sp.gegner) + '.png' };
+      var paar = heim ? [sch, geg] : [geg, sch];
+      function stand(a, b) { return heim ? a + ' : ' + b : b + ' : ' + a; }
+      var oben = eh(sp.wettbewerb || 'Spiel');
+      if (team !== 'm1' && teamName) oben = eh(teamName) + ' · ' + oben;
+      var zweite = [sp.runde, sp.spielort].filter(Boolean).map(eh).join(', ');
+      var zeit = eh(datumTag(sp.spieldatum || d.datum)) + (sp.anstoss ? ' | ' + eh(sp.anstoss) + ' Uhr' : '');
+      var hatEnde = sp.end_sch !== '' && sp.end_geg !== '';
+      var tore = (sp.tore_sch || '').split('\n').filter(function (x) { return x.trim(); })
+        .map(function (x) { return '<li><span>' + eh(x.trim()) + '</span></li>'; }).join('');
+      var weg = ' onerror="this.style.visibility=\'hidden\'"';
+      var tafel = '<section class="sb-tafel" aria-label="Ergebnis"><div class="sb-tafel-innen">' +
+        '<div class="sb-meta"><span class="sb-meta-icon"></span><p><b>' + oben + '</b>' + zweite + (zweite ? '<br>' : '') + zeit + '</p></div>' +
+        '<div class="sb-paar"><span class="sb-team stitel">' + eh(paar[0].name) + '</span><img class="sb-wappen" src="' + eh(paar[0].wappen) + '" alt=""' + weg + '>' +
+        '<div class="sb-stand"><strong>' + (hatEnde ? stand(sp.end_sch, sp.end_geg) : '– : –') + '</strong>' +
+        (sp.hz_sch !== '' && sp.hz_geg !== '' ? '<span>Halbzeit ' + stand(sp.hz_sch, sp.hz_geg) + '</span>' : '') + '</div>' +
+        '<img class="sb-wappen" src="' + eh(paar[1].wappen) + '" alt=""' + weg + '><span class="sb-team stitel">' + eh(paar[1].name) + '</span></div>' +
+        '<span class="sb-status">' + (hatEnde ? 'Beendet' : 'Spielbericht') + '</span>' +
+        (tore ? '<ul class="sb-tore">' + tore + '</ul>' : '') + '</div></section>';
+      // Text in Abschnitte je Zwischenüberschrift, Galeriebilder dazwischen wie auf der fertigen Seite
+      var teile = vorschauText(d.text).split(/(?=<h[23]>)/).map(function (t) {
+        return t.replace(/<h[23]>/, '<h3 class="stitel">').replace(/<\/h[23]>/, '</h3>');
+      });
+      var bilder = d.galerie.slice(), artikel = '';
+      teile.forEach(function (t, k) {
+        artikel += '<section class="sb-weiter">' + t + '</section>';
+        if (k % 2 === 1 && bilder.length) artikel += '<figure><img src="' + eh(rohUrl(bilder.shift())) + '" alt=""></figure>';
+      });
+      bilder.forEach(function (b) { artikel += '<figure><img src="' + eh(rohUrl(b)) + '" alt=""></figure>'; });
+      var main = '<main class="sb"><header class="sb-held sb-held-ganz"><img class="sb-held-bild" src="' + eh(bildFuer(d.bild)) + '" alt="">' +
+        '<h1 class="stitel">Spielbericht</h1></header>' + tafel +
+        '<div class="sb-reiter-band"><div class="sb-reiter" role="tablist"><button type="button" role="tab" aria-selected="true">Spielbericht</button></div></div>' +
+        '<section class="sb-bereich"><article class="sb-artikel"><h2 class="stitel">' + eh(d.titel) + '</h2><p class="sb-autor">' +
+        eh(datumLang(d.datum)) + '</p>' + artikel + '</article></section></main>';
+      return seiteMit(vorlage, '../', main);
+    });
+  }
+
+  function vorschauKarte(d) {
+    return holeSeite(BEITRAG_VORLAGE).then(function (vorlage) {
+      var teaser = d.teaser || textfeld.textContent.trim().slice(0, 230);
+      var karte = '<a class="sp-karte" href="#"><span class="sp-kartenbild"><img src="' + eh(bildFuer(d.bild)) + '" alt=""></span>' +
+        '<span class="sp-kartentext"><time>' + eh(datumDe(d.datum)) + '</time><b>' + eh(d.titel) + '</b><span>' + eh(teaser) +
+        '</span><em>Beitrag lesen</em></span></a>';
+      return seiteMit(vorlage, '../seiten/', '<main class="sch-report sp-seite"><article class="sp-inhalt" style="padding:24px 16px">' +
+        '<div class="sp-karten" style="grid-template-columns:1fr">' + karte + '</div></article></main>',
+        '.sp-nav,.sch-footer{display:none!important}body{background:#eef2f7}');
+    });
+  }
+
+  function zeigeVorschau() {
+    normalisiereText();
+    var d = { titel: form.titel.value.trim() || 'Ohne Titel', datum: form.datum.value, rubrik: form.rubrik.value,
+      teaser: form.teaser.value.trim(), text: textfeld.innerHTML, bild: titelbild, galerie: galerie.slice() };
+    var istSb = d.rubrik === 'Spielbericht' && !!form.sp_gegner.value.trim();
+    $('[data-vorschauhinweis]').textContent = vorschauAnsicht === 'karte' ? 'So erscheint der Beitrag in der Liste unter News und auf der Startseite.' :
+      istSb ? 'Spielbericht: Kopf, Ergebnistafel und Text. Die übrigen Reiter (Aufstellung, Statistik …) gibt es erst auf der fertigen Seite.' :
+      d.rubrik === 'Spielbericht' ? 'Für die Ergebnistafel bei den Spieldaten den Gegner eintragen.' : '';
+    $('[data-vorschaubuehne]').className = 'vorschau-buehne ' + vorschauAnsicht;
+    var p = vorschauAnsicht === 'karte' ? vorschauKarte(d) : istSb ? vorschauSpielbericht(d) : vorschauBeitrag(d);
+    return p.then(function (html) { vorschauRahmen.srcdoc = html; }, function (e) {
+      vorschauRahmen.srcdoc = '<p style="font:16px Arial;padding:24px">Vorschau nicht möglich: ' + eh(e.message) + '</p>';
+    });
+  }
+  $('[data-vorschau]').addEventListener('click', function () {
+    vorschauDialog.showModal();
+    zeigeVorschau();
+  });
+  $$('[data-vansicht]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      vorschauAnsicht = b.dataset.vansicht;
+      $$('[data-vansicht]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      zeigeVorschau();
+    });
+  });
+  $('[data-vorschauzu]').addEventListener('click', function () { vorschauDialog.close(); });
+  vorschauDialog.addEventListener('click', function (e) { if (e.target === vorschauDialog) vorschauDialog.close(); });
 })();

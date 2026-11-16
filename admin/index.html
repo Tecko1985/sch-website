@@ -7,7 +7,7 @@
 <title>Redaktion · 1. SC 1911 Heiligenstadt</title>
 <meta name="theme-color" content="#1b2d4f">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
-<link rel="stylesheet" href="admin.css?v=2026111504">
+<link rel="stylesheet" href="admin.css?v=2026111601">
 </head>
 <body>
 <header class="kopf">
@@ -199,6 +199,7 @@
           </div>
         </div>
         <label class="haken"><input type="checkbox" name="entwurf"><span>Nur als Entwurf speichern (noch nicht auf der Seite zeigen)</span></label>
+        <button type="button" class="klein-knopf breit vorschau-knopf" data-vorschau>Vorschau ansehen</button>
         <button type="submit" class="knopf breit" data-speichern>Veröffentlichen</button>
         <button type="button" class="klein-knopf breit" data-planenknopf>Für später planen (Datum und Uhrzeit)</button>
         <p class="meldung" role="status" data-editormeldung></p>
@@ -215,6 +216,19 @@
   </form>
 </dialog>
 
+<dialog class="vorschau-dialog" data-vorschaudialog aria-label="Vorschau des Beitrags">
+  <div class="vorschau-kopf">
+    <b>Vorschau</b>
+    <div class="vorschau-wahl" role="group" aria-label="Ansicht">
+      <button type="button" data-vansicht="computer" aria-pressed="true">Computer</button>
+      <button type="button" data-vansicht="handy" aria-pressed="false">Handy</button>
+      <button type="button" data-vansicht="karte" aria-pressed="false">Karte in News</button>
+    </div>
+    <button type="button" class="klein-knopf" data-vorschauzu>Schließen</button>
+  </div>
+  <p class="vorschau-hinweis" data-vorschauhinweis></p>
+  <div class="vorschau-buehne computer" data-vorschaubuehne><iframe data-vorschaurahmen title="Vorschau des Beitrags" sandbox="allow-same-origin"></iframe></div>
+</dialog>
 <dialog class="dialog" data-vorlagedialog>
   <form method="dialog">
     <h2 class="dialog-titel">Als Vorlage speichern</h2>
@@ -225,6 +239,6 @@
   </form>
 </dialog>
 
-<script src="admin.js?v=17"></script>
+<script src="admin.js?v=18"></script>
 </body>
 </html>
