@@ -80,7 +80,7 @@ exit($rc);
 def sichern():
     ordner = os.path.join(UMZUG, f"wp-sicherung-{HEUTE}")
     os.makedirs(ordner, exist_ok=True)
-    if not ssh(f"test -f {WEBORDNER}/wp-config.php && echo ja").strip():
+    if not ssh(f"test -f {WEBORDNER}/wp-config.php && echo ja || true").strip():  # ohne WordPress Code 0 statt Abbruch (H2-10)
         sys.exit("Im Webordner liegt kein WordPress (wp-config.php fehlt) – nichts zu sichern. Schon umgezogen?")
     schritt("WordPress-Datenbank sichern")
     db = os.path.join(ordner, "datenbank-sccnld_db1.sql")
