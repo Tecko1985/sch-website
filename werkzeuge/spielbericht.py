@@ -347,7 +347,8 @@ def spieldaten(s):
     if not s.da:
         return ""
     zeilen_ = []
-    for name, elf in ((SCH, s.elf_sch), (s.gegner, s.elf_geg)):
+    teams = ((SCH, s.elf_sch), (s.gegner, s.elf_geg))
+    for name, elf in (teams if s.heim else teams[::-1]):   # Heimmannschaft immer zuerst
         if elf:
             zeilen_.append(f'<p><b>{e(name)}:</b> {" – ".join(e(x["roh"]) for x in elf)}</p>')
     if s.tore:
