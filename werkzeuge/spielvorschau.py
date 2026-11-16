@@ -132,6 +132,7 @@ def wettbewerb_name(liga, team):
         name = re.sub(r"\bVL\b", "Verbandsliga", name)
         name = re.sub(r"\bKOL\b", "Kreisoberliga", name)
         name = re.sub(r"\bSt\.\s*(\d)", r"Staffel \1", name)
+        name = re.sub(r"\bTalente\b(?!liga)", "Talenteliga", name)
     return name
 
 

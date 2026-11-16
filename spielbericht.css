@@ -261,3 +261,5 @@
 @media(max-width:380px){.sb-team{font-size:13px}.sb-stand strong{min-width:80px}}
 /* Lange Torlisten (z. B. 18:2) dürfen die Tafel nicht verbreitern: zählen bei der Spaltenbreite nicht mit, brechen um (16.11.2026) */
 .sb-tore{width:0;min-width:100%;box-sizing:border-box}
+/* Nachwuchs-Titelbild: Gesichter sitzen oben im Bild (16.11.2026) */
+.sb-held-ganz img.sb-held-bild[src*="nachwuchs-instagram"]{object-position:50% 6%}
