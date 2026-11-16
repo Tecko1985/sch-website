@@ -268,7 +268,7 @@ def baue_newsletter():
     inhalt = inhalt.replace('<article class="sp-inhalt', '<article class="inhalt sp-inhalt', 1)
     inhalt = pfade_oben(inhalt)
     kopf = seitenkopf("Verein", "Newsletter", "", "")
-    out = seite("", titel, meta(s, "description"), None, kopf, inhalt, ["../newsletter.js?v=1"])
+    out = seite("", titel, meta(s, "description"), None, kopf, inhalt, ["../newsletter.js?v=2"])
     open("neu/newsletter.html", "w", encoding="utf-8").write(out)
 
 
