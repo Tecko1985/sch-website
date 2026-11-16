@@ -205,7 +205,11 @@ def berichte_vereinsseite(ab):
         if KEIN_BERICHT.search(titel) or not str(p.get("link", "")).startswith(VEREINSSEITE + "/"):
             continue
         text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", (p.get("content") or {}).get("rendered", ""))))
-        aus.append((p["date"][:10], p["link"], text))
+        # Schon übernommener Beitrag: auf die eigene Seite zeigen statt aufs WordPress
+        # (das verschwindet beim Umzug, siehe UMZUG.md)
+        slug = p["link"].rstrip("/").rsplit("/", 1)[-1]
+        eigen = f"seiten/beitrag-{slug}.html"
+        aus.append((p["date"][:10], eigen if os.path.isfile(os.path.join(REPO, eigen)) else p["link"], text))
     return aus
 
 
