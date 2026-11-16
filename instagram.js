@@ -36,11 +36,11 @@
  let dialog, aktuelleListe = [], pos = 0, pfadGlobal = '';
  const baueDialog = () => {
   dialog = el('dialog', { class: 'sch-igdialog', 'aria-label': 'Instagram-Beitrag' });
-  dialog.innerHTML = '<div class="sch-igbox"><div class="sch-igbild"></div><div class="sch-iginfo"><div class="sch-igkopf"></div>' +
+  dialog.innerHTML = '<div class="sch-igbox"><div class="sch-igbild"><div class="sch-igmedien"></div>' +
+   '<button type="button" class="sch-igpfeil sch-igzurueck" aria-label="Vorheriger Beitrag"></button>' +
+   '<button type="button" class="sch-igpfeil sch-igweiter" aria-label="Nächster Beitrag"></button></div><div class="sch-iginfo"><div class="sch-igkopf"></div>' +
    '<div class="sch-igvoll"></div><div class="sch-igteilen"><span>Teile diesen Beitrag</span><div class="sch-igknoepfe"></div></div></div>' +
-   '<button type="button" class="sch-igzu" aria-label="Schließen">×</button>' +
-   '<button type="button" class="sch-igpfeil sch-igzurueck" aria-label="Vorheriger Beitrag">‹</button>' +
-   '<button type="button" class="sch-igpfeil sch-igweiter" aria-label="Nächster Beitrag">›</button></div>';
+   '<button type="button" class="sch-igzu" aria-label="Schließen">×</button></div>';
   document.body.append(dialog);
   dialog.querySelector('.sch-igzu').addEventListener('click', () => dialog.close());
   dialog.querySelector('.sch-igzurueck').addEventListener('click', () => zeige(pos - 1));
@@ -57,7 +57,7 @@
   if (!aktuelleListe.length) return;
   pos = (i + aktuelleListe.length) % aktuelleListe.length;
   const b = aktuelleListe[pos];
-  const bildBox = dialog.querySelector('.sch-igbild');
+  const bildBox = dialog.querySelector('.sch-igmedien');
   const bild = el('img', { src: pfadGlobal + 'assets/instagram/' + b.bild, alt: (b.art && b.art !== 'Bild' ? b.art + ': ' : '') + (kuerzen(b.voll || b.text, 120) || 'Instagram-Beitrag') });
   const teile = [bild];
   if (b.art === 'Video') teile.push(el('a', { class: 'sch-igplay', href: b.href, target: '_blank', rel: 'noopener', 'aria-label': 'Video auf Instagram abspielen' }, []));

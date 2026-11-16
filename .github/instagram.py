@@ -172,7 +172,7 @@ def karten_bauen(antwort, behalten):
         ziel = os.path.join(ORDNER, datei)
         if not os.path.exists(ziel):
             bild = Image.open(io.BytesIO(hole(quelle))).convert('RGB')
-            bild.thumbnail((800, 800))
+            bild.thumbnail((1080, 1350))  # Grossansicht braucht volle Instagram-Breite
             bild.save(ziel, 'WEBP', quality=80)
         behalten.add(datei)
         karten.append(karte(b, datei))

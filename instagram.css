@@ -1,5 +1,6 @@
 /* Instagram-Karten (Startseite, Nachwuchs-Seite) und Grossansicht; gefuellt von instagram.js */
-:is(#top,body) .sch-igpost .sch-socialvisual>img{opacity:1;transition:transform .35s}
+:is(#top,body) .sch-social .sch-igpost .sch-socialvisual{height:auto;aspect-ratio:4/5;background:#0b1a33}
+:is(#top,body) .sch-igpost .sch-socialvisual>img{opacity:1;object-fit:contain;transition:transform .35s}
 :is(#top,body) .sch-igpost:hover .sch-socialvisual>img{transform:scale(1.03)}
 /* Beim Darueberfahren: Textauszug als Zitat ueber dem Bild */
 :is(#top,body) .sch-igzitat{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 26px;text-align:center;background:#1b2d4fd9;color:#fff;opacity:0;transition:opacity .25s}
@@ -18,40 +19,69 @@
 .nw-instakarte{position:relative}
 .nw-video::after{content:'';position:absolute;left:50%;top:0;width:52px;height:52px;margin:calc(50% - 26px) 0 0 -26px;border-radius:50%;background:#0b1a33a6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7l9 5-9 5z' fill='%23fff'/%3E%3C/svg%3E") center/26px no-repeat;border:2px solid #fff}
 
-/* Grossansicht */
+/* Grossansicht: feste Hoehe, Bild ganz (contain), Text scrollt in seiner Spalte, Teilen bleibt unten sichtbar */
 html.sch-igoffen{overflow:hidden}
-.sch-igdialog{padding:0;border:0;background:transparent;max-width:min(1120px,calc(100vw - 32px));max-height:calc(100vh - 48px);width:100%;overflow:visible;color:#1b2d4f}
-.sch-igdialog::backdrop{background:#0b1a33cc}
-.sch-igbox{position:relative;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr);background:#fff;border-radius:6px;overflow:hidden;max-height:calc(100vh - 48px)}
-.sch-igbild{position:relative;background:#0b1a33;display:flex;align-items:center;justify-content:center;min-height:320px}
-.sch-igbild>img{width:100%;height:100%;max-height:calc(100vh - 48px);object-fit:contain;display:block;margin:0}
+.sch-igdialog{padding:0;border:0;background:transparent;width:min(1180px,calc(100vw - 180px));max-width:none;max-height:none;overflow:visible;color:#1b2d4f}
+.sch-igdialog::backdrop{background:#0b1a33e6}
+.sch-igbox{position:relative;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);height:min(calc(100dvh - 48px),860px);background:#fff;border-radius:8px}
+.sch-igbild{position:static;background:#0b1a33;display:flex;align-items:center;justify-content:center;min-height:0;min-width:0;border-radius:8px 0 0 8px;overflow:hidden}
+.sch-igmedien{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.sch-igmedien>img{width:100%;height:100%;object-fit:contain;display:block;margin:0}
 .sch-igserie{position:absolute;left:12px;bottom:12px;background:#0b1a33cc;color:#fff;font:13px 'SCH Barlow',Arial,sans-serif;padding:5px 10px;border-radius:4px}
 .sch-iginfo{display:flex;flex-direction:column;min-height:0;padding:22px 24px 18px}
-.sch-igkopf{display:flex;align-items:center;gap:12px;padding-right:36px}
+.sch-igkopf{display:flex;align-items:center;gap:12px;padding-right:44px}
 .sch-igkopf>img{width:40px;height:46px;object-fit:contain;margin:0}
 .sch-igkopf>div{flex:1;display:flex;flex-direction:column;font:15px/1.3 'SCH Barlow',Arial,sans-serif;min-width:0}
 .sch-igkopf b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sch-igkopf time{color:#5b6b86;font-size:14px}
 .sch-igdialog .sch-ig-logo{flex:none;width:24px;height:24px;background:#1b2d4f;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2'%3E%3Crect x='2.5' y='2.5' width='19' height='19' rx='5.5'/%3E%3Ccircle cx='12' cy='12' r='4.4'/%3E%3Ccircle cx='17.6' cy='6.4' r='1.2' fill='%23000' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2'%3E%3Crect x='2.5' y='2.5' width='19' height='19' rx='5.5'/%3E%3Ccircle cx='12' cy='12' r='4.4'/%3E%3Ccircle cx='17.6' cy='6.4' r='1.2' fill='%23000' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat}
-.sch-igvoll{flex:1;min-height:0;overflow-y:auto;margin:18px 0 14px;padding-right:6px}
+.sch-igvoll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin:16px 0 12px;padding-right:8px}
 .sch-igvoll p{margin:0 0 16px;font:17px/1.55 'SCH Barlow',Arial,sans-serif;white-space:pre-line;overflow-wrap:anywhere;color:#1b2d4f}
 .sch-igauf{font:700 15px 'SCH Barlow',Arial,sans-serif;color:#1b2d4f;text-decoration:underline}
-.sch-igteilen{border-top:1px solid #e3e8f0;padding-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;font:14px 'SCH Barlow',Arial,sans-serif;color:#5b6b86}
+.sch-igteilen{flex:none;border-top:1px solid #e3e8f0;padding-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;font:14px 'SCH Barlow',Arial,sans-serif;color:#5b6b86}
 .sch-igknoepfe{display:flex;flex-wrap:wrap;gap:8px}
 .sch-igteil{font:700 14px 'SCH Barlow',Arial,sans-serif;background:#1b2d4f;color:#fff!important;border:0;border-radius:20px;padding:8px 14px;text-decoration:none;cursor:pointer;line-height:1.2}
 .sch-igteil:hover,.sch-igteil:focus-visible{background:#2c4675}
-.sch-igzu{position:absolute;right:10px;top:10px;width:38px;height:38px;border:0;border-radius:50%;background:#f0f3f8;color:#1b2d4f;font:28px/1 Arial,sans-serif;cursor:pointer;z-index:2}
-.sch-igpfeil{position:absolute;top:50%;width:44px;height:44px;margin-top:-22px;border:0;border-radius:50%;background:#fff;color:#1b2d4f;font:34px/1 Arial,sans-serif;cursor:pointer;box-shadow:0 2px 10px #0004;z-index:2}
-.sch-igzurueck{left:-22px}.sch-igweiter{right:-22px}
+.sch-igzu{position:absolute;right:12px;top:12px;width:40px;height:40px;border:0;border-radius:50%;background:#1b2d4f;color:#fff;font:30px/1 Arial,sans-serif;cursor:pointer;z-index:3;padding:0}
+/* Blaetter-Pfeile: gross, weiss mit dunklem Rand, neben der Box */
+.sch-igpfeil{position:absolute;top:50%;width:56px;height:56px;margin-top:-28px;border:3px solid #1b2d4f;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 4px 18px #0007;z-index:3;padding:0;font-size:0}
+.sch-igpfeil::before{content:'';position:absolute;left:50%;top:50%;width:14px;height:14px;border:solid #1b2d4f;border-width:0 4px 4px 0;transform:translate(-30%,-50%) rotate(135deg)}
+.sch-igweiter::before{transform:translate(-70%,-50%) rotate(-45deg)}
+.sch-igpfeil:hover,.sch-igpfeil:focus-visible{background:#dce3ef}
+.sch-igzurueck{left:-80px}.sch-igweiter{right:-80px}
 .sch-igpfeil[hidden]{display:none}
-@media(max-width:800px){
- .sch-igdialog{max-width:100vw;max-height:100dvh;height:100dvh;margin:0}
- .sch-igbox{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);max-height:100dvh;height:100dvh;border-radius:0}
- .sch-igbild{min-height:0;max-height:52dvh}
- .sch-igbild>img{max-height:52dvh}
- .sch-iginfo{padding:16px 16px 14px}
+/* Tablet / schmaler Bildschirm: Pfeile auf dem Bildrand */
+@media(max-width:1000px){
+ .sch-igdialog{width:calc(100vw - 24px)}
+ .sch-igbild{position:relative}
+ .sch-igzurueck{left:10px}.sch-igweiter{right:10px}
+ .sch-igpfeil{width:48px;height:48px;margin-top:-24px}
+}
+/* Handy hoch: Bild oben (ganz), Text darunter scrollt, ganzer Bildschirm */
+@media(max-width:1000px) and (orientation:portrait){
+ .sch-igdialog{width:100vw;height:100dvh;margin:0}
+ .sch-igbox{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);height:100dvh;border-radius:0}
+ .sch-igbild{max-height:55dvh;border-radius:0}
+ .sch-igmedien>img{max-height:55dvh;height:auto}
+ .sch-iginfo{padding:14px 16px 12px}
+ .sch-igvoll{margin:12px 0 10px}
  .sch-igvoll p{font-size:16px}
- .sch-igzu{background:#fffe}
- .sch-igpfeil{top:26dvh;width:38px;height:38px;margin-top:-19px;font-size:28px;background:#fffd}
+ .sch-igzu{background:#fff;color:#1b2d4f;box-shadow:0 2px 10px #0006}
+ .sch-igpfeil{width:44px;height:44px;margin-top:-22px}
+}
+/* Handy quer: nebeneinander, ganze Hoehe */
+@media(max-height:560px) and (orientation:landscape){
+ .sch-igdialog{width:100vw;height:100dvh;margin:0}
+ .sch-igbox{height:100dvh;border-radius:0;grid-template-columns:minmax(0,1fr) minmax(280px,1.1fr)}
+ .sch-igbild{border-radius:0}
+ .sch-iginfo{padding:12px 16px 10px}
+ .sch-igkopf>img{width:32px;height:36px}
+ .sch-igvoll{margin:10px 0 8px}
+ .sch-igvoll p{font-size:15px}
+ .sch-igteilen{padding-top:8px}
+ .sch-igteilen>span{display:none}
+ .sch-igteil{padding:6px 12px;font-size:13px}
+ .sch-igbild{position:relative}
  .sch-igzurueck{left:8px}.sch-igweiter{right:8px}
+ .sch-igpfeil{width:40px;height:40px;margin-top:-20px}
 }
