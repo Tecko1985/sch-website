@@ -55,6 +55,11 @@ def index(ziel):
         name = os.path.basename(pfad)
         if name in AUSLASSEN:
             continue
+        # Geplanter Beitrag, vorab gebaut (beitraege.vorab_sperre): erst nach dem Termin in den Index
+        # (Bugjagd 16.11.2026 H2-9), sonst stünden Titel und Text schon vorher in suche-index.json.
+        if "html.vorab-wartet" in open(pfad, encoding="utf-8", errors="replace").read():
+            print(f"  {name}: geplant, noch nicht im Suchindex")
+            continue
         eintraege.append(eintrag(pfad, "seiten/" + name))
     with open(os.path.join(ziel, "suche-index.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(eintraege, f, ensure_ascii=False, separators=(",", ":"))

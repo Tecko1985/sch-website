@@ -209,6 +209,16 @@ KORREKTUREN = [
 ]
 
 
+VORAB = re.compile(r"<style>html\.vorab-wartet.*?</script>", re.S)
+
+
+def mit_vorab(quelle, out):
+    """Geplanter Beitrag (beitraege.vorab_sperre): die Sperre bis zum Termin auch in /neu/ mitnehmen
+    (Bugjagd 16.11.2026 H2-9), sonst stünde der Text dort schon vorher lesbar."""
+    m = VORAB.search(quelle)
+    return out.replace("</head>", m.group(0) + "</head>", 1) if m else out
+
+
 def baue_unterseiten():
     os.makedirs("neu/seiten", exist_ok=True)
     anzahl = 0
@@ -242,7 +252,7 @@ def baue_unterseiten():
             skripte.append("../../fupa.js")
 
         kopf = seitenkopf(rubrik, h1, datum, bild)
-        out = seite("../", titel, beschreibung, aktiv_fuer(name), kopf, inhalt, skripte)
+        out = mit_vorab(s, seite("../", titel, beschreibung, aktiv_fuer(name), kopf, inhalt, skripte))
         open(f"neu/seiten/{name}", "w", encoding="utf-8").write(out)
         anzahl += 1
     return anzahl
@@ -256,6 +266,7 @@ def baue_spielbericht_unterseite(name, s):
     main = pfade_unterseite(main)
     out = seite("../", titel, meta(s, "description"), aktiv_fuer(name), "", main,
                 ["../../spielbericht.js?v=1"], ["../../spielbericht.css?v=2026111601"])
+    out = mit_vorab(s, out)
     open(f"neu/seiten/{name}", "w", encoding="utf-8").write(out)
 
 
