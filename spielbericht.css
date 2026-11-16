@@ -259,3 +259,5 @@
 @media (max-width:560px){.sb-meta{white-space:normal}.sb-meta p{min-width:0;margin:0}}
 /* Sehr schmale Handys (320 px): Vereinsnamen passen ohne Bruch mitten im Wort */
 @media(max-width:380px){.sb-team{font-size:13px}.sb-stand strong{min-width:80px}}
+/* Lange Torlisten (z. B. 18:2) dürfen die Tafel nicht verbreitern: zählen bei der Spaltenbreite nicht mit, brechen um (16.11.2026) */
+.sb-tore{width:0;min-width:100%;box-sizing:border-box}

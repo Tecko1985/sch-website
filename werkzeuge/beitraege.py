@@ -576,6 +576,8 @@ def main():
     start = open(p, encoding="utf-8").read()
     # Kommende Spiele der 1. Mannschaft: eigene Spielinfo-Seite, die Spielkarte verlinkt darauf
     spielinfo = spielvorschau.baue_alle(ziel, sb_vorlage, ADRESSE, sichtbar)
+    # Nachwuchs: Spielinfo- bzw. Ergebnisseite für jede Nachwuchskarte (nicht in den News)
+    spielinfo.update(spielvorschau.baue_jugend(ziel, start, sb_vorlage, ADRESSE, sichtbar))
     spielvorschau.vereinsspiele(ziel)  # für die Redaktion: Mannschaft aus Spieltag und Gegner erkennen
     start = spielvorschau.verlinke_karten(start, spielinfo)
     spielvorschau.verlinke_mannschaftsseiten(ziel, spielinfo)  # „Nächste Spiele“ -> eigene Spielinfo-Seiten
