@@ -39,7 +39,11 @@ gesichert unter `E:\Vereine\SCH\_umzug\beitraege-2025\` (Michels Rechner). Sie k
 
 ## Danach
 
-- Automatisches Hochladen nach jedem Redaktionsbeitrag einrichten (GitHub Action per SFTP/SSH-Schlüssel).
+- Automatisches Hochladen: läuft schon (seit 16.11.2026) nach jedem Veröffentlichen in den Testordner
+  `public_html/neu-test/` (Secret `HETZNER_SSH_KEY`, Schlüssel liegt bei Michel unter `%USERPROFILE%\.ssh\sch_hetzner`).
+  Nach dem Umzug in `.github/workflows/seite.yml` das `ZIEL` auf `public_html/` stellen, `--exclude .htaccess` entfernen
+  und den Umzugs-Schalter in den Schritt aufnehmen. Vorsicht: `--delete` würde dann alles im Webordner löschen,
+  was nicht zur neuen Seite gehört – erst nach der WordPress-Sicherung umstellen.
 - WordPress-Sicherung einige Wochen aufheben.
 - Offene Punkte im Impressum klären: Telefonnummer (612202 oder 612206), „USt-IdNr.“ (sieht aus wie eine Steuernummer).
 - Auftragsverarbeitungsvertrag mit Hetzner prüfen (in der konsoleH abschließbar).
