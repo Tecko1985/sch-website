@@ -615,6 +615,68 @@ def verlinke_karten(start, links):
     return re.sub(r'<a class="sch-game[^>]*data-spiel="[^"]+"[^>]*>', ersetze, start)
 
 
+
+# Termine-Seite: Bezeichnung der Mannschaft -> Kürzel in unseren Seitennamen (spiel-[kürzel-]JJJJ-MM-TT-gegner.html).
+# Achtung: FuPa-Team „u12-2“ heißt auf fussball.de „U13 II“; „U12“ dort ist die dritte D-Jugend.
+TERMINE_TEAMS = {"1. Mannschaft": [""], "2. Mannschaft": ["zweite-"], "U19": ["u19-1-"], "U17": ["u17-1-"],
+                 "U17 II": ["u17-2-"], "U16": ["u17-2-", "u16-1-"], "U15": ["u15-1-"], "U13": ["u13-1-"],
+                 "U13 II": ["u12-2-", "u13-2-"], "U12": ["u12-1-"], "U11": ["u11-1-"], "U11 II": ["u11-2-"],
+                 "U9": ["u9-1-"], "U7": ["u7-1-"]}
+MONATE_DE = {"Januar": 1, "Februar": 2, "März": 3, "April": 4, "Mai": 5, "Juni": 6, "Juli": 7, "August": 8,
+             "September": 9, "Oktober": 10, "November": 11, "Dezember": 12}
+
+
+def verlinke_termine(ziel, links):
+    """Termine-Seite (im gebauten Ordner): „Zum Spiel“ zeigt auf unsere eigene Spielseite statt auf fussball.de,
+    wenn es eine gibt. Zuordnung über Mannschaft und Datum; bei mehreren Spielen am Tag zusätzlich über den Gegner.
+    Spiele ohne eigene Seite behalten den fussball.de-Link. Liefert die Zahl der umgestellten Links."""
+    pfad = os.path.join(ziel, "seiten", "termine.html")
+    if not os.path.exists(pfad):
+        return 0
+    seiten = {}  # (Kürzel, Datum) -> [(Seitenname, Gegner-Slug)]
+    for seite in set(links.values()):
+        name = seite.split("/")[-1]
+        m = re.match(r"spiel-((?:zweite-|u\d+-\d-)?)(\d{4}-\d{2}-\d{2})-(.+)\.html$", name)
+        if m:
+            seiten.setdefault((m.group(1), m.group(2)), []).append((name, m.group(3)))
+    s = open(pfad, encoding="utf-8").read()
+    zahl = 0
+
+    def tag_ersetzen(abschnitt):
+        nonlocal zahl
+        kopf = re.search(r'aria-label="\w+, (\d{1,2})\. (\w+) (\d{4})"', abschnitt.group(0))
+        if not kopf or kopf.group(2) not in MONATE_DE:
+            return abschnitt.group(0)
+        datum = f"{kopf.group(3)}-{MONATE_DE[kopf.group(2)]:02d}-{int(kopf.group(1)):02d}"
+
+        def spiel_ersetzen(li):
+            nonlocal zahl
+            t = li.group(0)
+            team = re.search(r'<span class="tm-team"><b>([^<]+)</b>', t)
+            namen = re.findall(r'<span class="tm-gegner"><span>([^<]*)</span><i[^>]*>:</i><span>([^<]*)</span>', t)
+            if not team or not namen:
+                return t
+            gegner = next((n for n in namen[0] if "Heiligenstadt" not in n), "")
+            klein = gegner.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+            worte = [w for w in re.split(r"[^a-z0-9]+", klein) if len(w) > 3 and w not in ("heiligenstadt", "sportverein")]
+            kandidaten = []
+            for k in TERMINE_TEAMS.get(team.group(1).strip(), []):
+                kandidaten += seiten.get((k, datum), [])
+            if len(kandidaten) > 1 or (kandidaten and worte and not any(w in kandidaten[0][1] for w in worte)):
+                kandidaten = [c for c in kandidaten if any(w in c[1] for w in worte)]
+            if len(kandidaten) != 1:
+                return t
+            neu = re.sub(r'<a href="https://www\.fussball\.de/[^"]*">Zum Spiel', f'<a href="{kandidaten[0][0]}">Zum Spiel', t, count=1)
+            if neu != t:
+                zahl += 1
+            return neu
+        return re.sub(r'<li class="tm-spiel[^"]*">.*?</li>', spiel_ersetzen, abschnitt.group(0), flags=re.S)
+
+    neu = re.sub(r'<section class="tm-tag".*?</section>', tag_ersetzen, s, flags=re.S)
+    if neu != s:
+        open(pfad, "w", encoding="utf-8").write(neu)
+    return zahl
+
 def vereinsspiele(ziel):
     """assets/vereinsspiele.json: Spiele aller Mannschaften (45 Tage zurück bis 60 Tage voraus) –
     daraus erkennt die Redaktion beim Spielbericht die Mannschaft aus Spieltag und Gegner."""
