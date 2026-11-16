@@ -580,11 +580,16 @@
     var tag = form.sp_spieldatum.value || form.datum.value;
     if (!tag) return null;
     var bis = new Date(tag + 'T12:00:00');
-    var gegner = form.sp_gegner.value.trim().toLowerCase().split(/\s+/).filter(function (w) { return w.length > 3; });
+    // Dieselben Regeln wie der Seitenbau (spielbericht.py finde_vorbericht, Bugjagd 16.11.2026 H2-8):
+    // Mannschaft muss passen; die 2. Mannschaft und der Nachwuchs nur mit Gegnernamen.
+    var team = (form.sp_mannschaft && form.sp_mannschaft.value) || 'm1';
+    var gegnerText = form.sp_gegner.value.trim();
+    var gegner = worte(gegnerText);
     // Einem Spiel zugeordnete Vorberichte („Zu welchem Spiel?“) gelten nur für dieses Spiel
     var zugeordnet = beitraege.filter(function (b) {
       var m = (b.daten.spiel_slug || '').match(/-(\d{2})(\d{2})(\d{2})$/);
-      return b.daten.rubrik === 'Vorbericht' && !b.daten.entwurf && m && '20' + m[1] + '-' + m[2] + '-' + m[3] === tag;
+      return b.daten.rubrik === 'Vorbericht' && !b.daten.entwurf && m && '20' + m[1] + '-' + m[2] + '-' + m[3] === tag &&
+        b.daten.spiel_slug.indexOf('heiligenstadt-' + team + '-') >= 0;
     });
     if (zugeordnet.length) return zugeordnet.sort(function (a, b) {
       return (b.daten.datum + (b.daten.zeit || '')).localeCompare(a.daten.datum + (a.daten.zeit || ''));
@@ -597,7 +602,8 @@
       var t = ((b.daten.titel || '') + ' ' + (b.daten.text || '')).toLowerCase();
       return gegner.some(function (w) { return t.indexOf(w) >= 0; });
     });
-    passend = (gegner.length && mitName.length ? mitName : passend).sort(function (a, b) {
+    if (gegnerText) passend = team !== 'm1' ? mitName : (mitName.length ? mitName : passend);
+    passend = passend.sort(function (a, b) {
       return (b.daten.datum + (b.daten.zeit || '')).localeCompare(a.daten.datum + (a.daten.zeit || ''));
     });
     return passend[0] || null;
@@ -617,7 +623,7 @@
     vorberichtWahl.value = wert;
   }
   vorberichtWahl.addEventListener('change', function () { vorberichtWahl.dataset.wert = vorberichtWahl.value; });
-  [form.sp_spieldatum, form.sp_gegner, form.datum].forEach(function (f) { f.addEventListener('change', zeichneVorberichte); });
+  [form.sp_spieldatum, form.sp_gegner, form.datum, form.sp_mannschaft].forEach(function (f) { f.addEventListener('change', zeichneVorberichte); });
 
   $('[data-wappendatei]').addEventListener('change', function (e) {
     var datei = e.target.files[0];
