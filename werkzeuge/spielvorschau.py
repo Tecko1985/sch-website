@@ -311,9 +311,19 @@ def kurztext(team, heim, gegner, es, eg, hz, sch_tore):
     return " ".join(saetze)
 
 
-def tore_und_pause(slug, heim, gegner, end):
+# Datenschutz (Minderjährige): Torschützen-Namen in den automatischen Seiten nur bei diesen Mannschaften,
+# bei jüngeren steht statt des Namens „SCH“ (Ergebnis und Spielminute bleiben).
+NAMEN_TEAMS = ("m1", "m2", "u19-", "u17-")
+
+
+def namen_erlaubt(team):
+    return team.startswith(NAMEN_TEAMS)
+
+
+def tore_und_pause(slug, heim, gegner, end, namen=True):
     """Tore im Vereinsformat („1:0 Name (12.)“, Stand Heim:Gast) und Halbzeitstand aus dem FuPa-Ticker.
-    Gegentore ohne Spielernamen. Stimmen die Tore nicht mit dem Endstand überein, keine Torliste."""
+    Gegentore ohne Spielernamen. Stimmen die Tore nicht mit dem Endstand überein, keine Torliste.
+    namen=False: auch eigene Tore ohne Spielernamen (jüngere Nachwuchsmannschaften)."""
     try:
         ev = fupa_ticker.ereignisse(fupa_ticker.stream(slug))
     except Exception:
@@ -327,7 +337,7 @@ def tore_und_pause(slug, heim, gegner, end):
         vor = (h, g)
         # Wer getroffen hat, ergibt der Spielstand (FuPa benennt die Teams im Ticker uneinheitlich)
         if heim_tor == heim:
-            name = (x.get("_tor") or "").strip() or "SCH"
+            name = ((x.get("_tor") or "").strip() if namen else "") or "SCH"
             if name != "SCH":
                 sch_namen.append(name)
         else:
@@ -356,7 +366,7 @@ def baue_ergebnis(m, d, standings, vorlage, adresse, bericht=None):
     hg, ag = int(d.get("homeGoal") if d.get("homeGoal") is not None else m["homeGoal"]), \
         int(d.get("awayGoal") if d.get("awayGoal") is not None else m["awayGoal"])
     es, eg = (hg, ag) if heim else (ag, hg)
-    tore, sch_namen, hz = tore_und_pause(m["slug"], heim, gegner, (hg, ag))
+    tore, sch_namen, hz = tore_und_pause(m["slug"], heim, gegner, (hg, ag), namen_erlaubt(team_von(m)))
     if hz and (hz[0] > es or hz[1] > eg):
         hz = None  # passt nicht zum Endstand (z. B. Talenteliga mit Wertung nach Halbzeiten)
     sp = {"gegner": gegner, "ort_art": "heim" if heim else "auswaerts", "mannschaft": team,
