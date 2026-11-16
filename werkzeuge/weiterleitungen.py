@@ -27,12 +27,14 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALT = "https://www.sc1911-heiligenstadt.de"
 UA = {"User-Agent": "SCH-Website"}
 ZIEL = os.path.join(REPO, ".htaccess")
+UMZUG_2025 = os.path.join(os.path.dirname(REPO), "_umzug", "beitraege-2025")
 
 # Alte Seiten, deren neue Datei anders heißt als der WordPress-Slug (zusätzlich zur Linkkarte)
 SEITEN_FEST = {
     "impressum-2": "seiten/impressum.html",
     "datenschutz": "seiten/datenschutz.html",
     "news": "seiten/news.html",
+    "anmelden": "https://sc1911.clubdach.de/mitgliedsportal/",  # WordPress-Login -> Mitgliedsportal
     "startseite": "",
     "home": "",
 }
@@ -80,7 +82,8 @@ def redaktion():
 
 
 def main():
-    da = lambda p: os.path.isfile(os.path.join(REPO, p))
+    # Beiträge aus 2025 liegen bis zum Umzug außerhalb des (öffentlichen) Repos, siehe UMZUG.md
+    da = lambda p: any(os.path.isfile(os.path.join(w, p)) for w in (REPO, UMZUG_2025))
     regeln, fehlend = {}, []
     red = redaktion()
 
@@ -136,7 +139,8 @@ def main():
         "",
     ]
     for alt in sorted(regeln):
-        zeilen.append(f"RewriteRule ^{re.escape(alt)}/?$ /{regeln[alt]} [R=301,L]")
+        ziel = regeln[alt] if regeln[alt].startswith("https://") else "/" + regeln[alt]
+        zeilen.append(f"RewriteRule ^{re.escape(alt)}/?$ {ziel} [R=301,L]")
     open(ZIEL, "w", encoding="utf-8", newline="\n").write("\n".join(zeilen) + "\n")
     print(f"{len(regeln)} Weiterleitungen in .htaccess")
     if fehlend:

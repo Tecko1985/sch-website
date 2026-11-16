@@ -419,7 +419,7 @@ RewriteRule ^2026/11/16/sch\-mit\-stillem\-gruss/?$ /seiten/beitrag-2026-11-14-s
 RewriteRule ^a\-junioren/?$ /seiten/u19.html [R=301,L]
 RewriteRule ^abteilungen\-2/?$ /seiten/abteilungen.html [R=301,L]
 RewriteRule ^alte\-herren\-2/?$ /seiten/alte-herren.html [R=301,L]
-RewriteRule ^anmelden/?$ / [R=301,L]
+RewriteRule ^anmelden/?$ https://sc1911.clubdach.de/mitgliedsportal/ [R=301,L]
 RewriteRule ^b\-junioren/?$ /seiten/u17.html [R=301,L]
 RewriteRule ^breitensport/?$ /seiten/breitensport.html [R=301,L]
 RewriteRule ^c\-junioren/?$ /seiten/u15.html [R=301,L]
