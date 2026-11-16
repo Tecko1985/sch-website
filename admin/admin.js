@@ -828,10 +828,11 @@
 
   // ---------------------------------------------------------------- Vorlagen
   // Gerüste für wiederkehrende Beiträge. Sie liegen gemeinsam für alle in inhalte/vorlagen.json
+  // Grundvorlagen werden nicht mehr automatisch eingesetzt (Wunsch der Redaktion, 16.11.2026): neue Beiträge starten leer.
   // (der Seitenbau liest nur inhalte/beitraege/). Solange die Datei fehlt, gelten die Grundvorlagen.
   var VORLAGEN = 'inhalte/vorlagen.json';
   var GRUND = [
-    { id: 'grund-spielbericht', name: 'Spielbericht', rubrik: 'Spielbericht', standard: true,
+    { id: 'grund-spielbericht', name: 'Spielbericht', rubrik: 'Spielbericht', standard: false,
       titel: '[Sieg/Remis/Niederlage] gegen [Gegner]',
       teaser: '[Ergebnis in einem Satz: Wer hat wie gespielt?]',
       // Ergebnis, Tore, Aufstellung und Stimmen kommen aus den Spieldaten unter dem Text.
@@ -839,19 +840,19 @@
         '<h2>2. Halbzeit</h2><p>[Zwischenüberschrift]<br>[Wie lief die zweite Halbzeit?]</p>' +
         '<h2>Nach dem Spiel</h2><p>[Zwischenüberschrift]<br>[Einordnung, Stimmen]</p>' +
         '<h2>Ausblick</h2><p>[Nächstes Spiel: Tag, Datum, Uhrzeit, Gegner, Ort]</p>' },
-    { id: 'grund-vorbericht', name: 'Vorbericht', rubrik: 'Vorbericht', standard: true,
+    { id: 'grund-vorbericht', name: 'Vorbericht', rubrik: 'Vorbericht', standard: false,
       titel: 'Vorschau: SCH gegen [Gegner]',
       teaser: '[Worum geht es am Wochenende?]',
       text: '<h2>Die Ausgangslage</h2><p>[Tabellenplatz, letzte Ergebnisse, Bilanz gegen den Gegner]</p>' +
         '<h2>Personal</h2><p>[Wer fehlt, wer kommt zurück?]</p>' +
         '<h2>Anpfiff</h2><ul><li><b>Wann:</b> [Tag, Datum, Uhrzeit]</li><li><b>Wo:</b> [Sportplatz, Ort]</li><li><b>Eintritt:</b> [Preis]</li></ul>' +
         '<p>[Aufruf an die Fans]</p>' },
-    { id: 'grund-nachwuchs', name: 'Nachwuchs', rubrik: 'Nachwuchs', standard: true,
+    { id: 'grund-nachwuchs', name: 'Nachwuchs', rubrik: 'Nachwuchs', standard: false,
       titel: '[Mannschaft, z. B. D-Jugend]: [Kurzmeldung]',
       teaser: '[Was ist passiert?]',
       text: '<p>[Was ist passiert? Spiel, Turnier, Ausflug …]</p><p>[Besondere Momente, Ergebnisse]</p>' +
         '<h2>Danke</h2><p>[Dank an Trainer, Eltern, Helfer, Sponsoren]</p>' },
-    { id: 'grund-verein', name: 'Vereinsnachricht', rubrik: 'Verein', standard: true,
+    { id: 'grund-verein', name: 'Vereinsnachricht', rubrik: 'Verein', standard: false,
       titel: '[Thema]',
       teaser: '[Worum geht es in einem Satz?]',
       text: '<p>[Worum geht es?]</p><ul><li><b>Wann:</b> [Datum, Uhrzeit]</li><li><b>Wo:</b> [Ort]</li></ul>' +
