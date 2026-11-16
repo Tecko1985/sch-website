@@ -20,17 +20,30 @@ gesichert unter `E:\Vereine\SCH\_umzug\beitraege-2025\` (Michels Rechner). Sie k
 
 ## Am Umzugstag
 
-1. **WordPress sichern**: alle Dateien und die Datenbank (`sccnld_db1`), per SSH oder über die konsoleH.
-2. **Platzhalter zeigen** (optional, für die Zeit des Umbaus): `umzug.html` als `index.html` hochladen.
-3. **Seite bauen** wie GitHub es tut: Repo-Dateien in einen Ordner kopieren, dann
-   `python werkzeuge/beitraege.py <ordner>`, `python werkzeuge/suche.py index <ordner>` und `python <ordner>/werkzeuge/neu_seiten.py`.
-   Nach Schritt 4 (Beiträge 2025) den Suchindex noch einmal erzeugen, damit sie gefunden werden.
-4. **Beiträge aus 2025 dazulegen**: den Inhalt von `_umzug\beitraege-2025\` in den Ordner kopieren
-   (inklusive `seiten/news.html`, die alle Karten enthält). Neu erzeugen geht auch:
-   `python werkzeuge/alte_beitraege.py 2025`, solange das WordPress noch erreichbar ist.
-5. **Weiterleitungen auffrischen**: `python werkzeuge/weiterleitungen.py` (holt neue WordPress-Beiträge mit).
-6. **Schalter umlegen**: `python werkzeuge/umzug_schalter.py <ordner>`.
-7. **Hochladen** per SFTP auf den Webspace (statt des WordPress), `.htaccess` nicht vergessen.
+Alles in einem Befehl (im Repo-Ordner, braucht den Schlüssel `%USERPROFILE%\.ssh\sch_hetzner`):
+
+```
+python werkzeuge/umzug.py probe          # vorher: Generalprobe nach /neu-probe/, WordPress bleibt
+python werkzeuge/umzug.py echt --ja      # DER Umzug
+python werkzeuge/umzug.py zurueck --ja   # nur im Notfall: WordPress wieder zurück
+```
+
+`echt` macht der Reihe nach:
+1. **WordPress sichern**: Datenbank `sccnld_db1` und alle Dateien nach `E:\Vereine\SCH\_umzug\wp-sicherung-<datum>\`.
+2. **Seite bauen** wie GitHub (Repo-Dateien, Redaktionsbeiträge, `neu/`, Suchindex).
+3. **Beiträge aus 2025** aus `_umzug\beitraege-2025\` dazu, ihre Karten in News und Archiv.
+4. **Weiterleitungen** alter WordPress-Adressen frisch erzeugen (`.htaccess`, holt neue Beiträge mit;
+   Beiträge bis Juni 2025 -> Archiv).
+5. **Schalter umlegen** (noindex raus, Domain, Datenschutz für Hetzner, robots.txt, sitemap.xml).
+6. **Hochladen** in `~/umzug-neu` (außerhalb des Webordners), dann **umschalten**: das WordPress wird nach
+   `~/umzug-alt-wordpress-<datum>` **verschoben** (nicht gelöscht), die neue Seite in `public_html`. Dauert Sekunden.
+7. **Prüfen**: Startseite, News, Impressum, Datenschutz, Suche, Newsletter, eine alte Beitragsadresse (301).
+
+Generalprobe am 16.11.2026: alles ok (3104 Dateien, 158 MB, 406 Beiträge in der Liste, Weiterleitungen gehen).
+Sicherung des WordPress vom selben Tag: `E:\Vereine\SCH\_umzug\wp-sicherung-2026-11-16\` (5,3 GB + Datenbank).
+
+Danach von Hand:
+
 8. **Newsletter**: im Worker (`ToolsUebersicht/admin-worker.js`) `NL_SEITE_URL` auf
    `https://www.sc1911-heiligenstadt.de/newsletter.html` stellen und deployen.
 9. **Prüfen**: Startseite, ein alter Beitragslink (z. B. `/2026/10/04/ende-im-achtelfinale-2/`),
@@ -43,7 +56,8 @@ gesichert unter `E:\Vereine\SCH\_umzug\beitraege-2025\` (Michels Rechner). Sie k
   `public_html/neu-test/` (Secret `HETZNER_SSH_KEY`, Schlüssel liegt bei Michel unter `%USERPROFILE%\.ssh\sch_hetzner`).
   Nach dem Umzug in `.github/workflows/seite.yml` das `ZIEL` auf `public_html/` stellen, `--exclude .htaccess` entfernen
   und den Umzugs-Schalter in den Schritt aufnehmen. Vorsicht: `--delete` würde dann alles im Webordner löschen,
-  was nicht zur neuen Seite gehört – erst nach der WordPress-Sicherung umstellen.
+  was nicht im GitHub-Bau steckt – auch die **Beiträge aus 2025** (nicht im Repo) und ihre Karten in den News.
+  Erst umstellen, wenn diese Frage gelöst ist (z. B. ohne `--delete` und mit Ausnahme für die 2025-Dateien).
 - WordPress-Sicherung einige Wochen aufheben.
 - Offene Punkte im Impressum klären: Telefonnummer (612202 oder 612206), „USt-IdNr.“ (sieht aus wie eine Steuernummer).
 - Auftragsverarbeitungsvertrag mit Hetzner prüfen (in der konsoleH abschließbar).

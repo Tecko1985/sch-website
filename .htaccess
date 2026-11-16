@@ -7,6 +7,9 @@ RewriteEngine On
 RewriteRule ^(category|tag|author)/ /seiten/news.html [R=301,L]
 RewriteRule ^(feed|comments/feed)/?$ /seiten/news.html [R=301,L]
 RewriteRule ^page/[0-9]+/?$ /seiten/news.html [R=301,L]
+# Beiträge bis Juni 2025 (nur noch im Nextcloud-Archiv) -> News-Archiv
+RewriteRule ^(2021|2022|2023|2024)/[0-9]{2}/[0-9]{2}/ /seiten/archiv.html [R=301,L]
+RewriteRule ^2025/0[1-6]/[0-9]{2}/ /seiten/archiv.html [R=301,L]
 
 RewriteRule ^1\-mannschaft/?$ /seiten/erste-mannschaft.html [R=301,L]
 RewriteRule ^2\-mannschaft/?$ /seiten/zweite-mannschaft.html [R=301,L]

@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import sys
+import urllib.parse
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VORSCHAU = "https://tecko1985.github.io/sch-website/"
@@ -32,6 +33,7 @@ def main():
         sys.exit(__doc__)
     ziel = os.path.abspath(sys.argv[1])
     domain = (sys.argv[2] if len(sys.argv) > 2 else ALT).rstrip("/") + "/"
+    basis = urllib.parse.urlparse(domain).path or "/"  # "/" bzw. "/neu-probe/" bei der Generalprobe
     if ziel == REPO:
         sys.exit("Nicht auf das Repo anwenden – nur auf eine gebaute Kopie (z. B. _site).")
     if not os.path.isfile(os.path.join(ziel, "index.html")):
@@ -59,7 +61,7 @@ def main():
                 zaehler["noindex"] += n
             neu, n = re.subn(re.escape(VORSCHAU), domain, neu)
             zaehler["adressen"] += n
-            neu = neu.replace('"/sch-website/', '"/')
+            neu = neu.replace('"/sch-website/', '"' + basis)
             if name.endswith(".html"):
                 hoch = os.path.relpath(os.path.join(ziel, "seiten"), wurzel).replace("\\", "/")
                 hoch = "" if hoch == "." else hoch + "/"

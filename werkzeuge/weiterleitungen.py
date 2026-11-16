@@ -2,7 +2,8 @@
 """Weiterleitungen von den Adressen der alten Vereinsseite (WordPress) auf die neue Seite.
 
 Aufruf (im Repo-Ordner, braucht Netz):
-    python werkzeuge/weiterleitungen.py
+    python werkzeuge/weiterleitungen.py              schreibt .htaccess im Repo
+    python werkzeuge/weiterleitungen.py <datei>      schreibt dorthin (umzug.py: in den Bauordner)
 
 Schreibt .htaccess (Apache, für den Webspace bei Hetzner): jede alte Adresse eines Beitrags oder
 einer Seite zeigt mit 301 ("dauerhaft umgezogen") auf die passende neue Seite. So landen alte Links
@@ -20,6 +21,7 @@ import html
 import json
 import os
 import re
+import sys
 import urllib.parse
 import urllib.request
 
@@ -136,13 +138,17 @@ def main():
         r"RewriteRule ^(category|tag|author)/ /seiten/news.html [R=301,L]",
         r"RewriteRule ^(feed|comments/feed)/?$ /seiten/news.html [R=301,L]",
         r"RewriteRule ^page/[0-9]+/?$ /seiten/news.html [R=301,L]",
+        "# Beiträge bis Juni 2025 (nur noch im Nextcloud-Archiv) -> News-Archiv",
+        r"RewriteRule ^(2021|2022|2023|2024)/[0-9]{2}/[0-9]{2}/ /seiten/archiv.html [R=301,L]",
+        r"RewriteRule ^2025/0[1-6]/[0-9]{2}/ /seiten/archiv.html [R=301,L]",
         "",
     ]
     for alt in sorted(regeln):
         ziel = regeln[alt] if regeln[alt].startswith("https://") else "/" + regeln[alt]
         zeilen.append(f"RewriteRule ^{re.escape(alt)}/?$ {ziel} [R=301,L]")
-    open(ZIEL, "w", encoding="utf-8", newline="\n").write("\n".join(zeilen) + "\n")
-    print(f"{len(regeln)} Weiterleitungen in .htaccess")
+    ziel = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else ZIEL
+    open(ziel, "w", encoding="utf-8", newline="\n").write("\n".join(zeilen) + "\n")
+    print(f"{len(regeln)} Weiterleitungen in {ziel}")
     if fehlend:
         print(f"{len(fehlend)} Beiträge ohne eigene neue Seite (zeigen auf die News-Liste): {', '.join(fehlend[:10])}")
 
