@@ -25,6 +25,7 @@ from html.parser import HTMLParser
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import spielbericht  # noqa: E402  Spielbericht-Seiten im Aufbau von spielbericht-erfurt.html
+import spieltag  # noqa: E402
 import spiele  # noqa: E402  „Aktuelle Spiele“ auf der Startseite
 import spielvorschau  # noqa: E402  Spielinfo-Seiten für kommende Spiele
 
@@ -287,6 +288,7 @@ def lade_beitraege():
         d["titel"] = (d.get("titel") or "").strip() or "Ohne Titel"
         d["teaser"] = kurz(d.get("teaser") or d.get("text"), 300)
         d["text"] = saeubern(d.get("text"))
+        d["text"] = spieltag.karten(d["text"])  # „Spiele am Wochenende“ als Spielkarten
         d["bild"] = d.get("bild") or ""
         d["galerie"] = [g for g in d.get("galerie", []) if re.match(r"^assets/(?:beitraege|seiten)/[a-z0-9._-]+$", g)]
         if d["bild"] and not re.match(r"^assets/(?:beitraege|seiten)/[a-z0-9._-]+$", d["bild"]):
