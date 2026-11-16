@@ -38,11 +38,18 @@ concurrency:
   queue: max
 
 jobs:
+  # Bauen und Veroeffentlichen in EINEM Job: das Repo ist privat, Actions-Minuten zaehlen gegen das
+  # Kontingent, und jeder Job wird auf eine volle Minute aufgerundet (16.11.2026). Vorher eigener Job
+  # "veroeffentlichen" -- kostete bei ~33 Laeufen am Tag rund 30 Minuten taeglich zusaetzlich.
   bauen:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pages: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     outputs:
       veroeffentlichen: ${{ steps.entscheiden.outputs.veroeffentlichen }}
       instagram: ${{ steps.instagram.outcome }}
@@ -131,18 +138,8 @@ jobs:
         with:
           path: _site
 
-  veroeffentlichen:
-    needs: bauen
-    if: needs.bauen.outputs.veroeffentlichen == '1'
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - id: deployment
+        if: steps.entscheiden.outputs.veroeffentlichen == '1'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   # Abnahme 07.10.2026 (AB3-6): GitHub schaltet Zeitplaene in oeffentlichen Repos nach 60 Tagen
@@ -166,7 +163,7 @@ jobs:
   # oder wenn SECRETS_PAT fehlt (nur ::warning:: in "Neuen Schluessel speichern", der
   # verlaengerte Schluessel geht verloren; rot erst, wenn der alte nach 60 Tagen ablaeuft).
   instagram-fehler:
-    needs: [bauen, veroeffentlichen]
+    needs: [bauen]
     if: always() && needs.bauen.outputs.instagram == 'failure'
     runs-on: ubuntu-latest
     steps:
