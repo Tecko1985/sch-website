@@ -129,6 +129,11 @@ def bauen(ziel, domain, probe_pfad, weiterleitungen=True):
     if os.path.isdir(BEITRAEGE_2025):
         schritt("Beiträge aus 2025 dazulegen")
         alt = open(os.path.join(BEITRAEGE_2025, "seiten", "news.html"), encoding="utf-8").read()
+        # ?v= der 2025er auf den Stand des Repos bringen, sonst laden sie nach einem Bump alte CSS/JS aus dem
+        # Browser-Speicher (Live-Prüfung 17.11.2026 L-6). Maßstab: die News-Seite des Repos.
+        vor = open(os.path.join(ziel, "seiten", "news.html"), encoding="utf-8").read()
+        versionen = {os.path.basename(n): v for n, v in re.findall(r'([\w./-]+\.(?:css|js))\?v=([\w.]+)', vor)}
+        angeglichen = 0
         for wurzel, _, namen in os.walk(BEITRAEGE_2025):
             for name in namen:
                 rel = os.path.relpath(os.path.join(wurzel, name), BEITRAEGE_2025)
@@ -136,6 +141,15 @@ def bauen(ziel, domain, probe_pfad, weiterleitungen=True):
                     continue
                 os.makedirs(os.path.join(ziel, os.path.dirname(rel)), exist_ok=True)
                 shutil.copy2(os.path.join(wurzel, name), os.path.join(ziel, rel))
+                if name.endswith(".html"):
+                    p = os.path.join(ziel, rel)
+                    t = open(p, encoding="utf-8").read()
+                    t2 = re.sub(r'([\w./-]+\.(?:css|js))\?v=([\w.]+)',
+                                lambda m: f'{m.group(1)}?v={versionen.get(os.path.basename(m.group(1)), m.group(2))}', t)
+                    if t2 != t:
+                        open(p, "w", encoding="utf-8", newline="").write(t2)
+                        angeglichen += 1
+        print(f"   ?v= in {angeglichen} Dateien an das Repo angeglichen")
         # Karten der 2025-Beiträge in die News-Grundlage (beitraege.py sortiert und baut Archiv)
         news_pfad = os.path.join(ziel, "seiten", "news.html")
         news = open(news_pfad, encoding="utf-8").read()
