@@ -346,3 +346,17 @@ html.sb-bf-offen{overflow:hidden}
  .sb-wk-name{font-size:18px;padding:0 12px}
  .sb-wk-pfeil{font-size:30px;padding:0 12px}
 }
+/* Tor-Karte: Torschütze mit Foto, darunter Vorlage, rechts der Ball */
+.sb-tk{grid-template-columns:minmax(0,620px) 48px}
+.sb-wk-zusatz{display:block;margin-top:5px;font:400 15px/1.3 Arial,sans-serif;text-transform:none;color:var(--grau)}
+.sb-wk-tor .sb-wk-pfeil{color:var(--navy)}
+.sb-wk-tor .sb-wk-pfeil svg{display:block;width:38px;height:38px}
+@media(max-width:700px){.sb-tk{grid-template-columns:minmax(0,1fr) 38px;gap:10px}.sb-wk-tor .sb-wk-pfeil svg{width:30px;height:30px}.sb-wk-zusatz{font-size:14px}}
+.sb-wk-name{overflow-wrap:break-word}
+@media(max-width:700px){
+ .sb-ereignisse li.mit-karte > div{grid-column:2/4;grid-row:1;min-width:0}
+ .sb-ereignisse li.mit-karte > .stand{grid-column:3;grid-row:1}
+ .sb-ereignisse li.mit-karte h3{padding-right:56px}
+ .sb-wk.sb-tk{grid-template-columns:minmax(0,1fr)}
+ .sb-wk.sb-tk .sb-wk-wappen{display:none}
+}

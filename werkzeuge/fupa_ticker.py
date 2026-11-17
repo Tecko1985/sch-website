@@ -85,6 +85,8 @@ def ereignisse(daten):
             vor = _name(x.get("secondaryRole")) if "penalty" not in unter and "own" not in unter else ""
             if "own" not in unter:
                 eintrag["_tor"] = _name(x.get("primaryRole"))
+                eintrag["_vorlage"] = vor
+                eintrag["_torart"] = art.strip(" ()")
             eintrag.update(art="tor", kopf=f"Tor für {eintrag['team']}" if eintrag["team"] else "Tor",
                            text=(_name(x.get("primaryRole")) or "Tor") + art + (f", Vorlage {vor}" if vor else "") + ".")
             if x.get("homeGoal") is not None and x.get("awayGoal") is not None:

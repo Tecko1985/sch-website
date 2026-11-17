@@ -441,6 +441,14 @@ def wechselkarte(s, rein, raus):
     return spielerbilder.karte_html(s.team, rein, raus)
 
 
+def torkarte(s, schuetze, vorlage="", zusatz=""):
+    """Tor-Karte mit Foto des Torschützen – nur für SCH-Tore der 1. und 2. Mannschaft (kein Eigentor)."""
+    if s.team not in ("m1", "m2") or not schuetze or re.search(r"(?i)eigentor", zusatz or ""):
+        return ""
+    import spielerbilder
+    return spielerbilder.torkarte_html(s.team, schuetze, vorlage, zusatz)
+
+
 def ticker(s, fazit):
     sp = s.sp
     link = (sp.get("ticker_link") or "").strip()
@@ -470,7 +478,9 @@ def ticker(s, fazit):
     elif fupa:
         eintraege = [(x["sort"], x["min"], FUPA_KLASSE.get(x["art"], ""), FUPA_ZEICHEN.get(x["art"], "") + e(x["kopf"]),
                       e(x["text"]), x["stand"], wechselkarte(s, x.get("_rein"), x.get("_raus"))
-                      if x["art"] == "wechsel" and x.get("team") == "SCH" else "") for x in fupa]
+                      if x["art"] == "wechsel" and x.get("team") == "SCH"
+                      else torkarte(s, x.get("_tor"), x.get("_vorlage"), x.get("_torart"))
+                      if x["art"] == "tor" and x.get("team") == "SCH" else "") for x in fupa]
         quelle = "Liveticker von FuPa."
         link = link or fupa_link
     elif s.da:
@@ -479,7 +489,8 @@ def ticker(s, fazit):
         for t in s.tore:
             wer = s.kurzname(t["team"])
             zus = f' ({e(t["zusatz"])})' if t["zusatz"] else ""
-            eintraege.append((t["min"], t["label"], "tor", f"Tor für {e(wer)}", f'{e(t["name"])} trifft{zus}.', stand_bei(t["min"])))
+            eintraege.append((t["min"], t["label"], "tor", f"Tor für {e(wer)}", f'{e(t["name"])} trifft{zus}.', stand_bei(t["min"]),
+                              torkarte(s, t["name"], "", t["zusatz"]) if t["team"] == "sch" else ""))
         for k in s.karten:
             zus = f' ({e(k["zusatz"])})' if k["zusatz"] else ""
             eintraege.append((k["min"] + 0.001, k["label"], "", f'<span class="sb-karte" aria-hidden="true"></span>Rote Karte für {e(k["name"])}',
@@ -720,7 +731,7 @@ def live_seite(vorlage, adresse):
     kopf = kopf.replace("</head>", '<link rel="stylesheet" href="live.css?v=3">\n</head>', 1)
     main = ('<main class="sb lv-seite">\n<header class="lv-kopf"><p>1. SC 1911 Heiligenstadt</p><h1 class="stitel">Liveticker</h1></header>\n'
             '<div id="sch-live-seite"><noscript><p>Der Liveticker braucht JavaScript.</p></noscript></div>\n'
-            '<script src="live.js?v=5" data-basis="../" defer></script>\n</main>')
+            '<script src="live.js?v=6" data-basis="../" defer></script>\n</main>')
     return pfade_fuer_seiten(kopf + main + fuss)
 
 

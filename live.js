@@ -134,17 +134,26 @@
 
   // Wechsel-Karte bei SCH-Wechseln: Fotos und Nummern aus den Kaderseiten (live.py, werkzeuge/spielerbilder.py)
   function wechselkarte(wk) {
-    function seite(p, art) {
-      var foto = /^assets\/[\w\/.-]+\.webp$/.test(p.bild || '') ? '<img src="' + basis + esc(p.bild) + '" alt="" loading="lazy">'
-        : '<span class="sb-wk-ohne" aria-hidden="true"></span>';
+    return '<div class="sb-wk' + (wk.raus ? '' : ' sb-wk-allein') + '">' + wkSeite(wk.rein, 'rein') + wkWappen() +
+      (wk.raus ? wkSeite(wk.raus, 'raus') : '') + '</div>';
+  }
+  function torkarte(tk) {
+    return '<div class="sb-wk sb-wk-allein sb-tk">' + wkSeite(tk, 'tor') + wkWappen() + '</div>';
+  }
+  function wkWappen() {
+    return '<img class="sb-wk-wappen" src="' + basis + 'assets/logo.png" alt="" aria-hidden="true">';
+  }
+  var BALL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/>' +
+    '<path d="M12 7.2l4.1 3-1.6 4.8h-5l-1.6-4.8z" fill="currentColor"/><path d="M12 1.6v5.6M16.1 10.2l5-1.8M14.5 15l3.2 4.4' +
+    'M9.5 15l-3.2 4.4M7.9 10.2l-5-1.8" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>';
+  function wkSeite(p, art) {
+    var foto = /^assets\/[\w\/.-]+\.webp$/.test(p.bild || '') ? '<img src="' + basis + esc(p.bild) + '" alt="" loading="lazy">'
+      : '<span class="sb-wk-ohne" aria-hidden="true"></span>';
       var nr = p.nr ? '<b class="sb-wk-nr">' + esc(p.nr) + '</b>' : '';
       return '<div class="sb-wk-seite sb-wk-' + art + '"><span class="sb-wk-foto">' + foto + nr + '</span>' +
-        '<span class="sb-wk-name"><small class="sb-wk-sr">' + (art === 'rein' ? 'Eingewechselt' : 'Ausgewechselt') + ': </small>' +
-        esc(p.name) + '</span><span class="sb-wk-pfeil" aria-hidden="true">' + (art === 'rein' ? '↑' : '↓') + '</span></div>';
-    }
-    return '<div class="sb-wk' + (wk.raus ? '' : ' sb-wk-allein') + '">' + seite(wk.rein, 'rein') +
-      '<img class="sb-wk-wappen" src="' + basis + 'assets/logo.png" alt="" aria-hidden="true">' +
-      (wk.raus ? seite(wk.raus, 'raus') : '') + '</div>';
+        '<span class="sb-wk-name"><small class="sb-wk-sr">' + (art === 'rein' ? 'Eingewechselt' : art === 'raus' ? 'Ausgewechselt' : 'Torschütze') + ': </small>' +
+        esc(p.name) + (p.unter ? '<small class="sb-wk-zusatz">' + esc(p.unter) + '</small>' : '') +
+        '</span><span class="sb-wk-pfeil" aria-hidden="true">' + (art === 'rein' ? '↑' : art === 'raus' ? '↓' : BALL_SVG) + '</span></div>';
   }
 
   // Aufstellungen (von FuPa, mit Toren, Karten und Wechseln aus dem Ticker)
@@ -206,7 +215,7 @@
     var li = (sp.ereignisse || []).map(function (e) {
       var kopf = e.kopf ? '<h3 class="stitel">' + (ZEICHEN[e.art] || '') + esc(e.kopf) + '</h3>' : '';
       var text = e.text ? '<p>' + esc(e.text) + '</p>' : '';
-      var karte = e.wk && e.wk.rein ? wechselkarte(e.wk) : '';
+      var karte = e.wk && e.wk.rein ? wechselkarte(e.wk) : e.tk && e.tk.name ? torkarte(e.tk) : '';
       return '<li class="' + (KLASSE[e.art] || '') + (karte ? ' mit-karte' : '') + '"><span class="sb-minute">' + esc(e.min) + '\'</span><div>' + kopf + karte + text +
         '</div><span class="stand">' + esc(e.stand) + '</span></li>';
     }).join('');

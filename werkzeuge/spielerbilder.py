@@ -56,21 +56,38 @@ def spieler(team, name):
     return {"name": name, "bild": "", "nr": ""}
 
 
+BALL_SVG = ('<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/>'
+            '<path d="M12 7.2l4.1 3-1.6 4.8h-5l-1.6-4.8z" fill="currentColor"/><path d="M12 1.6v5.6M16.1 10.2l5-1.8M14.5 15l3.2 4.4'
+            'M9.5 15l-3.2 4.4M7.9 10.2l-5-1.8" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>')
+
+
+def _seite(p, art, praefix, zeile2=""):
+    e = lambda x: html.escape(x or "", quote=True)
+    foto = (f'<img src="{e(praefix + p["bild"])}" alt="" loading="lazy">' if p["bild"]
+            else '<span class="sb-wk-ohne" aria-hidden="true"></span>')
+    nr = f'<b class="sb-wk-nr">{e(p["nr"])}</b>' if p["nr"] else ""
+    zeichen = {"rein": "↑", "raus": "↓", "tor": BALL_SVG}[art]
+    hinweis = {"rein": "Eingewechselt", "raus": "Ausgewechselt", "tor": "Torschütze"}[art]
+    unter = f'<small class="sb-wk-zusatz">{e(zeile2)}</small>' if zeile2 else ""
+    return (f'<div class="sb-wk-seite sb-wk-{art}"><span class="sb-wk-foto">{foto}{nr}</span>'
+            f'<span class="sb-wk-name"><small class="sb-wk-sr">{hinweis}: </small>{e(p["name"])}{unter}</span>'
+            f'<span class="sb-wk-pfeil" aria-hidden="true">{zeichen}</span></div>')
+
+
+def _wappen(praefix, wappen):
+    return f'<img class="sb-wk-wappen" src="{html.escape(praefix + wappen, quote=True)}" alt="" aria-hidden="true">'
+
+
 def karte_html(team, rein, raus, praefix="../", wappen="assets/logo.png"):
     """Wechsel-Karte wie bei Werder: links eingewechselt (grüner Pfeil), Mitte Wappen, rechts ausgewechselt."""
-    e = lambda x: html.escape(x or "", quote=True)
-
-    def seite(p, art):
-        foto = (f'<img src="{e(praefix + p["bild"])}" alt="" loading="lazy">' if p["bild"]
-                else '<span class="sb-wk-ohne" aria-hidden="true"></span>')
-        nr = f'<b class="sb-wk-nr">{e(p["nr"])}</b>' if p["nr"] else ""
-        pfeil = f'<span class="sb-wk-pfeil" aria-hidden="true">{"↑" if art == "rein" else "↓"}</span>'
-        hinweis = "Eingewechselt" if art == "rein" else "Ausgewechselt"
-        return (f'<div class="sb-wk-seite sb-wk-{art}"><span class="sb-wk-foto">{foto}{nr}</span>'
-                f'<span class="sb-wk-name"><small class="sb-wk-sr">{hinweis}: </small>{e(p["name"])}</span>{pfeil}</div>')
-
-    teile = [seite(spieler(team, rein), "rein")]
-    teile.append(f'<img class="sb-wk-wappen" src="{e(praefix + wappen)}" alt="" aria-hidden="true">')
+    teile = [_seite(spieler(team, rein), "rein", praefix), _wappen(praefix, wappen)]
     if raus:
-        teile.append(seite(spieler(team, raus), "raus"))
+        teile.append(_seite(spieler(team, raus), "raus", praefix))
     return f'<div class="sb-wk{"" if raus else " sb-wk-allein"}">{"".join(teile)}</div>'
+
+
+def torkarte_html(team, schuetze, vorlage="", zusatz="", praefix="../", wappen="assets/logo.png"):
+    """Tor-Karte: Torschütze mit Foto und Nummer, darunter Vorlage bzw. Strafstoß/Kopfball, Ball, Wappen."""
+    unter = f"Vorlage: {vorlage}" if vorlage else zusatz
+    return (f'<div class="sb-wk sb-wk-allein sb-tk">{_seite(spieler(team, schuetze), "tor", praefix, unter)}'
+            f'{_wappen(praefix, wappen)}</div>')
