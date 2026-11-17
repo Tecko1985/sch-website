@@ -5,6 +5,8 @@
     python werkzeuge/umzug.py sichern        nur WordPress sichern (Datenbank + Dateien) nach _umzug/
     python werkzeuge/umzug.py echt --ja      DER Umzug: sichern, bauen, hochladen, WordPress beiseitelegen
     python werkzeuge/umzug.py zurueck --ja   Notfall: WordPress wieder an seinen Platz, neue Seite beiseite
+    python werkzeuge/umzug.py live <ordner>  nach dem Umzug (GitHub, seite.yml): echte Seite nach <ordner> bauen,
+                                             ohne neue .htaccess (die alte Seite mit ihrer Schnittstelle ist dann weg)
 
 Was "probe" und "echt" tun (siehe UMZUG.md):
  1. Seite bauen wie GitHub (Repo-Dateien, Redaktionsbeiträge, neu/, Suchindex), Instagram von der Vorschau
@@ -107,7 +109,7 @@ NICHT_AUSLIEFERN = ["werkzeuge", "wordpress-plugin", "UMZUG.md", "hochladen.ps1"
                     "inhalte/LIESMICH.md"]
 
 
-def bauen(ziel, domain, probe_pfad):
+def bauen(ziel, domain, probe_pfad, weiterleitungen=True):
     if os.path.exists(ziel):
         shutil.rmtree(ziel)
     schritt("Seite zusammenstellen (wie GitHub)")
@@ -159,7 +161,8 @@ def bauen(ziel, domain, probe_pfad):
     schritt("Instagram-Karten von der Vorschau übernehmen")
     try:
         js = urllib.request.urlopen(urllib.request.Request(VORSCHAU + "instagram-daten.js", headers={"User-Agent": "SCH-Website"}), timeout=30).read()
-        bilder = sorted(set(re.findall(rb'assets/instagram/[A-Za-z0-9._/-]+', js)))
+        # instagram-daten.js nennt nur den Dateinamen ("bild": "123.webp"), instagram.js setzt assets/instagram/ davor
+        bilder = sorted({b"assets/instagram/" + n for n in re.findall(rb'"bild":\s*"([A-Za-z0-9._-]+)"', js)})
         for b in bilder:
             p = os.path.join(ziel, b.decode())
             os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -170,9 +173,13 @@ def bauen(ziel, domain, probe_pfad):
     except Exception as e:  # die Repo-Fassung (ohne Bilder) bleibt dann stehen; der nächste GitHub-Lauf ersetzt sie
         print(f"   nicht geklappt ({e}) – Repo-Fassung bleibt")
 
-    schritt("Weiterleitungen alter WordPress-Adressen")
     ht = os.path.join(ziel, ".htaccess")
-    subprocess.run([py, os.path.join(REPO, "werkzeuge", "weiterleitungen.py"), ht], check=True)
+    if not weiterleitungen:
+        # live: die .htaccess auf dem Webspace bleibt (rsync --exclude .htaccess); die aus dem Repo nicht mitschicken
+        os.path.exists(ht) and os.remove(ht)
+    else:
+        schritt("Weiterleitungen alter WordPress-Adressen")
+        subprocess.run([py, os.path.join(REPO, "werkzeuge", "weiterleitungen.py"), ht], check=True)
     if probe_pfad:
         # In /neu-probe/ zeigen die Ziele in den Probeordner; Google bekommt "noindex"
         t = open(ht, encoding="utf-8").read()
@@ -266,6 +273,12 @@ def pruefen(basis):
 def main():
     art = sys.argv[1] if len(sys.argv) > 1 else ""
     ja = "--ja" in sys.argv
+    if art == "live" and len(sys.argv) > 2:
+        # Ohne die 2025-Beiträge würde rsync --delete sie auf dem Webspace löschen – dann lieber gar nicht
+        if not os.path.isfile(os.path.join(BEITRAEGE_2025, "seiten", "news.html")):
+            sys.exit(f"Abbruch: {BEITRAEGE_2025} fehlt")
+        bauen(os.path.abspath(sys.argv[2]), DOMAIN, "", weiterleitungen=False)
+        return
     if not os.path.isfile(SCHLUESSEL):
         sys.exit(f"SSH-Schlüssel fehlt: {SCHLUESSEL}")
     # Jedes Mal ein frischer Bauordner: unter Windows kann ein alter noch gesperrt sein (Explorer, Shell)

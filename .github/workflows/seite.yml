@@ -167,37 +167,45 @@ jobs:
   # (ssh-keyscan -p 222 dedi1977.your-server.de, 16.11.2026), kein blindes Vertrauen.
   # .htaccess bleibt draussen: ihre Weiterleitungen gelten erst fuer die echte Seite im Hauptordner.
   # Symlinks werden nicht mitgenommen (rsync ohne -l).
+  # Seit dem Umzug (17.11.2026) ist der Hetzner-Webspace die echte Seite. Gebaut wird wie beim Umzug
+  # (werkzeuge/umzug.py live): Repo + Redaktionsbeitraege + Beitraege aus 2025. Die 2025er liegen NICHT im
+  # oeffentlichen Repo, sondern auf dem Server unter ~/beitraege-2025 und werden nur fuer den Bau geholt.
+  # .htaccess (Weiterleitungen) bleibt auf dem Server; ohne 2025er bricht der Bau ab, statt sie zu loeschen.
   hetzner:
     needs: [bauen]
     if: needs.bauen.outputs.veroeffentlichen == '1'
     runs-on: ubuntu-latest
     permissions:
-      actions: read
+      contents: read
     steps:
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
-          name: github-pages
-          path: ${{ runner.temp }}/artefakt
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pillow==12.3.0 tzdata==2026.4
 
-      - name: Test-Kopie zu Hetzner
+      - name: Echte Seite zu Hetzner
         env:
           HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
-          ZIEL: public_html/neu-test/
+          ZIEL: public_html/
         run: |
-          if [ -z "$HETZNER_SSH_KEY" ]; then echo "Kein HETZNER_SSH_KEY -- Test-Kopie uebersprungen."; exit 0; fi
-          tarball=$(find "$RUNNER_TEMP/artefakt" -type f -name '*.tar' | head -n 1)
-          if [ -z "$tarball" ]; then echo "::error::Pages-Artefakt ohne .tar"; ls -laR "$RUNNER_TEMP/artefakt"; exit 1; fi
-          mkdir "$RUNNER_TEMP/seite"
-          tar -xf "$tarball" -C "$RUNNER_TEMP/seite" --no-same-owner --no-same-permissions
-          echo "$(find "$RUNNER_TEMP/seite" -type f | wc -l) Dateien"
+          if [ -z "$HETZNER_SSH_KEY" ]; then echo "::error::Kein HETZNER_SSH_KEY"; exit 1; fi
           install -m 600 /dev/null "$RUNNER_TEMP/hetzner"
           printf '%s\n' "$HETZNER_SSH_KEY" > "$RUNNER_TEMP/hetzner"
           echo '[dedi1977.your-server.de]:222 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8yCL+qtrE6fn3yHRsto9z6C/Y6q4S7K4G7mdOTI9q51ZPRZAayP3jHoUnqbYOgtaJQrkcdRqJ3GOW7wMh2Y6jLCSmRoVIBqNmtNPdLIXvWmVfJapXExf30SRb0cIAgtbGx30+ejY5GvgJiQyxdQen563yVc0E/dIWfgXlrXJFwS5RbA7mJQ5NtB2TQs38HH8U1uVLVBJ4knFP2ga3E00+lRvnedXhMeFZx+bXwuAf0CBd8ZZDBGPtgC7wZM8z4uY0HFhK9hUgB4k/cM+tK/u8XIJwTXxn8/P2kz49RUNgEEcPnd5l3BcEHpIr/FO+UFWFmovmsC3CbG9eimJy7wcp' > "$RUNNER_TEMP/known_hosts"
-          rsync -rt --delete --exclude .htaccess \
-            -e "ssh -p 222 -i $RUNNER_TEMP/hetzner -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes" \
-            "$RUNNER_TEMP/seite/" "sccnld@dedi1977.your-server.de:$ZIEL"
+          SSH="ssh -p 222 -i $RUNNER_TEMP/hetzner -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes"
+          mkdir -p ../_umzug
+          rsync -rt -e "$SSH" "sccnld@dedi1977.your-server.de:beitraege-2025/" ../_umzug/beitraege-2025/
+          python werkzeuge/umzug.py live "$RUNNER_TEMP/seite"
+          n=$(find "$RUNNER_TEMP/seite" -type f | wc -l)
+          echo "$n Dateien"
+          if [ "$n" -lt 3000 ]; then echo "::error::Nur $n Dateien gebaut -- nichts hochgeladen"; exit 1; fi
+          rsync -rt --delete --exclude /.htaccess --exclude '/google*.html' --exclude /.well-known/ \
+            -e "$SSH" "$RUNNER_TEMP/seite/" "sccnld@dedi1977.your-server.de:$ZIEL"
           rm -f "$RUNNER_TEMP/hetzner"
-          echo "Test-Kopie liegt unter https://www.sc1911-heiligenstadt.de/neu-test/"
+          echo "Live unter https://www.sc1911-heiligenstadt.de/"
 
   # Abnahme 07.10.2026 (AB3-6): GitHub schaltet Zeitplaene in oeffentlichen Repos nach 60 Tagen
   # ohne Repo-Aktivitaet ab -- und seit AB3-2 committet der Bot nichts mehr. Der Aufruf der

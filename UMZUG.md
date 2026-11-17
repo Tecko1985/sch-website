@@ -18,14 +18,15 @@ Sie kommt auf den **Webspace bei Hetzner** (dedi1977.your-server.de), wo heute d
 **Beiträge aus 2025** (163 Stück mit Fotos) liegen bewusst **nicht** im Repo, weil das Repo öffentlich ist:
 gesichert unter `E:\Vereine\SCH\_umzug\beitraege-2025\` (Michels Rechner). Sie kommen erst beim Umzug dazu.
 
-## Seit 17.11.2026: Umzugsseite für alle Besucher
+## UMGEZOGEN am 17.11.2026
 
-Die alte Seite zeigt allen Besuchern `umzug.html` (Status 503 = „kurz weg“, Google behält die Seite).
-Das steuert der Block `# BEGIN SC1911 Umzugsseite` oben in `public_html/.htaccess` auf dem Webspace.
-Offen bleiben: angemeldete Admins, `wp-admin`, `wp-login.php`, `wp-json` (braucht `weiterleitungen.py`), `neu-test/`, `neu-probe/`.
-**Abschalten:** den Block löschen (Sicherung davor: `~/htaccess-vor-umzugsseite-20261117-0737`).
-Beim Umzug verschwindet er von selbst (die alte `.htaccess` wandert mit ins WordPress-Archiv).
-Achtung: `umzug.py zurueck` holt ihn mit zurück – danach den Block löschen, wenn das WordPress wieder sichtbar sein soll.
+`python werkzeuge/umzug.py echt --ja` lief durch, alle Prüfungen ok. Seitdem ist www.sc1911-heiligenstadt.de die neue Seite.
+- WordPress liegt unverändert unter `~/umzug-alt-wordpress-2026-11-17` (Server), Sicherung unter
+  `E:\Vereine\SCH\_umzug\wp-sicherung-2026-11-17\` (Michels Rechner).
+- Vor dem Umzug zeigte das WordPress kurz allen Besuchern `umzug.html` (Block `# BEGIN SC1911 Umzugsseite` in seiner
+  `.htaccess`). Der Block steckt noch im beiseitegelegten WordPress: nach `umzug.py zurueck` löschen.
+- `werkzeuge/weiterleitungen.py` geht seit dem Umzug nicht mehr (holt die Liste aus dem alten WordPress).
+  Die fertige `.htaccess` liegt auf dem Server und wird vom Auto-Upload nie überschrieben.
 
 ## Am Umzugstag
 
@@ -53,7 +54,7 @@ Sicherung des WordPress vom selben Tag: `E:\Vereine\SCH\_umzug\wp-sicherung-2026
 
 Danach von Hand:
 
-8. **Newsletter**: im Worker (`ToolsUebersicht/admin-worker.js`) `NL_SEITE_URL` auf
+8. **Newsletter** (erledigt 17.11.2026): im Worker (`ToolsUebersicht/admin-worker.js`) `NL_SEITE_URL` auf
    `https://www.sc1911-heiligenstadt.de/newsletter.html` stellen und deployen.
 9. **Prüfen**: Startseite, ein alter Beitragslink (z. B. `/2026/10/04/ende-im-achtelfinale-2/`),
    Impressum, Datenschutz, Newsletter-Anmeldung, Handy-Ansicht.
@@ -61,12 +62,13 @@ Danach von Hand:
 
 ## Danach
 
-- Automatisches Hochladen: läuft schon (seit 16.11.2026) nach jedem Veröffentlichen in den Testordner
-  `public_html/neu-test/` (Secret `HETZNER_SSH_KEY`, Schlüssel liegt bei Michel unter `%USERPROFILE%\.ssh\sch_hetzner`).
-  Nach dem Umzug in `.github/workflows/seite.yml` das `ZIEL` auf `public_html/` stellen, `--exclude .htaccess` entfernen
-  und den Umzugs-Schalter in den Schritt aufnehmen. Vorsicht: `--delete` würde dann alles im Webordner löschen,
-  was nicht im GitHub-Bau steckt – auch die **Beiträge aus 2025** (nicht im Repo) und ihre Karten in den News.
-  Erst umstellen, wenn diese Frage gelöst ist (z. B. ohne `--delete` und mit Ausnahme für die 2025-Dateien).
+- **Automatisches Hochladen auf die echte Seite** (seit 17.11.2026): Job `hetzner` in `.github/workflows/seite.yml`
+  baut nach jedem Veröffentlichen mit `python werkzeuge/umzug.py live <ordner>` (wie beim Umzug, aber ohne neue
+  `.htaccess`) und lädt nach `public_html/` mit `--delete` (ausgenommen `.htaccess`, `google*.html`, `.well-known/`).
+  Die **Beiträge aus 2025** holt er dafür vom Server aus `~/beitraege-2025` (außerhalb des Webordners, nicht im Repo).
+  Fehlen sie dort oder kommen weniger als 3000 Dateien heraus, bricht er ab, statt zu löschen.
+  Wer einen 2025-Beitrag in `E:\Vereine\SCH\_umzug\beitraege-2025\` ändert, muss den Ordner wieder nach `~/beitraege-2025` hochladen.
+  Secret `HETZNER_SSH_KEY`, Schlüssel bei Michel unter `%USERPROFILE%\.ssh\sch_hetzner`. Den Testordner `neu-test/` gibt es nicht mehr.
 - WordPress-Sicherung einige Wochen aufheben.
 - **Instagram-Beiträge** (16.11.2026): Meta-App „SCH Webseite“ (Business-Portfolio „SCH Webseite“, das Vereins-Portfolio
   ist für Werbung gesperrt), Anwendungsfall „Instagram API with Unified Login“, beide Konten als Instagram-Tester.
