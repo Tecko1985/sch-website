@@ -417,3 +417,7 @@ body{margin:0;background:#fff}
 
 /* Tabellen nur seitlich schiebbar */
 .sp-tabelle,.sp-fupa-geladen{overflow-y:hidden;overscroll-behavior-x:contain}
+
+/* Termine: Wanderungen aus dem Wanderplan */
+.tm-marke.wandern{background:#1d7a45}
+.tm-spiel.wandern .tm-team b{color:#1d7a45}

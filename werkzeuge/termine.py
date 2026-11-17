@@ -2,6 +2,7 @@
 
 Aufruf:  python3 werkzeuge/termine.py
 Holt alle Spiele von heute bis Saisonende (mit Spielort), lässt spielfreie Termine weg,
+nimmt die kommenden Wanderungen aus dem Wanderplan auf seiten/wandern.html dazu,
 zeigt verlegte Spiele am neuen Termin und markiert abgesetzte. Die Mannschaftsbezeichnung
 (z. B. „U13 II“) wird von der bisherigen Seite übernommen (über die fussball.de-Mannschaft);
 für neue Mannschaften aus der Altersklasse gebildet.
@@ -115,6 +116,49 @@ def eintrag(z, label):
             f'<span class="tm-team"><b>{e(label)}</b><small>{e(z["wettbewerb"])}</small></span>'
             f'<span class="tm-paar"><span class="tm-gegner"><span>{e(z["heim"])}</span><i aria-hidden="true">:</i>'
             f'<span>{e(z["gast"])}</span></span>{ort}</span><span class="tm-info">{marke}{link}</span></li>')
+
+
+WANDERSEITE = os.path.join(REPO, "seiten", "wandern.html")
+
+
+def wandertermine(heute):
+    """Kommende Wanderungen aus dem Wanderplan auf seiten/wandern.html (eine Quelle: Ändert die Redaktion den
+    Wanderplan, ändert sich auch die Termine-Seite). Liste von dicts mit datum, zeit, titel, treff, strecke."""
+    try:
+        s = open(WANDERSEITE, encoding="utf-8").read()
+    except OSError:
+        return []
+    jahr = re.search(r'<h2 id="wp-titel">Wanderplan (\d{4})</h2>', s)
+    start = re.search(r"Start (\d{1,2}):(\d{2}) Uhr", s)
+    standard = f"{int(start.group(1)):02d}:{start.group(2)}" if start else "10:00"
+    aus = []
+    for datum, inhalt in re.findall(r'<li><time class="wp-datum" datetime="(\d{4}-\d{2}-\d{2})">.*?</time>'
+                                    r'<div class="wp-text">(.*?)</div></li>', s, re.S):
+        if datum < heute:
+            continue
+        titel = re.search(r"<strong>(.*?)</strong>", inhalt)
+        feld = lambda name: (re.search(rf"<b>{name}:</b>\s*(.*?)</span>", inhalt, re.S) or [None, ""])[1]
+        titel = html.unescape(re.sub(r"<[^>]+>", "", titel.group(1))).strip() if titel else "Wanderung"
+        treff = html.unescape(re.sub(r"<[^>]+>", "", feld("Treff"))).strip()
+        # Abweichende Zeit: „8:00 Uhr in Heiligenstadt …“ beim Treff (gemeinsame Abfahrt) zuerst,
+        # sonst „(Start 8:30–10:30 Uhr)“ im Titel, sonst die Startzeit aus den Eckdaten
+        z = re.match(r"(\d{1,2}):(\d{2}) Uhr", treff) or re.search(r"Start (\d{1,2}):(\d{2})", titel)
+        aus.append({"datum": datum, "zeit": f"{int(z.group(1)):02d}:{z.group(2)}" if z else standard,
+                    "titel": re.sub(r"\s*\(Start [^)]*\)", "", titel), "treff": treff,
+                    "strecke": html.unescape(re.sub(r"<[^>]+>", "", feld("Strecke"))).strip(),
+                    "plan": f"Wanderplan {jahr.group(1)}" if jahr else "Wanderplan"})
+    return aus
+
+
+def wander_eintrag(w):
+    e = lambda s: html.escape(s, quote=True)
+    ort = " · ".join(x for x in (f"Treff: {w['treff']}" if w["treff"] else "", w["strecke"]) if x)
+    return (f'<li class="tm-spiel wandern"><span class="tm-zeit">{w["zeit"]}</span>'
+            f'<span class="tm-team"><b>Wandern</b><small>{e(w["plan"])}</small></span>'
+            f'<span class="tm-paar"><span class="tm-gegner"><span>{e(w["titel"])}</span></span>'
+            + (f'<small class="tm-platz">{e(ort)}</small>' if ort else "") + '</span>'
+            f'<span class="tm-info"><em class="tm-marke wandern">Wanderung</em>'
+            f'<a href="wandern.html#wanderplan">Zum Wanderplan<span class="tm-sr"> {e(w["titel"])}</span></a></span></li>')
 
 
 def tag_kopf(iso):
@@ -231,14 +275,17 @@ def baue(heute=None):
             einmal[k]["verlegt"] = True
     spiele = sorted(einmal.values(), key=lambda z: (z["datum"], z["zeit"]))
 
+    wanderungen = wandertermine(heute)
+    termine = sorted([(z["datum"], z["zeit"], 0, eintrag(z, z["label"])) for z in spiele]
+                     + [(w["datum"], w["zeit"], 1, wander_eintrag(w)) for w in wanderungen])
     teile, tag = [], None
-    for z in spiele:
-        if z["datum"] != tag:
+    for datum, _, _, li in termine:
+        if datum != tag:
             if tag:
                 teile.append("</ul></section>\n")
-            tag = z["datum"]
+            tag = datum
             teile.append(tag_kopf(tag))
-        teile.append(eintrag(z, z["label"]) + "\n")
+        teile.append(li + "\n")
     if tag:
         teile.append("</ul></section>\n")
 
@@ -277,7 +324,8 @@ def baue(heute=None):
     neu_seite = neu_seite.replace("gibt es bis Jahresende keine Spiele", "gibt es bis Saisonende keine Spiele")
     open(SEITE, "w", encoding="utf-8").write(neu_seite)
     print(f"{len(spiele)} Spiele an {len({z['datum'] for z in spiele})} Tagen, "
-          f"{sum(1 for z in spiele if z.get('verlegt'))} verlegt, {sum(1 for z in spiele if z.get('abgesetzt'))} abgesetzt.")
+          f"{sum(1 for z in spiele if z.get('verlegt'))} verlegt, {sum(1 for z in spiele if z.get('abgesetzt'))} abgesetzt, "
+          f"{len(wanderungen)} Wanderungen.")
     # Für den täglichen Abgleich: Kurzbericht als Commit-Text
     if os.environ.get("TERMINE_BERICHT"):
         open(os.environ["TERMINE_BERICHT"], "w", encoding="utf-8").write(
