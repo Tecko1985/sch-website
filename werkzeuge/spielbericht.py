@@ -719,7 +719,7 @@ SPONSOREN = "assets/sponsorenleiste"
 SPONSOREN_AB = "2026-11-17"
 # … oder wenn das Titelbild nach Einführung der Leiste neu hochgeladen wurde (Redaktion benennt Bilder
 # nach dem Zeitpunkt: assets/beitraege/<Date.now() in Basis 36>-xxxxx.webp)
-SPONSOREN_BILD_AB = 1794915000000  # 17.11.2026, 12:30 Uhr
+SPONSOREN_BILD_AB = 1794913200000  # 17.11.2026, 12:00 Uhr
 
 
 def leiste_erlaubt(d):
