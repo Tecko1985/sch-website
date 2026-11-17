@@ -671,7 +671,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
         f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
         f'{"" if n == "spielbericht" else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
-    logos = sponsoren_html(s.team) if leiste_erlaubt(d) else ""
+    logos = sponsoren_html(s.team, marke=not d.get("ohne_marke")) if leiste_erlaubt(d) else ""
     main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll{" mit-sponsoren" if "sb-sponsoren" in logos else ""}">'
             f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
             f'{tafel(s)}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche des Spielberichts">{knoepfe}</div></div>\n\n'

@@ -321,7 +321,7 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     # sp-kopfbild: Bild ganz und ungeschnitten, Rubrik/Titel/Datum darunter (seiten.css)
     # Neue Beiträge (ab SPONSOREN_AB oder mit neu hochgeladenem Titelbild): SCHeimat-Zeichen unten rechts bei jeder
     # Rubrik, bei Vorberichten zusätzlich die Sponsorenleiste der Mannschaft unten links. Ältere Grafiken haben beides schon.
-    logos = (spielbericht.sponsoren_html(team if d.get("rubrik") == "Vorbericht" else "", "../")
+    logos = (spielbericht.sponsoren_html(team if d.get("rubrik") == "Vorbericht" else "", "../", marke=not d.get("ohne_marke"))
              if spielbericht.leiste_erlaubt(d) else "")
     if logos:
         bild = f'<div class="sp-kopfbild-bild">{bild}{logos}</div>'

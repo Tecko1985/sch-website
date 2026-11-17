@@ -276,6 +276,7 @@
     form.rubrik.value = d.rubrik || 'News';
     form.teaser.value = d.teaser || '';
     form.entwurf.checked = !!d.entwurf;
+    form.ohne_marke.checked = !!d.ohne_marke;
     var geplant = istGeplant(d);
     form.planen.checked = geplant;
     form.plan_datum.value = geplant ? d.geplant.slice(0, 10) : '';
@@ -311,7 +312,7 @@
   var ohneWarnung = false;  // Abmelden hat schon gefragt
   function editorStand() {
     return [form.titel.value, form.teaser.value, textfeld.innerHTML, form.datum.value, form.rubrik.value,
-      form.entwurf.checked ? '1' : '0', titelbild || '', galerie.join('|'), JSON.stringify(spielFelder()),
+      form.entwurf.checked ? '1' : '0', form.ohne_marke.checked ? '1' : '0', titelbild || '', galerie.join('|'), JSON.stringify(spielFelder()),
       form.planen.checked ? form.plan_datum.value + 'T' + form.plan_zeit.value : '',
       form.rubrik.value === 'Vorbericht' ? (form.spiel_slug.dataset.wert || '') : ''].join('\u0001');
   }
@@ -476,7 +477,6 @@
   function zeigeMannschaft() {
     var m = form.sp_mannschaft.value || 'm1';
     $('[data-vorberichtfeld]').hidden = m !== 'm1' && m !== 'm2';
-    $('[data-schlanktipp]').hidden = !(m === 'm2' && form.sp_ort_art.value === 'auswaerts');
   }
   [form.sp_mannschaft, form.sp_ort_art].forEach(function (f) { f.addEventListener('change', zeigeMannschaft); });
 
@@ -1240,6 +1240,7 @@
       entwurf: form.entwurf.checked
     };
     if (geplant) daten.geplant = geplant;
+    if (form.ohne_marke.checked) daten.ohne_marke = true;
     if (form.rubrik.value === 'Vorbericht' && form.spiel_slug.dataset.wert) daten.spiel_slug = form.spiel_slug.dataset.wert;
     if (istSpiel) daten.spiel = spielFelder();
     var wappenNeu = istSpiel ? (wappen || '') : '';
