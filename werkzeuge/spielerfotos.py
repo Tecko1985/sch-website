@@ -45,7 +45,10 @@ def main():
             if any(spielerbilder._norm(k["name"]) == spielerbilder._norm(name) and k["bild"]
                    for k in spielerbilder.kader(team)):
                 continue
-            datei = f"{ORDNER}/{p['slug']}.webp"
+            # Bild-Kennung von FuPa im Dateinamen: Ein neues Foto bei FuPa ergibt eine neue Datei, das alte
+            # wird unten aufgeräumt (sonst bliebe nach einem Fototausch das alte Bild stehen)
+            kennung = bild["path"].rstrip("/").rsplit("/", 1)[-1]
+            datei = f"{ORDNER}/{p['slug']}-{kennung}.webp"
             gebraucht.add(os.path.basename(datei))
             if not os.path.exists(os.path.join(REPO, datei)):
                 with open(os.path.join(REPO, datei), "wb") as f:
