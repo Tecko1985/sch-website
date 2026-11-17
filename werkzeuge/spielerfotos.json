@@ -78,5 +78,63 @@
    "bild": "assets/spielerfotos/jagar-jargees-ali-2019204-a50mwtPBHOuy.webp"
   }
  ],
- "u19": []
+ "u19": [],
+ "u17-1": [
+  {
+   "name": "Johann Hauschild",
+   "nr": "21",
+   "bild": "assets/spielerfotos/nv-johann-hauschild-2081972-8dsxExntdvIv.webp"
+  },
+  {
+   "name": "Nevio Baumgarten",
+   "nr": "",
+   "bild": "assets/spielerfotos/nv-nevio-baumgarten-2081992-mcsyuTNsMCb9.webp"
+  },
+  {
+   "name": "Leo Hinze",
+   "nr": "",
+   "bild": "assets/spielerfotos/nv-leo-hinze-2081985-ud2lk8CbjHD3.webp"
+  },
+  {
+   "name": "Louis Rotter",
+   "nr": "",
+   "bild": "assets/spielerfotos/nv-louis-rotter-2081982-PnpubB1Lb2ao.webp"
+  },
+  {
+   "name": "Hannes Drange",
+   "nr": "",
+   "bild": "assets/spielerfotos/hannes-drange-2081975-PNb6LKWytZ9S.webp"
+  },
+  {
+   "name": "Jacob Fromm",
+   "nr": "",
+   "bild": "assets/spielerfotos/jacob-fromm-2081966-QExomsfLTZJt.webp"
+  },
+  {
+   "name": "Lennard Herwig",
+   "nr": "",
+   "bild": "assets/spielerfotos/lennard-herwig-2081994-BgQiSvRJLrOM.webp"
+  },
+  {
+   "name": "Damian Mecke",
+   "nr": "",
+   "bild": "assets/spielerfotos/nv-damian-mecke-2081979-0bk1jBOJNio7.webp"
+  },
+  {
+   "name": "Oskar Kruse",
+   "nr": "",
+   "bild": "assets/spielerfotos/nv-oskar-kruse-2081991-IZe03ZXufrqE.webp"
+  },
+  {
+   "name": "Cruz Meier",
+   "nr": "3",
+   "bild": "assets/spielerfotos/cruz-meier-2251519-KJgQBt4Zn906.webp"
+  },
+  {
+   "name": "Moritz Nolte",
+   "nr": "",
+   "bild": "assets/spielerfotos/nv-moritz-nolte-2081989-EUOVwyKkNb9z.webp"
+  }
+ ],
+ "u17-2": []
 }

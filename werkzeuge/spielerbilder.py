@@ -71,12 +71,23 @@ def fupa_fotos(team):
     return _FUPA.get(team, [])
 
 
+# Mannschaften, für die es Karten mit Namen und Foto gibt. Datenschutz (Minderjährige): beim Nachwuchs wie bei
+# den Torschützen auf den automatischen Seiten (spielvorschau.NAMEN_TEAMS) nur ab der U17 (U19, U17, U16).
+KARTEN_TEAMS = {"m1": "m1", "m2": "m2", "u19-1": "u19", "u19": "u19", "u17-1": "u17-1", "u17-2": "u17-2"}
+ALLE_TEAMS = ("m1", "m2", "u19", "u17-1", "u17-2")
+
+
+def karten_team(kuerzel):
+    """Mannschaftskürzel (m1, m2, u19-1, u17-1 …) -> Schlüssel für die Fotosuche, oder None (keine Karten)."""
+    return KARTEN_TEAMS.get(kuerzel)
+
+
 def _quellen(team):
     """Suchreihenfolge: erst alle unsere Kaderseiten (dort liegen die aktuellen Saisonfotos), eigene Mannschaft
     zuerst, dann die anderen Herren, dann die U19 – erst danach die FuPa-Listen als Ersatz. So bekommt z. B. ein
     Spieler der Ersten, der in der Zweiten aushilft, sein neues Foto von der Kaderseite der Ersten statt eines
     älteren FuPa-Bilds aus dem Kader der Zweiten (Abgleich 17.11.2026)."""
-    reihe = [team] + [t for t in ("m1", "m2", "u19") if t != team]
+    reihe = [team] + [t for t in ALLE_TEAMS if t != team]
     for t in reihe:
         if t in SEITEN:
             yield t, kader(t)

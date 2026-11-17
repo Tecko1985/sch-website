@@ -434,19 +434,21 @@ def fupa_eintraege(s):
 
 
 def wechselkarte(s, rein, raus):
-    """Wechsel-Karte mit Spielerfotos – nur für SCH-Wechsel der 1. und 2. Mannschaft."""
-    if s.team not in ("m1", "m2") or not rein:
-        return ""
+    """Wechsel-Karte mit Spielerfotos – für SCH-Wechsel der Herren und des Nachwuchses ab der U17."""
     import spielerbilder
-    return spielerbilder.karte_html(s.team, rein, raus)
+    team = spielerbilder.karten_team(s.team)
+    if not team or not rein:
+        return ""
+    return spielerbilder.karte_html(team, rein, raus)
 
 
 def torkarte(s, schuetze, vorlage="", zusatz=""):
-    """Tor-Karte mit Foto des Torschützen – nur für SCH-Tore der 1. und 2. Mannschaft (kein Eigentor)."""
-    if s.team not in ("m1", "m2") or not schuetze or re.search(r"(?i)eigentor", zusatz or ""):
-        return ""
+    """Tor-Karte mit Foto des Torschützen – Herren und Nachwuchs ab der U17 (kein Eigentor)."""
     import spielerbilder
-    return spielerbilder.torkarte_html(s.team, schuetze, vorlage, zusatz)
+    team = spielerbilder.karten_team(s.team)
+    if not team or not schuetze or re.search(r"(?i)eigentor", zusatz or ""):
+        return ""
+    return spielerbilder.torkarte_html(team, schuetze, vorlage, zusatz)
 
 
 def ticker(s, fazit):

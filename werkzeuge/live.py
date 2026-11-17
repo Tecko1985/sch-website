@@ -86,9 +86,11 @@ def aufstellung(slug, m):
 
 
 def wechselkarte(kuerzel, e):
-    """SCH-Wechsel der 1./2. Mannschaft: Fotos und Nummern aus den Kaderseiten für die Karte in live.js."""
-    if e.get("team") != "SCH" or kuerzel not in ("m1", "m2"):
+    """SCH-Tore und -Wechsel der Herren und des Nachwuchses ab der U17: Fotos und Nummern für die Karten in live.js."""
+    team = spielerbilder.karten_team(kuerzel)
+    if e.get("team") != "SCH" or not team:
         return {}
+    kuerzel = team
     if e["art"] == "tor" and e.get("_tor"):
         tor = dict(spielerbilder.spieler(kuerzel, e["_tor"]))
         tor["unter"] = f'Vorlage: {e["_vorlage"]}' if e.get("_vorlage") else e.get("_torart", "")

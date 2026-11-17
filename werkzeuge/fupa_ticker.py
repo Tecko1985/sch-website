@@ -65,6 +65,14 @@ def kurz(name):
     return "SCH" if "1911 Heiligenstadt" in (name or "") else (name or "")
 
 
+def _sch_oder_name(team):
+    """„SCH“ für unsere Mannschaften – beim Nachwuchs heißt das Team bei FuPa nur „Heiligenstadt“, deshalb
+    zusätzlich an der Vereinskennung im FuPa-Slug erkennen – sonst der Teamname."""
+    if isinstance(team, dict) and str(team.get("slug") or "").startswith("1-sc-1911-heiligenstadt"):
+        return "SCH"
+    return kurz(_teamname(team))
+
+
 def ereignisse(daten):
     """Stream -> Liste von Einträgen, neueste zuerst.
 
@@ -79,7 +87,7 @@ def ereignisse(daten):
         typ, unter = x.get("type") or "", (x.get("subtype") or "").lower()
         n, plus = int(x.get("minute") or 0), int(x.get("additionalMinute") or 0)
         eintrag = {"sort": n + plus / 100, "min": f"{n}+{plus}" if plus else str(n), "art": "text",
-                   "kopf": "", "text": (x.get("text") or "").strip(), "stand": "", "team": kurz(_teamname(x.get("team")))}
+                   "kopf": "", "text": (x.get("text") or "").strip(), "stand": "", "team": _sch_oder_name(x.get("team"))}
         if typ == "goal":
             art = " (Strafstoß)" if "penalty" in unter else " (Eigentor)" if "own" in unter else " (Kopfball)" if "head" in unter else ""
             vor = _name(x.get("secondaryRole")) if "penalty" not in unter and "own" not in unter else ""

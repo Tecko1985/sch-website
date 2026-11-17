@@ -21,7 +21,8 @@ import spielerbilder  # noqa: E402
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORDNER = "assets/spielerfotos"
 LISTE = os.path.join(REPO, "werkzeuge", "spielerfotos.json")
-TEAMS = {"m1": "m1", "m2": "m2", "u19": "u19-1"}
+# Nachwuchs nur ab der U17 (Datenschutz, siehe spielerbilder.KARTEN_TEAMS)
+TEAMS = {"m1": "m1", "m2": "m2", "u19": "u19-1", "u17-1": "u17-1", "u17-2": "u17-2"}
 UA = {"User-Agent": "SCH-Website"}
 
 
