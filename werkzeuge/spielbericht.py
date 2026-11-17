@@ -786,13 +786,17 @@ def sponsoren_html(team, praefix="", marke=True):
 
 def vorbericht_seite(d, vorlage, adresse, team, sp=None, schluss=""):
     """Eigene Vorberichtsseite im Aufbau der Spielberichte: festes Kopfbild der Mannschaft mit „Vorbericht“,
-    Sponsorenleiste und SCHeimat, Anzeigetafel ohne Ergebnis (wenn das Spiel über den Spielbericht bekannt ist),
+    Sponsorenleiste und SCHeimat, Anzeigetafel (wenn das Spiel über den Spielbericht bekannt ist; mit Ergebnis,
+    sobald es gespielt ist),
     darunter Überschrift, das Bild aus der Redaktion ungeschnitten und der Text."""
     team = team or "m1"
     tafel_html = ""
     if sp:
-        vorher = {k: v for k, v in sp.items() if not k.startswith(("end_", "hz_", "tore_", "karten_"))}
-        tafel_html = tafel(Spiel(vorher, d))
+        # Ist das Spiel gespielt (Ergebnis im Spielbericht), zeigt auch der Vorbericht das Ergebnis samt
+        # Torschützen; vorher bleibt die Tafel ohne Ergebnis („– : –“)
+        gespielt = any(str(v).strip() for k, v in sp.items() if k.startswith("end_"))
+        tafel_html = tafel(Spiel(sp if gespielt else
+                                 {k: v for k, v in sp.items() if not k.startswith(("end_", "hz_", "tore_", "karten_"))}, d))
     vorspann = d["teaser"] if d.get("teaser") and not platzhalter(d["teaser"]) else ""
     if vorspann and vorspann.rstrip(" …")[:60] in nur_text(d["text"])[:800]:
         vorspann = ""
