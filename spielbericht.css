@@ -317,3 +317,7 @@ html.sb-bf-offen{overflow:hidden}
 .sb-held.mit-sponsoren h1{left:max(var(--rand),calc(2.4% + clamp(48px,12%,230px) + 24px))}
 .sb-held .sb-marke{position:absolute;z-index:2;right:1.9%;bottom:3%;width:clamp(40px,7%,140px);height:auto;pointer-events:none}
 .sb-held .sb-ecke{position:absolute;z-index:1;right:0;bottom:0;width:16.7%;height:35.2%;background:linear-gradient(to top left,#000000f0 0%,#000000c0 20%,#00000066 36%,#0000 50%);pointer-events:none}
+
+/* Spielbericht-Reiter so breit wie bei Werder Bremen: Überschrift, Spielfoto und Text auf etwa 1300 px */
+#sb-spielbericht.sb-bereich{max-width:calc(1300px + 2*var(--rand))}
+#sb-spielbericht .sb-artikel{max-width:1300px}
