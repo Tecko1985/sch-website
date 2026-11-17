@@ -360,3 +360,6 @@ html.sb-bf-offen{overflow:hidden}
  .sb-wk.sb-tk{grid-template-columns:minmax(0,1fr)}
  .sb-wk.sb-tk .sb-wk-wappen{display:none}
 }
+
+/* Seitlich schiebbare Leisten (Reiter, Tabelle, Bilderstreifen): auf dem Handy nur links/rechts, kein Wackeln nach oben/unten */
+.sb-reiter,.sb-tabelle-rahmen,.sb-bf-leiste{overflow-y:hidden;overscroll-behavior-x:contain}

@@ -179,3 +179,6 @@ a:focus-visible,button:focus-visible{outline-color:var(--sch-akzent)!important}
   :is(#top,body) .sch-home .sch-panelhead span{font-size:19px}
   :is(#top,body) .sch-home .sch-panel nav a{padding:9px 12px;font-size:17px}
 }
+
+/* Startseite: Leisten mit Beiträgen, Spielen und Social Media nur seitlich schiebbar (kein Wackeln nach oben/unten) */
+:is(#top,body) :is(.sch-latest,.sch-gametrack,.sch-socialtrack){overflow-y:hidden;overscroll-behavior-x:contain}

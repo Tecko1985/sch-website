@@ -414,3 +414,6 @@ body{margin:0;background:#fff}
 .sp-neu .sp-titelfoto figcaption{max-width:1240px;margin:0 auto;padding:8px clamp(18px,4vw,64px);box-sizing:border-box;font:13px 'SCH Barlow',Arial,sans-serif;color:#5b6b86;background:none}
 .sp-seite.sp-neu .sp-inhalt{max-width:860px;padding-top:clamp(26px,3vw,44px)}
 .sp-neu .sp-inhalt>p:first-of-type{font-weight:700}
+
+/* Tabellen nur seitlich schiebbar */
+.sp-tabelle,.sp-fupa-geladen{overflow-y:hidden;overscroll-behavior-x:contain}
