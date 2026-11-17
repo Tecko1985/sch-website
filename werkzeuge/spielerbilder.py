@@ -72,11 +72,15 @@ def fupa_fotos(team):
 
 
 def _quellen(team):
-    """Suchreihenfolge: eigene Mannschaft zuerst (Kaderseite, dann FuPa), dann die anderen Herren, dann die U19.
-    Spieler der Ersten helfen in der Zweiten aus, U19-Spieler spielen in beiden Herrenteams."""
-    for t in [team] + [t for t in ("m1", "m2", "u19") if t != team]:
+    """Suchreihenfolge: erst alle unsere Kaderseiten (dort liegen die aktuellen Saisonfotos), eigene Mannschaft
+    zuerst, dann die anderen Herren, dann die U19 – erst danach die FuPa-Listen als Ersatz. So bekommt z. B. ein
+    Spieler der Ersten, der in der Zweiten aushilft, sein neues Foto von der Kaderseite der Ersten statt eines
+    älteren FuPa-Bilds aus dem Kader der Zweiten (Abgleich 17.11.2026)."""
+    reihe = [team] + [t for t in ("m1", "m2", "u19") if t != team]
+    for t in reihe:
         if t in SEITEN:
             yield t, kader(t)
+    for t in reihe:
         yield t, fupa_fotos(t)
 
 
