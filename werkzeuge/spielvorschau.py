@@ -426,7 +426,17 @@ def baue_ergebnis(m, d, standings, vorlage, adresse, bericht=None):
     text = kurztext(team, heim, gegner, es, eg, hz, sch_namen)
     info = (f'<div class="sb-schmal">\n<h2 class="sb-h2 stitel">Kurzbericht</h2>\n<p class="sb-kurz">{e(text)}</p>\n'
             f'<dl class="sb-info">\n{dl}\n</dl>\n<p class="sb-hinweis">{" · ".join(links)}</p>\n</div>')
+    # Liveticker von FuPa mit Tor- und Wechsel-Karten (Fotos) wie in den Spielberichten – Datenschutz: nur bei
+    # Mannschaften, deren Spielernamen wir zeigen (Herren, U19, U17/U16); jüngere bekommen keinen Ticker-Reiter
+    ticker_html = ""
+    if namen_erlaubt(team):
+        st = sb.Spiel(dict(sp, ticker_link=f"https://www.fupa.net/match/{m['slug']}"), {"datum": sp["spieldatum"]})
+        st.wappen = s.wappen
+        ticker_html = sb.ticker(st, "")
+        if "sb-ereignisse" not in ticker_html:
+            ticker_html = ""
     reiter = [("spielinfo", "Spielinfo", info, ""),
+              ("liveticker", "Liveticker", ticker_html, ""),
               ("tabelle", "Tabelle", tabelle_html(standings, {gegner_t.get("slug")}), "")]
     wir = wir_name(team)
     paar = f"{wir} gegen {gegner}" if heim else f"{gegner} gegen {wir}"
