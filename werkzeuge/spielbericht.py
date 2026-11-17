@@ -747,7 +747,8 @@ def sponsoren_html(team, praefix="", marke=True):
     teile = f'<img class="sb-sponsoren" src="{praefix}{pfad}" alt="Präsentiert von unseren Partnern">' if pfad else ""
     zeichen = sponsoren_bild("schheimat") if marke else ""
     if zeichen:
-        teile += f'<img class="sb-marke" src="{praefix}{zeichen}" alt="SCHeimat">'
+        # wie in der Vorlage: schwarzer, schräg auslaufender Verlauf in der Ecke, darauf das Zeichen
+        teile += f'<span class="sb-ecke" aria-hidden="true"></span><img class="sb-marke" src="{praefix}{zeichen}" alt="SCHeimat">'
     return teile
 
 
