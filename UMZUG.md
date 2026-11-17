@@ -18,6 +18,15 @@ Sie kommt auf den **Webspace bei Hetzner** (dedi1977.your-server.de), wo heute d
 **Beiträge aus 2025** (163 Stück mit Fotos) liegen bewusst **nicht** im Repo, weil das Repo öffentlich ist:
 gesichert unter `E:\Vereine\SCH\_umzug\beitraege-2025\` (Michels Rechner). Sie kommen erst beim Umzug dazu.
 
+## Seit 17.11.2026: Umzugsseite für alle Besucher
+
+Die alte Seite zeigt allen Besuchern `umzug.html` (Status 503 = „kurz weg“, Google behält die Seite).
+Das steuert der Block `# BEGIN SC1911 Umzugsseite` oben in `public_html/.htaccess` auf dem Webspace.
+Offen bleiben: angemeldete Admins, `wp-admin`, `wp-login.php`, `wp-json` (braucht `weiterleitungen.py`), `neu-test/`, `neu-probe/`.
+**Abschalten:** den Block löschen (Sicherung davor: `~/htaccess-vor-umzugsseite-20261117-0737`).
+Beim Umzug verschwindet er von selbst (die alte `.htaccess` wandert mit ins WordPress-Archiv).
+Achtung: `umzug.py zurueck` holt ihn mit zurück – danach den Block löschen, wenn das WordPress wieder sichtbar sein soll.
+
 ## Am Umzugstag
 
 Alles in einem Befehl (im Repo-Ordner, braucht den Schlüssel `%USERPROFILE%\.ssh\sch_hetzner`):
