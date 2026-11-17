@@ -187,7 +187,7 @@
 
 /* Redaktions-Spielberichte: Titelbild vollflächig und höher; 16:9 ist auf dem Handy ganz zu sehen,
    auf großen Bildschirmen höchstens 72 % der Fensterhöhe (dann oben/unten leicht beschnitten) */
-.sb .sb-held-ganz{height:clamp(260px,56.25vw,72vh)}
+.sb .sb-held-ganz{height:clamp(220px,25vw,480px)}  /* flaches Band wie bei Werder Bremen: etwa 4 : 1 */
 .sb-held-ganz img.sb-held-bild{object-fit:cover;object-position:50% 35%}
 
 /* ---------- Gestaltung 13.11.: ruhiger Bildkopf, große Ergebnisleiste, luftige Reiter (Schrift bleibt) ---------- */
@@ -310,11 +310,6 @@ html.sb-bf-offen{overflow:hidden}
  .sb-bf-leiste{padding:4px 12px 6px}
  .sb-bf-leiste button{width:60px}
 }
-
-/* Spielbericht: Titelbild in voller Größe wie beim Vorbericht (volle Breite, eigene Höhe, nichts abgeschnitten);
-   „Spielbericht“ bleibt unten links über dem Bild */
-.sb .sb-held-ganz.sb-held-voll{height:auto;min-height:0}
-.sb-held-voll img.sb-held-bild{display:block;width:100%;height:auto;object-fit:contain}
 
 /* Sponsorenleiste der Mannschaft unten links im Titelbild, über dem blauen Schleier (assets/sponsorenleiste/<mannschaft>.png) */
 .sb-held .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;object-position:left bottom;pointer-events:none}
