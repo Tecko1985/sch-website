@@ -20,8 +20,8 @@ body{margin:0;background:#fff}
 .sp-inhalt a{color:#1b2d4f;font-weight:700}
 .sp-bild{margin:28px 0}
 .sp-bild img,.sp-galerie img{width:100%;height:auto;display:block;border-radius:6px}
-.sp-galerie{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:28px 0}
-.sp-galerie img{aspect-ratio:4/3;object-fit:cover}
+.sp-galerie{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:28px 0;align-items:start}
+.sp-galerie img{aspect-ratio:auto;object-fit:contain}.sp-galerie>a{display:block}
 .sp-logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;margin:28px 0}
 .sp-logos a,.sp-logos span{display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dce1e9;border-radius:6px;padding:14px;aspect-ratio:4/3;transition:transform .2s,box-shadow .2s}
 .sp-logos a:hover{transform:translateY(-3px);box-shadow:0 8px 20px #1b2d4f1f}
@@ -391,3 +391,4 @@ body{margin:0;background:#fff}
 
 /* Fanshop: Shop-Banner ganz zeigen (Breitformat, nicht auf 4:3 zuschneiden) */
 .sp-shopbanner{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.sp-shopbanner img{aspect-ratio:auto;object-fit:contain;transition:transform .2s}.sp-shopbanner a:hover img,.sp-shopbanner a:focus-visible img{transform:translateY(-3px)}
+@media(max-width:600px){.sp-galerie:not(.sp-shopbanner){grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
