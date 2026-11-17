@@ -654,7 +654,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
     reiter = [
         ("spielinfo", "Spielinfo", spielinfo(s), ""),
         ("spielbericht", "Spielbericht", bericht, ""),
-        ("galerie", "Galerie", galerie(alle, titel), ""),  # alle Bilder des Spiels, auch Titel- und Textbilder
+        ("galerie", "Galerie", galerie(alle[1:], titel), ""),  # alle Bilder des Spiels außer dem Titelbild (steht oben im Kopf)
         ("liveticker", "Liveticker", ticker(s, teaser), ""),
         ("stimmen", "Stimmen", stimmen(s), ""),
         ("statistiken", "Statistiken", statistik(s), "grau"),
