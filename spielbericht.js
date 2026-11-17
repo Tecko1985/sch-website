@@ -63,6 +63,12 @@
   // Pfeile, Bildleiste unten, Zoom, Wischen auf dem Handy, Tastatur (← → Esc).
   var bilder = Array.prototype.slice.call(seite.querySelectorAll('.sb-galerie button'));
   if (!bilder.length) return;
+  // Querformat-Bilder (z. B. Titelgrafik) über zwei Spalten, damit neben Hochformat-Fotos keine Lücke bleibt
+  bilder.forEach(function (b) {
+    var img = b.querySelector('img');
+    function pruefe() { if (img.naturalWidth > img.naturalHeight * 1.3) b.classList.add('breit'); }
+    if (img.complete && img.naturalWidth) pruefe(); else img.addEventListener('load', pruefe);
+  });
   var fenster = document.createElement('dialog');
   fenster.className = 'sb-bildfenster';
   fenster.setAttribute('aria-label', 'Bildergalerie');
