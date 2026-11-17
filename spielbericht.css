@@ -310,3 +310,8 @@ html.sb-bf-offen{overflow:hidden}
  .sb-bf-leiste{padding:4px 12px 6px}
  .sb-bf-leiste button{width:60px}
 }
+
+/* Spielbericht: Titelbild in voller Größe wie beim Vorbericht (volle Breite, eigene Höhe, nichts abgeschnitten);
+   „Spielbericht“ bleibt unten links über dem Bild */
+.sb .sb-held-ganz.sb-held-voll{height:auto;min-height:0}
+.sb-held-voll img.sb-held-bild{display:block;width:100%;height:auto;object-fit:contain}
