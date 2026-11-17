@@ -392,3 +392,5 @@ body{margin:0;background:#fff}
 /* Fanshop: Shop-Banner ganz zeigen (Breitformat, nicht auf 4:3 zuschneiden) */
 .sp-shopbanner{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.sp-shopbanner img{aspect-ratio:auto;object-fit:contain;transition:transform .2s}.sp-shopbanner a:hover img,.sp-shopbanner a:focus-visible img{transform:translateY(-3px)}
 @media(max-width:600px){.sp-galerie:not(.sp-shopbanner){grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+.sch-reporthero.sp-kopfbild>.sp-kopfbild-bild{position:relative;max-width:none;margin:0;padding:0}.sp-kopfbild-bild>img:first-child{display:block;width:100%;height:auto;margin:0}
+.sp-kopfbild-bild .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;object-position:left bottom;margin:0}

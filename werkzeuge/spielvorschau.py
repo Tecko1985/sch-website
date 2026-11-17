@@ -221,7 +221,7 @@ def baue_seite(m, d, standings, vorlage, adresse, beitraege):
     paar = f"{wir} gegen {gegner}" if heim else f"{gegner} gegen {wir}"
     titel = f"Spielinfo: {paar}"
     beschreibung = f'{paar} am {sb.datum_tag(sp["spieldatum"])}, {sp["anstoss"]} Uhr' + (f' – {sp["wettbewerb"]}' if sp["wettbewerb"] else "")
-    return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, titelbild(team), tafel, reiter, "spielinfo")
+    return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, titelbild(team), tafel, reiter, "spielinfo", team)
 
 
 def baue_alle(ziel, vorlage, adresse, beitraege):
@@ -433,7 +433,7 @@ def baue_ergebnis(m, d, standings, vorlage, adresse, bericht=None):
     h, g = hg, ag
     titel = f"{paar} {h}:{g}"
     beschreibung = text
-    return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, titelbild(team), tafel, reiter, "spielinfo")
+    return sb.rahmen(vorlage, adresse, seitenname(m), titel, beschreibung, titelbild(team), tafel, reiter, "spielinfo", team)
 
 
 def baue_jugend(ziel, start, vorlage, adresse, beitraege):

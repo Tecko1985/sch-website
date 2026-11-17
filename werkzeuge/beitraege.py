@@ -305,7 +305,7 @@ def lade_beitraege():
 
 
 # ---------------------------------------------------------------- Beitragsseite
-def baue_seite(ziel, d, vorlage, zusatz=""):
+def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     t = vorlage
     e = lambda s: html.escape(s, quote=True)
     titel = f'{e(d["titel"])} · 1. SC 1911 Heiligenstadt'
@@ -319,6 +319,9 @@ def baue_seite(ziel, d, vorlage, zusatz=""):
 
     bild = f'<img src="../{d["bild"]}" alt="">' if d["bild"] else '<img src="../assets/hero.jpg" alt="">'
     # sp-kopfbild: Bild ganz und ungeschnitten, Rubrik/Titel/Datum darunter (seiten.css)
+    logos = spielbericht.sponsoren_html(team, "../")  # Sponsorenleiste der Mannschaft (nur Vorberichte)
+    if logos:
+        bild = f'<div class="sp-kopfbild-bild">{bild}{logos}</div>'
     held = (f'<div class="sch-reporthero sp-held sp-kopfbild">{bild}<div><span>{e(d.get("rubrik") or "News")}</span>'
             f'<h1>{e(d["titel"])}</h1><p class="sp-datum">{datum_de(d["datum"])}</p></div></div>')
     inhalt = d["text"] + zusatz
@@ -329,6 +332,23 @@ def baue_seite(ziel, d, vorlage, zusatz=""):
     if d.get("ab"):
         t = vorab_sperre(t, d["ab"], d["geplant"])
     open(os.path.join(ziel, "seiten", d["seite"]), "w", encoding="utf-8").write(t)
+
+
+def vorbericht_team(d, sb):
+    """Mannschaft eines Vorberichts (für die Sponsorenleiste): aus dem zugehörigen Spielbericht, sonst aus der
+    Redaktion („Zu welchem Spiel?“), sonst aus dem Text (Liga/Spitzname). Andere Rubriken: keine."""
+    if d.get("rubrik") != "Vorbericht":
+        return ""
+    if sb:
+        return (sb.get("spiel") or {}).get("mannschaft") or "m1"
+    if (d.get("spiel") or {}).get("mannschaft"):
+        return d["spiel"]["mannschaft"]
+    text = (d.get("titel") or "") + " " + (d.get("text") or "")
+    if re.search(r"(?i)kreisoberliga|reserve|papst-elf|SCH II\b|Heiligenstadt II\b", text):
+        return "m2"
+    if re.search(r"(?i)thüringenliga|verbandsliga|ludwig-elf", text):
+        return "m1"
+    return ""
 
 
 # ---------------------------------------------------------------- Listen
@@ -564,7 +584,7 @@ def main():
             continue
         sb = zum_bericht.get(d["slug"])
         zusatz = f'\n<p><strong><a href="{sb["seite"]}#spielbericht">Zum Spielbericht</a></strong></p>' if sb else ""
-        baue_seite(ziel, d, vorlage, zusatz)
+        baue_seite(ziel, d, vorlage, zusatz, vorbericht_team(d, sb))
     news = open(os.path.join(REPO, "seiten/news.html"), encoding="utf-8").read()
     liste = alle_eintraege(news, beitraege)
     schreibe_news(ziel, news, liste)

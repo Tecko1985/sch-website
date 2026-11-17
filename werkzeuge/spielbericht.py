@@ -671,8 +671,9 @@ def baue(d, vorlage, alle_beitraege, adresse):
         f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
         f'{"" if n == "spielbericht" else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
-    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll">'
-            f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high"><h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
+    logos = sponsoren_html(s.team)
+    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll{" mit-sponsoren" if logos else ""}">'
+            f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
             f'{tafel(s)}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche des Spielberichts">{knoepfe}</div></div>\n\n'
             f"{bereiche}\n</main>")
 
@@ -709,7 +710,26 @@ def live_seite(vorlage, adresse):
     return pfade_fuer_seiten(kopf + main + fuss)
 
 
-def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, reiter, start):
+# Sponsorenleiste je Mannschaft: liegt eine Datei assets/sponsorenleiste/<mannschaft>.png (oder .webp) im Repo,
+# erscheint sie automatisch unten links im Titelbild (über dem blauen Schleier) von Spielbericht, Spielinfo,
+# Ergebnisseite und Vorbericht dieser Mannschaft. Mannschaft: m1, m2, u19-1, u17-1 … (wie im Redaktionstool).
+SPONSOREN = "assets/sponsorenleiste"
+
+
+def sponsoren_bild(team):
+    for endung in ("png", "webp"):
+        pfad = f"{SPONSOREN}/{team}.{endung}"
+        if team and os.path.exists(os.path.join(REPO, pfad)):
+            return pfad
+    return ""
+
+
+def sponsoren_html(team, praefix=""):
+    pfad = sponsoren_bild(team)
+    return f'<img class="sb-sponsoren" src="{praefix}{pfad}" alt="Präsentiert von unseren Partnern">' if pfad else ""
+
+
+def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, reiter, start, team=""):
     """Seite im Spielbericht-Aufbau (Bildkopf, Tafel, Reiter) – z. B. für die Spielinfo kommender Spiele.
     reiter: [(name, beschriftung, inhalt, zusatzklasse)], start: Name des zuerst offenen Reiters."""
     reiter = [r for r in reiter if r[2]]
@@ -724,8 +744,9 @@ def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, 
         f'{"" if n == start else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
     erster = next(l for n, l, _, _ in reiter if n == start)
-    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz">'
-            f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high"><h1 class="stitel" data-sb-titel>{e(erster)}</h1></header>\n\n'
+    logos = sponsoren_html(team)
+    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz{" mit-sponsoren" if logos else ""}">'
+            f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>{e(erster)}</h1></header>\n\n'
             f'{tafel_html}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche der Seite">{knoepfe}</div></div>\n\n'
             f"{bereiche}\n</main>")
     kopf = vorlage[:vorlage.find('<main class="sb">')]

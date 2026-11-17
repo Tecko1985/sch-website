@@ -315,3 +315,7 @@ html.sb-bf-offen{overflow:hidden}
    „Spielbericht“ bleibt unten links über dem Bild */
 .sb .sb-held-ganz.sb-held-voll{height:auto;min-height:0}
 .sb-held-voll img.sb-held-bild{display:block;width:100%;height:auto;object-fit:contain}
+
+/* Sponsorenleiste der Mannschaft unten links im Titelbild, über dem blauen Schleier (assets/sponsorenleiste/<mannschaft>.png) */
+.sb-held .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;object-position:left bottom;pointer-events:none}
+.sb-held.mit-sponsoren h1{left:max(var(--rand),calc(2.4% + clamp(48px,12%,230px) + 24px))}
