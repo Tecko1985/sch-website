@@ -396,3 +396,21 @@ body{margin:0;background:#fff}
 .sp-kopfbild-bild .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;object-position:left bottom;margin:0}
 .sp-kopfbild-bild .sb-marke{position:absolute;z-index:2;right:1.9%;bottom:3%;width:clamp(40px,7%,140px);height:auto;margin:0}
 .sp-kopfbild-bild .sb-ecke{position:absolute;z-index:1;right:0;bottom:0;width:16.7%;height:35.2%;background:linear-gradient(to top left,#000000f0 0%,#000000c0 20%,#00000066 36%,#0000 50%);pointer-events:none}
+
+/* Beiträge wie bei Werder Bremen (beitraege.py, Klasse sp-neu): weißer Kopf, Foto über die ganze Breite, Text darunter */
+.sp-seite.sp-neu{background:#fff}
+.sp-neu .sp-kopf2{max-width:1240px;margin:0 auto;padding:clamp(30px,4.5vw,64px) clamp(18px,4vw,64px) clamp(22px,3vw,40px);box-sizing:border-box;color:#1b2d4f}
+.sp-neu .sp-rubrik{display:block;font:700 14px/1 'SCH Barlow',Arial,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#4a75b0}
+.sp-neu .sp-kopf2 h1{margin:12px 0 0;font:700 clamp(34px,4.8vw,66px)/1.03 'SCH Barlow',Impact,sans-serif;text-transform:uppercase;color:#1b2d4f;letter-spacing:-.3px}
+.sp-neu .sp-unterzeile{margin:18px 0 0;font:700 clamp(18px,1.8vw,25px)/1.25 'SCH Barlow',Arial,sans-serif;text-transform:uppercase;color:#1b2d4f}
+.sp-neu .sp-meta{margin:20px 0 0;font:15px 'SCH Barlow',Arial,sans-serif;color:#5b6b86}
+.sp-neu .sp-meta b{color:#1b2d4f}
+.sp-neu .sp-titelfoto{margin:0;background:#0b1a33}
+.sp-neu .sp-titelfoto img,.sp-neu .sp-titelfoto-bild>img:first-child{display:block;width:100%;height:auto;max-height:100vh;object-fit:contain;margin:0 auto}
+.sp-neu .sp-titelfoto-bild{position:relative}
+.sp-neu .sp-titelfoto-bild .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;margin:0}
+.sp-neu .sp-titelfoto-bild .sb-marke{position:absolute;z-index:2;right:1.9%;bottom:3%;width:clamp(40px,7%,140px);height:auto;margin:0}
+.sp-neu .sp-titelfoto-bild .sb-ecke{position:absolute;z-index:1;right:0;bottom:0;width:16.7%;height:35.2%;background:linear-gradient(to top left,#000000f0 0%,#000000c0 20%,#00000066 36%,#0000 50%)}
+.sp-neu .sp-titelfoto figcaption{max-width:1240px;margin:0 auto;padding:8px clamp(18px,4vw,64px);box-sizing:border-box;font:13px 'SCH Barlow',Arial,sans-serif;color:#5b6b86;background:#fff}
+.sp-seite.sp-neu .sp-inhalt{max-width:860px;padding-top:clamp(26px,3vw,44px)}
+.sp-neu .sp-inhalt>p:first-of-type{font-weight:700}

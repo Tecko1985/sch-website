@@ -323,14 +323,24 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     # Rubrik, bei Vorberichten zusätzlich die Sponsorenleiste der Mannschaft unten links. Ältere Grafiken haben beides schon.
     logos = (spielbericht.sponsoren_html(team if d.get("rubrik") == "Vorbericht" else "", "../", marke=not d.get("ohne_marke"))
              if spielbericht.leiste_erlaubt(d) else "")
-    if logos:
-        bild = f'<div class="sp-kopfbild-bild">{bild}{logos}</div>'
-    held = (f'<div class="sch-reporthero sp-held sp-kopfbild">{bild}<div><span>{e(d.get("rubrik") or "News")}</span>'
-            f'<h1>{e(d["titel"])}</h1><p class="sp-datum">{datum_de(d["datum"])}</p></div></div>')
-    inhalt = d["text"] + zusatz
+    # Aufbau wie bei Werder Bremen: weißer Kopf mit Rubrik, großer Überschrift, Unterzeile und Datum/Lesezeit,
+    # darunter das Titelbild über die ganze Breite (ungeschnitten) mit Bildnachweis, dann der Text
+    text = d["text"]
+    unterzeile = ""
+    m = re.match(r"\s*<h3>(.*?)</h3>\s*", text, re.S)
+    if m and len(re.sub(r"<[^>]+>", "", m.group(1))) <= 160:   # erste Zwischenüberschrift wird zur Unterzeile
+        unterzeile, text = m.group(1).strip(), text[m.end():]
+    woerter = len(re.sub(r"<[^>]+>", " ", text).split())
+    minuten = max(1, round(woerter / 200))
+    foto = f'<div class="sp-titelfoto-bild">{bild}{logos}</div>' if logos else bild
+    held = (f'<header class="sp-kopf2"><span class="sp-rubrik">{e(d.get("rubrik") or "News")}</span>'
+            f'<h1>{e(d["titel"])}</h1>' + (f'<p class="sp-unterzeile">{unterzeile}</p>' if unterzeile else "")
+            + f'<p class="sp-meta">{datum_de(d["datum"])} | <b>{minuten} Min</b></p></header>'
+            f'<figure class="sp-titelfoto">{foto}<figcaption>Foto: SCH</figcaption></figure>')
+    inhalt = text + zusatz
     if d["galerie"]:
         inhalt += '\n<div class="sp-galerie">' + "".join(f'<img src="../{g}" alt="" loading="lazy">' for g in d["galerie"]) + "</div>"
-    main = f'<main class="sch-report sp-seite">{held}<article class="sp-inhalt">\n{inhalt}\n</article>'
+    main = f'<main class="sch-report sp-seite sp-neu">{held}<article class="sp-inhalt">\n{inhalt}\n</article>'
     t = re.sub(r'<main class="sch-report sp-seite">.*?</article>', lambda m: main, t, count=1, flags=re.S)
     if d.get("ab"):
         t = vorab_sperre(t, d["ab"], d["geplant"])
