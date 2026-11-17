@@ -16,7 +16,7 @@ import re
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VORLAGE = "seiten/datenschutz.html"
-STAND = "16.11.2026"
+STAND = "17.11.2026"
 
 IMPRESSUM = """
 <h2>Angaben gemäß § 5 DDG</h2>
@@ -47,7 +47,7 @@ DATENSCHUTZ = """
 <h2>2. Aufruf der Seite</h2>
 <p>Die Seite liegt auf einem Webserver der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, in Deutschland. Beim Aufruf schickt euer Browser technisch nötige Daten an den Server: IP-Adresse, Datum und Uhrzeit, die aufgerufene Seite, die Seite, von der ihr kommt, sowie Browser und Betriebssystem. Der Server speichert sie für begrenzte Zeit in Protokolldateien. Wir brauchen sie, um die Seite sicher und fehlerfrei auszuliefern und Angriffe zu erkennen (Art. 6 Abs. 1 lit. f DSGVO). Wir führen diese Daten nicht mit anderen zusammen. Hetzner arbeitet für uns als Auftragsverarbeiter nach Art. 28 DSGVO.</p>
 <h2>3. Keine Cookies, keine Statistik</h2>
-<p>Die Seite setzt keine Cookies und zählt keine Besuche. Schriften, Bilder und Skripte liegen auf unserem eigenen Webserver; beim Anschauen werden keine Inhalte von Google, Facebook oder anderen Anbietern nachgeladen. Ausnahmen stehen unten bei Newsletter und FuPa.</p>
+<p>Die Seite setzt keine Cookies und zählt keine Besuche. Schriften, Bilder und Skripte liegen auf unserem eigenen Webserver; beim Anschauen werden keine Inhalte von Google, Facebook oder anderen Anbietern nachgeladen. Ausnahmen stehen unten bei Newsletter, FuPa und Live-Ticker.</p>
 <p>Auf der Startseite fragt die Seite beim Laden unseren Serverdienst bei Cloudflare (siehe Newsletter), ob gerade ein Hinweis aktiv ist, etwa zu einem Fußballcamp. Dabei wird eure IP-Adresse übertragen, gespeichert wird nichts. Klickt ihr einen Hinweis weg, merkt sich euer Browser das für 7 Tage im lokalen Speicher (kein Cookie, es wird nichts an uns geschickt).</p>
 <h2 id="newsletter">4. Newsletter</h2>
 <p>Meldet ihr euch für unseren Newsletter an, speichern wir eure E-Mail-Adresse, freiwillig euren Vornamen und wann ihr euch angemeldet und bestätigt habt. Rechtsgrundlage ist eure Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Zuerst kommt eine Mail mit einem Bestätigungslink. Erst nach dem Klick seid ihr angemeldet. Klickt ihr nicht, löschen wir die Adresse nach 7 Tagen.</p>
@@ -56,13 +56,17 @@ DATENSCHUTZ = """
 <p>Abmelden könnt ihr euch jederzeit über den Link in jeder Mail. Dann löschen wir eure Adresse ganz. Einmal am Tag legen wir eine Sicherungskopie in einem Speicher bei Cloudflare in der EU ab; jede Kopie wird nach 30 Tagen gelöscht. Bis dahin kann eure Adresse dort noch stehen.</p>
 <h2>5. FuPa erst nach Klick</h2>
 <p>Tabellen, Spielpläne und Statistiken von FuPa laden wir erst, wenn ihr auf „FuPa-Inhalte laden“ klickt. Vorher geht keine Anfrage an FuPa. Nach dem Klick überträgt euer Browser Daten wie die IP-Adresse an die FuPa GmbH. Mehr dazu in der <a href="https://www.fupa.net/about/privacy-policy">Datenschutzerklärung von FuPa</a>.</p>
-<h2>6. Instagram-Beiträge</h2>
-<p>Die neuesten Beiträge von unserem Instagram-Konto holen wir regelmäßig selbst ab und legen Bilder und Text auf unserem Webserver ab. Beim Anschauen geht deshalb keine Anfrage an Instagram oder Meta. Erst wenn ihr auf einen Beitrag klickt, öffnet sich Instagram. Gezeigt werden nur die neuesten Beiträge; ein Beitrag, der auf Instagram gelöscht oder archiviert wird, verschwindet in der Regel nach wenigen Stunden auch hier.</p>
-<h2>7. E-Mail an uns</h2>
+<h2>6. Live-Ticker</h2>
+<p>Beim Öffnen der Startseite und der Seite „Live“ fragt euer Browser bei GitHub nach, ob gerade ein Spiel läuft oder ansteht. Ist das so, fragt er etwa einmal pro Minute nach dem aktuellen Spielstand, solange die Seite offen ist. Dabei gehen eure IP-Adresse und technische Daten wie Browser und Uhrzeit an GitHub (GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, USA, ein Unternehmen von Microsoft). Gespeichert wird bei uns nichts. Wir nutzen GitHub, damit der Ticker ohne eigenen Server laufend aktuell ist (Art. 6 Abs. 1 lit. f DSGVO). GitHub verarbeitet die Daten auch in den USA; GitHub ist nach dem EU-US Data Privacy Framework zertifiziert (Art. 45 DSGVO). Mehr dazu in der <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement">Datenschutzerklärung von GitHub</a>.</p>
+<h2>7. Instagram-Beiträge</h2>
+<p>Die neuesten Beiträge unserer beiden Instagram-Konten (@sc1911heiligenstadt und @sc1911heiligenstadt_nachwuchs) holen wir regelmäßig selbst über die Schnittstelle von Meta ab und legen Bilder und Text auf unserem Webserver ab. Beim Anschauen geht deshalb keine Anfrage an Instagram oder Meta. Ein Klick auf einen Beitrag öffnet zuerst eine Großansicht auf unserer Seite; auch dabei wird nichts von Instagram geladen. Erst der Link „Auf Instagram ansehen“ führt zu Instagram.</p>
+<p>In der Großansicht gibt es Knöpfe zum Teilen über WhatsApp, Facebook und X. Das sind einfache Links: Erst wenn ihr einen davon anklickt, öffnet sich der jeweilige Dienst und erhält dabei die Adresse des Beitrags. „Link kopieren“ legt die Adresse nur in eurer Zwischenablage ab.</p>
+<p>Gezeigt werden nur die neuesten Beiträge. Ältere Bilder heben wir nicht auf. Ein Beitrag, der auf Instagram gelöscht oder archiviert wird, verschwindet in der Regel nach wenigen Stunden auch hier.</p>
+<h2>8. E-Mail an uns</h2>
 <p>Schreibt ihr uns eine Mail, nutzen wir eure Angaben nur, um die Anfrage zu beantworten (Art. 6 Abs. 1 lit. b und f DSGVO). Wir löschen sie, wenn die Sache erledigt ist und keine Aufbewahrungspflicht besteht.</p>
-<h2>8. Links zu anderen Seiten</h2>
-<p>Links zu fussball.de, Facebook, Instagram, staige.tv oder den Shops öffnen fremde Seiten. Erst dann gelten deren Datenschutzregeln.</p>
-<h2>9. Eure Rechte</h2>
+<h2>9. Links zu anderen Seiten</h2>
+<p>Links zu fussball.de, FuPa, Facebook, Instagram, WhatsApp, X, staige.tv oder den Shops öffnen fremde Seiten. Erst dann gelten deren Datenschutzregeln.</p>
+<h2>10. Eure Rechte</h2>
 <p>Ihr habt das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Eine Einwilligung, etwa für den Newsletter, könnt ihr jederzeit für die Zukunft widerrufen. Schreibt uns dazu an <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a>.</p>
 <p>Ihr könnt euch außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren, in Thüringen beim Thüringer Landesbeauftragten für den Datenschutz und die Informationsfreiheit (TLfDI), Häßlerstraße 8, 99096 Erfurt.</p>
 <p class="sp-datum">Stand: __STAND__</p>
