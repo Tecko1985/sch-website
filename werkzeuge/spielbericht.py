@@ -671,7 +671,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
         f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
         f'{"" if n == "spielbericht" else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
-    logos = sponsoren_html(s.team)
+    logos = sponsoren_html(s.team) if d["datum"] >= SPONSOREN_AB else ""
     main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll{" mit-sponsoren" if logos else ""}">'
             f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
             f'{tafel(s)}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche des Spielberichts">{knoepfe}</div></div>\n\n'
@@ -714,10 +714,13 @@ def live_seite(vorlage, adresse):
 # erscheint sie automatisch unten links im Titelbild (über dem blauen Schleier) von Spielbericht, Spielinfo,
 # Ergebnisseite und Vorbericht dieser Mannschaft. Mannschaft: m1, m2, u19-1, u17-1 … (wie im Redaktionstool).
 SPONSOREN = "assets/sponsorenleiste"
+# Spielberichte und Vorberichte bekommen die Leiste erst ab diesem Datum: ältere Titelgrafiken enthalten
+# die Logos schon selbst (sonst doppelt). Spielinfo-/Ergebnisseiten (Mannschaftsfoto) immer.
+SPONSOREN_AB = "2026-11-17"
 
 
 def sponsoren_bild(team):
-    for endung in ("png", "webp"):
+    for endung in ("webp", "png"):
         pfad = f"{SPONSOREN}/{team}.{endung}"
         if team and os.path.exists(os.path.join(REPO, pfad)):
             return pfad
