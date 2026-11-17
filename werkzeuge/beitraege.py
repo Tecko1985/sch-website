@@ -320,7 +320,8 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     bild = f'<img src="../{d["bild"]}" alt="">' if d["bild"] else '<img src="../assets/hero.jpg" alt="">'
     # sp-kopfbild: Bild ganz und ungeschnitten, Rubrik/Titel/Datum darunter (seiten.css)
     # Sponsorenleiste der Mannschaft (nur Vorberichte, erst ab SPONSOREN_AB: ältere Grafiken haben die Logos schon)
-    logos = spielbericht.sponsoren_html(team, "../") if d["datum"] >= spielbericht.SPONSOREN_AB else ""
+    logos = (spielbericht.sponsoren_html(team, "../")
+             if d.get("rubrik") == "Vorbericht" and spielbericht.leiste_erlaubt(d) else "")
     if logos:
         bild = f'<div class="sp-kopfbild-bild">{bild}{logos}</div>'
     held = (f'<div class="sch-reporthero sp-held sp-kopfbild">{bild}<div><span>{e(d.get("rubrik") or "News")}</span>'

@@ -671,8 +671,8 @@ def baue(d, vorlage, alle_beitraege, adresse):
         f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
         f'{"" if n == "spielbericht" else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
-    logos = sponsoren_html(s.team) if d["datum"] >= SPONSOREN_AB else ""
-    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll{" mit-sponsoren" if logos else ""}">'
+    logos = sponsoren_html(s.team) if leiste_erlaubt(d) else ""
+    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll{" mit-sponsoren" if "sb-sponsoren" in logos else ""}">'
             f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
             f'{tafel(s)}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche des Spielberichts">{knoepfe}</div></div>\n\n'
             f"{bereiche}\n</main>")
@@ -717,6 +717,19 @@ SPONSOREN = "assets/sponsorenleiste"
 # Spielberichte und Vorberichte bekommen die Leiste erst ab diesem Datum: ältere Titelgrafiken enthalten
 # die Logos schon selbst (sonst doppelt). Spielinfo-/Ergebnisseiten (Mannschaftsfoto) immer.
 SPONSOREN_AB = "2026-11-17"
+# … oder wenn das Titelbild nach Einführung der Leiste neu hochgeladen wurde (Redaktion benennt Bilder
+# nach dem Zeitpunkt: assets/beitraege/<Date.now() in Basis 36>-xxxxx.webp)
+SPONSOREN_BILD_AB = 1794915000000  # 17.11.2026, 12:30 Uhr
+
+
+def leiste_erlaubt(d):
+    if (d.get("datum") or "") >= SPONSOREN_AB:
+        return True
+    m = re.match(r"assets/beitraege/([0-9a-z]{6,10})-", d.get("bild") or "")
+    try:
+        return bool(m) and int(m.group(1), 36) >= SPONSOREN_BILD_AB
+    except ValueError:
+        return False
 
 
 def sponsoren_bild(team):
@@ -727,9 +740,15 @@ def sponsoren_bild(team):
     return ""
 
 
-def sponsoren_html(team, praefix=""):
+def sponsoren_html(team, praefix="", marke=True):
+    """Sponsorenleiste der Mannschaft (unten links) und das SCHeimat-Zeichen (unten rechts, alle Mannschaften:
+    assets/sponsorenleiste/schheimat.webp|png)."""
     pfad = sponsoren_bild(team)
-    return f'<img class="sb-sponsoren" src="{praefix}{pfad}" alt="Präsentiert von unseren Partnern">' if pfad else ""
+    teile = f'<img class="sb-sponsoren" src="{praefix}{pfad}" alt="Präsentiert von unseren Partnern">' if pfad else ""
+    zeichen = sponsoren_bild("schheimat") if marke else ""
+    if zeichen:
+        teile += f'<img class="sb-marke" src="{praefix}{zeichen}" alt="SCHeimat">'
+    return teile
 
 
 def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, reiter, start, team=""):
@@ -748,7 +767,7 @@ def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, 
         for n, _, inhalt, k in reiter)
     erster = next(l for n, l, _, _ in reiter if n == start)
     logos = sponsoren_html(team)
-    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz{" mit-sponsoren" if logos else ""}">'
+    main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz{" mit-sponsoren" if "sb-sponsoren" in logos else ""}">'
             f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>{e(erster)}</h1></header>\n\n'
             f'{tafel_html}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche der Seite">{knoepfe}</div></div>\n\n'
             f"{bereiche}\n</main>")

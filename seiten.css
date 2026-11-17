@@ -394,3 +394,4 @@ body{margin:0;background:#fff}
 @media(max-width:600px){.sp-galerie:not(.sp-shopbanner){grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 .sch-reporthero.sp-kopfbild>.sp-kopfbild-bild{position:relative;max-width:none;margin:0;padding:0}.sp-kopfbild-bild>img:first-child{display:block;width:100%;height:auto;margin:0}
 .sp-kopfbild-bild .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;object-position:left bottom;margin:0}
+.sp-kopfbild-bild .sb-marke{position:absolute;z-index:2;right:2.4%;bottom:6%;width:clamp(44px,7%,130px);height:auto;margin:0}

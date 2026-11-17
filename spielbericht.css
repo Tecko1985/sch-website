@@ -319,3 +319,4 @@ html.sb-bf-offen{overflow:hidden}
 /* Sponsorenleiste der Mannschaft unten links im Titelbild, über dem blauen Schleier (assets/sponsorenleiste/<mannschaft>.png) */
 .sb-held .sb-sponsoren{position:absolute;z-index:2;left:2.4%;bottom:7%;width:clamp(48px,12%,230px);height:auto;max-height:78%;object-fit:contain;object-position:left bottom;pointer-events:none}
 .sb-held.mit-sponsoren h1{left:max(var(--rand),calc(2.4% + clamp(48px,12%,230px) + 24px))}
+.sb-held .sb-marke{position:absolute;z-index:2;right:2.4%;bottom:6%;width:clamp(44px,7%,130px);height:auto;pointer-events:none}
