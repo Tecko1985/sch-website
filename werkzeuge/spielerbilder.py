@@ -5,6 +5,7 @@ Fotos schon auf unserer Seite (assets/...), es geht also keine Anfrage an FuPa. 
 Karte einen neutralen Platzhalter.
 """
 import html
+import json
 import os
 import re
 
@@ -34,25 +35,64 @@ def kader(team):
     return _KADER[team]
 
 
+def _norm(name):
+    return " ".join((name or "").lower().replace("-", " ").split())
+
+
 def _gleich(a, b):
-    a, b = (a or "").lower().strip(), (b or "").lower().strip()
+    """Gleicher Spieler? Genau gleich, oder Nachname gleich und Vorname nur abgekürzt bzw. fehlend
+    („T. Kahlmeyer“, „Kahlmeyer“). Zwei ausgeschriebene, verschiedene Vornamen (Adam/Alexander) zählen nicht."""
+    a, b = _norm(a), _norm(b)
     if not a or not b:
         return False
     if a == b:
         return True
-    # „T. Kahlmeyer“, „Kahlmeyer“, „Thomas Kahlmeyer“: Nachname gleich und Vorname passt (oder fehlt)
     aa, bb = a.split(), b.split()
-    return aa[-1] == bb[-1] and (len(aa) == 1 or len(bb) == 1 or aa[0][0] == bb[0][0])
+    if aa[-1] != bb[-1]:
+        return False
+    if len(aa) == 1 or len(bb) == 1:
+        return True
+    va, vb = aa[0].rstrip("."), bb[0].rstrip(".")
+    kurz = len(va) == 1 or len(vb) == 1
+    return va == vb or (kurz and va[0] == vb[0])
+
+
+_FUPA = None
+
+
+def fupa_fotos(team):
+    """Fotos aus werkzeuge/spielerfotos.json (FuPa-Kader von 1., 2. und U19, geholt mit spielerfotos.py)."""
+    global _FUPA
+    if _FUPA is None:
+        try:
+            _FUPA = json.load(open(os.path.join(REPO, "werkzeuge", "spielerfotos.json"), encoding="utf-8"))
+        except (OSError, ValueError):
+            _FUPA = {}
+    return _FUPA.get(team, [])
+
+
+def _quellen(team):
+    """Suchreihenfolge: eigene Mannschaft zuerst (Kaderseite, dann FuPa), dann die anderen Herren, dann die U19.
+    Spieler der Ersten helfen in der Zweiten aus, U19-Spieler spielen in beiden Herrenteams."""
+    for t in [team] + [t for t in ("m1", "m2", "u19") if t != team]:
+        if t in SEITEN:
+            yield t, kader(t)
+        yield t, fupa_fotos(t)
 
 
 def spieler(team, name):
-    """Name aus dem Ticker -> {"name", "bild", "nr"}; ohne Treffer nur der Name."""
-    for teams in ([team] if team in SEITEN else []) + [t for t in SEITEN if t != team]:
-        treffer = [p for p in kader(teams) if _gleich(p["name"], name)]
-        if len(treffer) == 1:
-            return {"name": name, "bild": treffer[0]["bild"], "nr": treffer[0]["nr"]}
-        if team in SEITEN:
-            break  # nur im eigenen Kader suchen, wenn die Mannschaft bekannt ist
+    """Name aus dem Ticker -> {"name", "bild", "nr"}; ohne Treffer nur der Name.
+    Erst der genaue Name in allen Kadern, dann Kurzformen („T. Kahlmeyer“) – die nur, wenn eindeutig.
+    Die Rückennummer nur aus der eigenen Mannschaft (in der U19 oder Ersten trägt er oft eine andere)."""
+    quellen = list(_quellen(team))
+    eigene = [l for t, l in quellen if t == team]
+    for pruef in (lambda p: _norm(p["name"]) == _norm(name), lambda p: _gleich(p["name"], name)):
+        for t, liste in quellen:
+            treffer = [p for p in liste if p["bild"] and pruef(p)]
+            if len({_norm(p["name"]) for p in treffer}) == 1:
+                voll = _norm(treffer[0]["name"])
+                nr = next((x["nr"] for l in eigene for x in l if _norm(x["name"]) == voll and x["nr"]), "")
+                return {"name": name, "bild": treffer[0]["bild"], "nr": nr}
     return {"name": name, "bild": "", "nr": ""}
 
 
