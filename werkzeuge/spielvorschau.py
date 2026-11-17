@@ -175,7 +175,7 @@ def wettbewerb_name(liga, team):
 
 
 def titelbild(team):
-    return TITELBILD_ZWEITE if team == "m2" else TITELBILD if team == "m1" else TITELBILD_JUGEND
+    return sb.kopfbild(team)  # dieselben festen Kopfbilder wie die Spielberichte
 
 
 def baue_seite(m, d, standings, vorlage, adresse, beitraege):

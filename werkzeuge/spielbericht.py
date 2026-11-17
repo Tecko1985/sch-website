@@ -642,19 +642,22 @@ def baue(d, vorlage, alle_beitraege, adresse):
     teaser = d["teaser"] if d.get("teaser") and not platzhalter(d["teaser"]) else ""
     # Steht der Anreißer schon als erster Absatz im Text (langer Einstieg), nicht doppelt zeigen
     vorspann = "" if teaser and nur_text(d["text"]).startswith(teaser.rstrip(" …")[:80]) else teaser
-    # Bild 1 = Titelbild (Bildkopf), Bild 2-4 in den Text, alle weiteren in die Galerie
+    # Wie bei Werder Bremen: oben immer das feste Bild der Mannschaft (mit Sponsorenleiste und SCHeimat),
+    # Bild 1 aus der Redaktion steht ungeschnitten unter der Überschrift des Berichts, Bild 2-4 im Text,
+    # alle weiteren in der Galerie
     alle = ([d["bild"]] if d.get("bild") else []) + [g for g in (d.get("galerie") or []) if g != d.get("bild")]
-    titelbild = alle[0] if alle else "assets/hero.jpg"
+    titelbild = kopfbild(s.team)
+    spielfoto = alle[0] if alle else ""
     im_text, fuer_galerie = alle[1:4], alle[4:]
     vb = None if s.jugend else finde_vorbericht(d, alle_beitraege)  # Nachwuchs: kein Vorbericht
 
     bericht = artikel(titel, d["datum"], sp.get("autor"), vorspann, d["text"], im_text,
                       f"{s.gegner and ('SCH gegen ' + s.gegner) or titel} (Foto: SCH)", spieldaten(s),
-                      kicker=(sp.get("kurztitel") or "").strip())
+                      oben_bild=spielfoto, kicker=(sp.get("kurztitel") or "").strip())
     reiter = [
         ("spielinfo", "Spielinfo", spielinfo(s), ""),
         ("spielbericht", "Spielbericht", bericht, ""),
-        ("galerie", "Galerie", galerie(alle[1:], titel), ""),  # alle Bilder des Spiels außer dem Titelbild (steht oben im Kopf)
+        ("galerie", "Galerie", galerie(alle[1:], titel), ""),  # alle Bilder des Spiels außer Bild 1 (steht unter der Überschrift)
         ("liveticker", "Liveticker", ticker(s, teaser), ""),
         ("stimmen", "Stimmen", stimmen(s), ""),
         ("statistiken", "Statistiken", statistik(s), "grau"),
@@ -671,7 +674,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
         f'<section class="sb-bereich{" " + k if k else ""}" id="sb-{n}" role="tabpanel" aria-labelledby="sb-tab-{n}"'
         f'{"" if n == "spielbericht" else " hidden"}>\n{inhalt}\n</section>'
         for n, _, inhalt, k in reiter)
-    logos = sponsoren_html(s.team, marke=not d.get("ohne_marke")) if leiste_erlaubt(d) else ""
+    logos = sponsoren_html(s.team)  # festes Kopfbild: Leiste und SCHeimat passen immer
     main = (f'<main class="sb">\n<header class="sb-held sb-held-ganz sb-held-voll{" mit-sponsoren" if "sb-sponsoren" in logos else ""}">'
             f'<img class="sb-held-bild" src="{titelbild}" alt="" fetchpriority="high">{logos}<h1 class="stitel" data-sb-titel>Spielbericht</h1></header>\n\n'
             f'{tafel(s)}\n\n<div class="sb-reiter-band"><div class="sb-reiter" role="tablist" aria-label="Bereiche des Spielberichts">{knoepfe}</div></div>\n\n'
@@ -686,7 +689,7 @@ def baue(d, vorlage, alle_beitraege, adresse):
     kopf = re.sub(r'(<meta property="og:title" content=")[^"]*', lambda m: m.group(1) + voll_titel, kopf, count=1)
     kopf = re.sub(r'(<meta property="og:description" content=")[^"]*', lambda m: m.group(1) + beschreibung, kopf, count=1)
     kopf = re.sub(r'(<meta property="og:url" content=")[^"]*', lambda m: m.group(1) + adresse + "seiten/" + d["seite"], kopf, count=1)
-    kopf = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda m: m.group(1) + adresse + titelbild, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda m: m.group(1) + adresse + (spielfoto or titelbild), kopf, count=1)
     seite = pfade_fuer_seiten(kopf + main + fuss)
     # og:-Adressen sind absolut und bleiben; der Link auf die Vorberichtsseite liegt danach unter ../seiten/
     return seite, vb
@@ -714,6 +717,13 @@ def live_seite(vorlage, adresse):
 # erscheint sie automatisch unten links im Titelbild (über dem blauen Schleier) von Spielbericht, Spielinfo,
 # Ergebnisseite und Vorbericht dieser Mannschaft. Mannschaft: m1, m2, u19-1, u17-1 … (wie im Redaktionstool).
 SPONSOREN = "assets/sponsorenleiste"
+# Festes Kopfbild je Mannschaft (Spielbericht, Spielinfo, Ergebnisseite) – wie bei Werder Bremen
+KOPFBILDER = {"m1": "assets/hero-mannschaft-1600.webp", "m2": "assets/zweite-titel.webp"}
+KOPFBILD_JUGEND = "assets/nachwuchs-instagram.webp"
+
+
+def kopfbild(team):
+    return KOPFBILDER.get(team, KOPFBILD_JUGEND)
 # Spielberichte und Vorberichte bekommen die Leiste erst ab diesem Datum: ältere Titelgrafiken enthalten
 # die Logos schon selbst (sonst doppelt). Spielinfo-/Ergebnisseiten (Mannschaftsfoto) immer.
 SPONSOREN_AB = "2026-11-17"
