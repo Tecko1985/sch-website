@@ -94,7 +94,7 @@ details ul{padding-left:20px;margin:6px 0}
 <p>1. SC 1911 Heiligenstadt e.V.<br>Leineberg 2<br>37308 Heilbad Heiligenstadt</p>
 <p>Vertreten durch den Vorstand: Thadäus König, Manuel Lubojanski, Christoph Rodenstock, Sebastian Möhlhenrich, Michael Apel</p>
 <p>Telefon: +49 3606 612202<br>Telefax: +49 3606 509091<br>E-Mail: <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a></p>
-<p>Vereinsregister: Amtsgericht Heilbad Heiligenstadt, Vereinsregisternummer 400083<br>LSB-Nr.: 150004<br>USt-IdNr.: DE 157/142/07749</p>
+<p>Vereinsregister: Amtsgericht Heilbad Heiligenstadt, Vereinsregisternummer 400083<br>LSB-Nr.: 150004</p>
 <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 </details>
 <details>

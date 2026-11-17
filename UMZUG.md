@@ -73,5 +73,4 @@ Danach von Hand:
   Secrets `IG_TOKEN` (Verein → Startseite) und `IG_TOKEN_NACHWUCHS` (Nachwuchs → seiten/nachwuchs.html),
   Systemnutzer-Tokens ohne Ablauf. Findet `.github/instagram.py` die Konto-ID nicht, Repo-Variable `IG_ID` bzw.
   `IG_ID_NACHWUCHS` setzen (Nummer 1784… aus der Meta-App).
-- Offene Punkte im Impressum klären: Telefonnummer (612202 oder 612206), „USt-IdNr.“ (sieht aus wie eine Steuernummer).
 - Auftragsverarbeitungsvertrag mit Hetzner prüfen (in der konsoleH abschließbar).

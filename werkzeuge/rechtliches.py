@@ -28,8 +28,6 @@ IMPRESSUM = """
 <p>Erreicht ihr uns telefonisch nicht, schreibt uns gern eine Mail. Wir melden uns!</p>
 <h2>Registereintrag</h2>
 <p>Vereinsregister: Amtsgericht Heilbad Heiligenstadt<br>Vereinsregisternummer: 400083<br>LSB-Nr.: 150004</p>
-<h2>Umsatzsteuer</h2>
-<p>USt-IdNr.: DE 157/142/07749</p>
 <h2>Verbraucherstreitbeilegung</h2>
 <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 <h2>Haftung für Inhalte</h2>
@@ -44,7 +42,7 @@ IMPRESSUM = """
 DATENSCHUTZ = """
 <p class="fb-lead">Hier steht, welche Daten beim Besuch dieser Seite anfallen, wofür wir sie brauchen und welche Rechte ihr habt. Kurz gesagt: keine Cookies, keine Besucherzählung, nichts von Werbenetzwerken.</p>
 <h2>1. Verantwortlich</h2>
-<p>1. SC 1911 Heiligenstadt e.V.<br>Leineberg 2, 37308 Heilbad Heiligenstadt<br>Telefon: +49 3606 612206<br>E-Mail: <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a></p>
+<p>1. SC 1911 Heiligenstadt e.V.<br>Leineberg 2, 37308 Heilbad Heiligenstadt<br>Telefon: +49 3606 612202<br>E-Mail: <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a></p>
 <p>Unseren Datenschutzbeauftragten erreicht ihr über dieselben Kontaktdaten.</p>
 <h2>2. Aufruf der Seite</h2>
 <p>Die Seite liegt auf einem Webserver der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, in Deutschland. Beim Aufruf schickt euer Browser technisch nötige Daten an den Server: IP-Adresse, Datum und Uhrzeit, die aufgerufene Seite, die Seite, von der ihr kommt, sowie Browser und Betriebssystem. Der Server speichert sie für begrenzte Zeit in Protokolldateien. Wir brauchen sie, um die Seite sicher und fehlerfrei auszuliefern und Angriffe zu erkennen (Art. 6 Abs. 1 lit. f DSGVO). Wir führen diese Daten nicht mit anderen zusammen. Hetzner arbeitet für uns als Auftragsverarbeiter nach Art. 28 DSGVO.</p>
