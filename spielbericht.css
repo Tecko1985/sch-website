@@ -253,6 +253,7 @@
 .sb-tore{width:0;min-width:100%;box-sizing:border-box}
 /* Nachwuchs-Titelbild: Gesichter sitzen oben im Bild (16.11.2026) */
 .sb-held-ganz img.sb-held-bild[src*="nachwuchs-instagram"]{object-position:50% 6%}
+.sb-held-ganz img.sb-held-bild[src*="hero-mannschaft"]{object-position:50% 8%}  /* Köpfe der Ersten ganz im Bild */
 
 /* Galerie: Raster (Querformat 3:2) und Großansicht über den ganzen Bildschirm */
 .sb-galerie{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:start;grid-auto-flow:dense}
