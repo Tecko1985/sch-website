@@ -414,7 +414,10 @@ def baue_ergebnis(m, d, standings, vorlage, adresse, bericht=None):
     dl = "\n".join(f"<div><dt>{e(a)}</dt><dd>{e(b)}</dd></div>" for a, b in felder if b)
     links = []
     if bericht and bericht.get("seite"):
-        links.append(f'<a href="{e(bericht["seite"])}">Zum Spielbericht</a>')
+        # bericht["seite"] ist relativ zu seiten/ ("beitrag-x.html"); die Links dieser Seite stehen ab der Wurzel
+        # und bekommen beim Einsetzen "../" davor (Live-Prüfung 17.11.2026 L-3: sonst /beitrag-x.html = 404)
+        ziel = bericht["seite"] if bericht["seite"].startswith(("seiten/", "http")) else "seiten/" + bericht["seite"]
+        links.append(f'<a href="{e(ziel)}">Zum Spielbericht</a>')
     if standings:
         links.append('<a href="#tabelle" data-sb-zu="tabelle">Zur Tabelle</a>')
     links.append({"m1": '<a href="seiten/erste-mannschaft.html">1. Mannschaft</a>',
