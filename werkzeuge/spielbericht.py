@@ -762,7 +762,26 @@ def sponsoren_html(team, praefix="", marke=True):
     return teile
 
 
-def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, reiter, start, team=""):
+def vorbericht_seite(d, vorlage, adresse, team, sp=None, schluss=""):
+    """Eigene Vorberichtsseite im Aufbau der Spielberichte: festes Kopfbild der Mannschaft mit „Vorbericht“,
+    Sponsorenleiste und SCHeimat, Anzeigetafel ohne Ergebnis (wenn das Spiel über den Spielbericht bekannt ist),
+    darunter Überschrift, das Bild aus der Redaktion ungeschnitten und der Text."""
+    team = team or "m1"
+    tafel_html = ""
+    if sp:
+        vorher = {k: v for k, v in sp.items() if not k.startswith(("end_", "hz_", "tore_", "karten_"))}
+        tafel_html = tafel(Spiel(vorher, d))
+    vorspann = d["teaser"] if d.get("teaser") and not platzhalter(d["teaser"]) else ""
+    if vorspann and vorspann.rstrip(" …")[:60] in nur_text(d["text"])[:800]:
+        vorspann = ""
+    inhalt = artikel(d["titel"], d["datum"], "", vorspann, d["text"], [], "", schluss, oben_bild=d.get("bild") or "")
+    if d.get("galerie"):
+        inhalt += "\n" + galerie(d["galerie"], d["titel"])
+    return rahmen(vorlage, adresse, d["seite"], d["titel"], d.get("teaser") or "", kopfbild(team), tafel_html,
+                  [("vorbericht", "Vorbericht", inhalt, "")], "vorbericht", team, og_bild=d.get("bild") or "")
+
+
+def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, reiter, start, team="", og_bild=""):
     """Seite im Spielbericht-Aufbau (Bildkopf, Tafel, Reiter) – z. B. für die Spielinfo kommender Spiele.
     reiter: [(name, beschriftung, inhalt, zusatzklasse)], start: Name des zuerst offenen Reiters."""
     reiter = [r for r in reiter if r[2]]
@@ -790,5 +809,5 @@ def rahmen(vorlage, adresse, seite, titel, beschreibung, titelbild, tafel_html, 
     kopf = re.sub(r'(<meta property="og:title" content=")[^"]*', lambda m: m.group(1) + voll_titel, kopf, count=1)
     kopf = re.sub(r'(<meta property="og:description" content=")[^"]*', lambda m: m.group(1) + e(beschreibung), kopf, count=1)
     kopf = re.sub(r'(<meta property="og:url" content=")[^"]*', lambda m: m.group(1) + adresse + "seiten/" + seite, kopf, count=1)
-    kopf = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda m: m.group(1) + adresse + titelbild, kopf, count=1)
+    kopf = re.sub(r'(<meta property="og:image" content=")[^"]*', lambda m: m.group(1) + adresse + (og_bild or titelbild), kopf, count=1)
     return pfade_fuer_seiten(kopf + main + fuss)

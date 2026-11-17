@@ -597,6 +597,15 @@ def main():
             continue
         sb = zum_bericht.get(d["slug"])
         zusatz = f'\n<p><strong><a href="{sb["seite"]}#spielbericht">Zum Spielbericht</a></strong></p>' if sb else ""
+        if d.get("rubrik") == "Vorbericht":
+            # Vorbericht im Aufbau der Spielberichte (Kopfbild der Mannschaft, Tafel, Bild unter der Überschrift)
+            seite = spielbericht.vorbericht_seite(d, sb_vorlage, ADRESSE, vorbericht_team(d, sb),
+                                                  (sb or {}).get("spiel"),
+                                                  zusatz.replace('href="', 'href="seiten/') if zusatz else "")
+            if d.get("ab"):
+                seite = vorab_sperre(seite, d["ab"], d["geplant"])
+            open(os.path.join(ziel, "seiten", d["seite"]), "w", encoding="utf-8").write(seite)
+            continue
         baue_seite(ziel, d, vorlage, zusatz, vorbericht_team(d, sb))
     news = open(os.path.join(REPO, "seiten/news.html"), encoding="utf-8").read()
     liste = alle_eintraege(news, beitraege)
