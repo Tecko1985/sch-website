@@ -1,6 +1,6 @@
 """Spielerfotos und Rückennummern für die Wechsel-Karten im Liveticker (Spielbericht und seiten/live.html).
 
-Quelle sind die Kaderseiten seiten/erste-mannschaft.html und seiten/zweite-mannschaft.html – dort liegen die
+Quelle sind die Kaderseiten seiten/erste-mannschaft.html, seiten/zweite-mannschaft.html und seiten/u19.html – dort liegen die
 Fotos schon auf unserer Seite (assets/...), es geht also keine Anfrage an FuPa. Wer dort fehlt, bekommt auf der
 Karte einen neutralen Platzhalter.
 """
@@ -10,7 +10,7 @@ import os
 import re
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SEITEN = {"m1": "seiten/erste-mannschaft.html", "m2": "seiten/zweite-mannschaft.html"}
+SEITEN = {"m1": "seiten/erste-mannschaft.html", "m2": "seiten/zweite-mannschaft.html", "u19": "seiten/u19.html"}
 _KADER = {}
 
 KARTE = re.compile(r'<div class="sp-spieler">(.*?)<span class="kd-name"><em>(.*?)</em>\s*(.*?)(?:<small|</span>)', re.S)
