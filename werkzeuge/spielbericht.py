@@ -433,6 +433,14 @@ def fupa_eintraege(s):
         return [], ""
 
 
+def wechselkarte(s, rein, raus):
+    """Wechsel-Karte mit Spielerfotos – nur für SCH-Wechsel der 1. und 2. Mannschaft."""
+    if s.team not in ("m1", "m2") or not rein:
+        return ""
+    import spielerbilder
+    return spielerbilder.karte_html(s.team, rein, raus)
+
+
 def ticker(s, fazit):
     sp = s.sp
     link = (sp.get("ticker_link") or "").strip()
@@ -461,7 +469,8 @@ def ticker(s, fazit):
         quelle = "Spielverlauf aus der Redaktion."
     elif fupa:
         eintraege = [(x["sort"], x["min"], FUPA_KLASSE.get(x["art"], ""), FUPA_ZEICHEN.get(x["art"], "") + e(x["kopf"]),
-                      e(x["text"]), x["stand"]) for x in fupa]
+                      e(x["text"]), x["stand"], wechselkarte(s, x.get("_rein"), x.get("_raus"))
+                      if x["art"] == "wechsel" and x.get("team") == "SCH" else "") for x in fupa]
         quelle = "Liveticker von FuPa."
         link = link or fupa_link
     elif s.da:
@@ -481,17 +490,19 @@ def ticker(s, fazit):
                 m = minute(x["wechsel"]) if x["wechsel"] else None
                 if m and m[2]:
                     eintraege.append((m[0] + 0.002, m[1], "wechsel", f'<span class="sb-wechsel" aria-hidden="true">⇄</span> Wechsel bei {e(s.kurzname(team))}',
-                                      f'{e(m[2])} kommt für {e(x["name"])}.', ""))
+                                      f'{e(m[2])} kommt für {e(x["name"])}.', "",
+                                      wechselkarte(s, m[2], x["name"]) if team == "sch" else ""))
         if s.hz:
             eintraege.append((45.5, "45", "", "Halbzeit", "Pause.", s.stand(s.hz).replace(" ", "")))
         if s.end:
             eintraege.append((99, "90", "", "Abpfiff", "Das Spiel ist aus.", s.stand(s.end).replace(" ", "")))
     else:
         quelle = ""
+    eintraege = [x if len(x) > 6 else x + ("",) for x in eintraege]
     eintraege.sort(key=lambda x: x[0], reverse=True)
-    li = "".join(f'<li class="{kl}"><span class="sb-minute">{lab}\'</span><div>'
-                 + (f'<h3 class="stitel">{kopf}</h3>' if kopf else "") + (f"<p>{text}</p>" if text else "")
-                 + f'</div><span class="stand">{st}</span></li>' for _, lab, kl, kopf, text, st in eintraege)
+    li = "".join(f'<li class="{kl}{" mit-karte" if karte else ""}"><span class="sb-minute">{lab}\'</span><div>'
+                 + (f'<h3 class="stitel">{kopf}</h3>' if kopf else "") + karte + (f"<p>{text}</p>" if text else "")
+                 + f'</div><span class="stand">{st}</span></li>' for _, lab, kl, kopf, text, st, karte in eintraege)
     kopf = (f'<div class="sb-tickerkopf"><b>Abpfiff</b><span>Endstand {s.stand(s.end)}</span></div>' if s.end
             else '<div class="sb-tickerkopf"><b>Liveticker</b><span></span></div>')
     fz = f'<p class="sb-tickerfazit">{e(fazit)}</p>' if fazit else ""
@@ -709,7 +720,7 @@ def live_seite(vorlage, adresse):
     kopf = kopf.replace("</head>", '<link rel="stylesheet" href="live.css?v=3">\n</head>', 1)
     main = ('<main class="sb lv-seite">\n<header class="lv-kopf"><p>1. SC 1911 Heiligenstadt</p><h1 class="stitel">Liveticker</h1></header>\n'
             '<div id="sch-live-seite"><noscript><p>Der Liveticker braucht JavaScript.</p></noscript></div>\n'
-            '<script src="live.js?v=4" data-basis="../" defer></script>\n</main>')
+            '<script src="live.js?v=5" data-basis="../" defer></script>\n</main>')
     return pfade_fuer_seiten(kopf + main + fuss)
 
 

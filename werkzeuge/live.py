@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fupa_ticker  # noqa: E402
 import spiele  # noqa: E402
 import spielbericht  # noqa: E402
+import spielerbilder  # noqa: E402
 
 VORLAUF = datetime.timedelta(minutes=45)      # so lange vor Anpfiff geht es los
 SPIELDAUER = datetime.timedelta(minutes=180)  # danach gilt ein Spiel ohne FuPa-Ende als vorbei
@@ -84,6 +85,16 @@ def aufstellung(slug, m):
     return auf
 
 
+def wechselkarte(kuerzel, e):
+    """SCH-Wechsel der 1./2. Mannschaft: Fotos und Nummern aus den Kaderseiten für die Karte in live.js."""
+    if e["art"] != "wechsel" or e.get("team") != "SCH" or kuerzel not in ("m1", "m2") or not e.get("_rein"):
+        return {}
+    karte = {"rein": spielerbilder.spieler(kuerzel, e["_rein"])}
+    if e.get("_raus"):
+        karte["raus"] = spielerbilder.spieler(kuerzel, e["_raus"])
+    return {"wk": karte}
+
+
 def lage(slug, kuerzel):
     m = fupa_ticker.spiel(slug)
     if not mit_ticker(m):
@@ -103,7 +114,7 @@ def lage(slug, kuerzel):
         "anstoss": m.get("kickoff"), "status": status, "minute": minute,
         "heim": team(m.get("homeTeam") or {}), "gast": team(m.get("awayTeam") or {}),
         "tore": [m.get("homeGoal"), m.get("awayGoal")],
-        "ereignisse": [{k: e[k] for k in ("min", "art", "kopf", "text", "stand")} for e in ev],
+        "ereignisse": [dict({k: e[k] for k in ("min", "art", "kopf", "text", "stand")}, **wechselkarte(kuerzel, e)) for e in ev],
         **({"aufstellung": auf} if auf else {}),
     }
 

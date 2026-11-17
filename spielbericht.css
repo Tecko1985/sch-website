@@ -321,3 +321,28 @@ html.sb-bf-offen{overflow:hidden}
 /* Spielbericht-Reiter so breit wie bei Werder Bremen: Überschrift, Spielfoto und Text auf etwa 1300 px */
 #sb-spielbericht.sb-bereich{max-width:calc(1300px + 2*var(--rand))}
 #sb-spielbericht .sb-artikel{max-width:1300px}
+
+/* Liveticker: Wechsel-Karte bei SCH-Wechseln wie bei Werder (links rein, Mitte Wappen, rechts raus) */
+.sb-wk{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:12px;align-items:center;margin:12px 0 10px}
+.sb-wk-allein{grid-template-columns:minmax(0,1fr) 48px}
+.sb-wk-seite{display:flex;align-items:center;min-height:104px;background:#eef1f6;border-radius:8px;overflow:hidden}
+.sb-wk-raus{flex-direction:row-reverse;text-align:right}
+.sb-wk-foto{position:relative;flex:none;width:104px;align-self:stretch;min-height:104px;background:var(--navy)}
+.sb-wk-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 8%;margin:0}
+.sb-wk-ohne{position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff40'%3E%3Ccircle cx='12' cy='8' r='4.2'/%3E%3Cpath d='M3.5 23c0-5 3.8-8.5 8.5-8.5s8.5 3.5 8.5 8.5z'/%3E%3C/svg%3E") center 70%/72% no-repeat}
+.sb-wk-nr{position:absolute;right:6px;bottom:6px;min-width:26px;padding:2px 6px;border-radius:4px;background:var(--navy);color:#fff;font:700 17px/1.2 "SCH Barlow","Arial Narrow",Impact,sans-serif;text-align:center}
+.sb-wk-name{flex:1;min-width:0;padding:0 16px;font:700 21px/1.1 "SCH Barlow","Arial Narrow",Impact,sans-serif;text-transform:uppercase;color:var(--navy);overflow-wrap:anywhere}
+.sb-wk-pfeil{flex:none;padding:0 16px;font:700 38px/1 Arial,sans-serif;color:#1d7a45}
+.sb-wk-raus .sb-wk-pfeil{color:#d0302f}
+.sb-wk-wappen{width:48px;height:auto;margin:0;justify-self:center}
+.sb-wk-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sb-ereignisse .mit-karte > div > p:last-child{color:var(--grau);font-size:15px;padding-top:0}
+@media(max-width:700px){
+ .sb-wk,.sb-wk-allein{grid-template-columns:1fr;gap:8px}
+ .sb-wk .sb-wk-wappen{width:38px;margin:-2px auto}
+ .sb-wk-seite{min-height:76px}
+ .sb-wk-foto{width:76px;min-height:76px}
+ .sb-wk-nr{font-size:14px;min-width:22px;right:4px;bottom:4px}
+ .sb-wk-name{font-size:18px;padding:0 12px}
+ .sb-wk-pfeil{font-size:30px;padding:0 12px}
+}

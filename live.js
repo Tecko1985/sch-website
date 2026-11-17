@@ -132,6 +132,21 @@
   };
   var KLASSE = { tor: 'tor', pfiff: 'pfiff', wechsel: 'wechsel', karte: 'karte', gelb: 'karte' };
 
+  // Wechsel-Karte bei SCH-Wechseln: Fotos und Nummern aus den Kaderseiten (live.py, werkzeuge/spielerbilder.py)
+  function wechselkarte(wk) {
+    function seite(p, art) {
+      var foto = /^assets\/[\w\/.-]+\.webp$/.test(p.bild || '') ? '<img src="' + basis + esc(p.bild) + '" alt="" loading="lazy">'
+        : '<span class="sb-wk-ohne" aria-hidden="true"></span>';
+      var nr = p.nr ? '<b class="sb-wk-nr">' + esc(p.nr) + '</b>' : '';
+      return '<div class="sb-wk-seite sb-wk-' + art + '"><span class="sb-wk-foto">' + foto + nr + '</span>' +
+        '<span class="sb-wk-name"><small class="sb-wk-sr">' + (art === 'rein' ? 'Eingewechselt' : 'Ausgewechselt') + ': </small>' +
+        esc(p.name) + '</span><span class="sb-wk-pfeil" aria-hidden="true">' + (art === 'rein' ? '↑' : '↓') + '</span></div>';
+    }
+    return '<div class="sb-wk' + (wk.raus ? '' : ' sb-wk-allein') + '">' + seite(wk.rein, 'rein') +
+      '<img class="sb-wk-wappen" src="' + basis + 'assets/logo.png" alt="" aria-hidden="true">' +
+      (wk.raus ? seite(wk.raus, 'raus') : '') + '</div>';
+  }
+
   // Aufstellungen (von FuPa, mit Toren, Karten und Wechseln aus dem Ticker)
   function spielerZeile(x, bank) {
     var zeichen = '';
@@ -191,7 +206,8 @@
     var li = (sp.ereignisse || []).map(function (e) {
       var kopf = e.kopf ? '<h3 class="stitel">' + (ZEICHEN[e.art] || '') + esc(e.kopf) + '</h3>' : '';
       var text = e.text ? '<p>' + esc(e.text) + '</p>' : '';
-      return '<li class="' + (KLASSE[e.art] || '') + '"><span class="sb-minute">' + esc(e.min) + '\'</span><div>' + kopf + text +
+      var karte = e.wk && e.wk.rein ? wechselkarte(e.wk) : '';
+      return '<li class="' + (KLASSE[e.art] || '') + (karte ? ' mit-karte' : '') + '"><span class="sb-minute">' + esc(e.min) + '\'</span><div>' + kopf + karte + text +
         '</div><span class="stand">' + esc(e.stand) + '</span></li>';
     }).join('');
     var kopfzeile = sp.status === 'ende' ? '<b>Abpfiff</b><span>Endstand ' + stand(sp) + '</span>'
