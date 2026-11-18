@@ -338,7 +338,7 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     logos = (spielbericht.sponsoren_html(team, "../", marke=False)
              if d.get("rubrik") == "Vorbericht" and spielbericht.leiste_erlaubt(d) else "")
     # Aufbau wie bei Werder Bremen: weißer Kopf mit Rubrik, großer Überschrift, Unterzeile und Datum/Lesezeit,
-    # darunter das Titelbild über die ganze Breite (ungeschnitten) mit Bildnachweis, dann der Text
+    # darunter das Titelbild über die ganze Breite (ungeschnitten), dann der Text
     text = d["text"]
     unterzeile = ""
     m = re.match(r"\s*<h3>(.*?)</h3>\s*", text, re.S)
@@ -347,12 +347,12 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     woerter = len(re.sub(r"<[^>]+>", " ", text).split())
     minuten = max(1, round(woerter / 200))
     foto = f'<div class="sp-titelfoto-bild">{bild}{logos}</div>' if logos else bild
-    # Bildnachweis: Fotograf aus der Redaktion (Feld „fotograf“), sonst „SCH“
+    # Bildnachweis (Bilder im Text, Großansicht): Fotograf aus der Redaktion (Feld „fotograf“), sonst „SCH“
     fotograf = (d.get("fotograf") or "").strip() or "SCH"
     held = (f'<header class="sp-kopf2"><span class="sp-rubrik">{e(d.get("rubrik") or "News")}</span>'
             f'<h1>{e(d["titel"])}</h1>' + (f'<p class="sp-unterzeile">{unterzeile}</p>' if unterzeile else "")
             + f'<p class="sp-meta">{datum_de(d["datum"])} | <b>{minuten} Min</b></p></header>'
-            f'<figure class="sp-titelfoto">{foto}<figcaption>Foto: {e(fotograf)}</figcaption></figure>')
+            f'<figure class="sp-titelfoto">{foto}</figure>')   # ohne Bildnachweis unter dem Titelbild
     inhalt = text + zusatz
     if d["galerie"]:
         inhalt += '\n<div class="sp-galerie">' + "".join(f'<img src="../{g}" alt="" loading="lazy">' for g in d["galerie"]) + "</div>"
