@@ -467,3 +467,23 @@ body{margin:0;background:#fff}
 /* Termine: Vereinstermine (Adventssingen, Kurstadtlauf …) */
 .tm-marke.verein{background:#b8862b}
 .tm-spiel.verein .tm-team b{color:#9a6f1e}
+
+/* Beiträge: Bilder im Text und Großansicht zum Durchblättern (galerie.js) */
+.sp-neu .sp-inhalt .sp-textbild{margin:28px 0}
+.sp-neu .sp-inhalt .sp-textbild img{display:block;width:100%;height:auto;border-radius:6px}
+.sp-neu .sp-inhalt .sp-textbild figcaption{margin-top:6px;font-size:13px;color:#5f6a7b}
+.gl-klickbar{cursor:zoom-in}
+.gl-klickbar:focus-visible{outline:3px solid #4a75b0;outline-offset:3px}
+html.gl-offen{overflow:hidden}
+.gl-box{position:fixed;inset:0;z-index:1000;background:#0b1a33;display:flex;align-items:center;justify-content:center}
+.gl-box[hidden]{display:none}
+.gl-buehne{margin:0;max-width:calc(100vw - 160px);max-height:calc(100dvh - 40px);display:flex;flex-direction:column;align-items:center;gap:10px}
+.gl-buehne img{max-width:100%;max-height:calc(100dvh - 90px);object-fit:contain;display:block;border-radius:4px}
+.gl-buehne figcaption{color:#c9d3e3;font:500 14px 'SCH Barlow',Arial,sans-serif}
+.gl-zu{position:absolute;right:16px;top:16px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#1b2d4f;font:30px/1 Arial,sans-serif;cursor:pointer;padding:0}
+.gl-pfeil{position:absolute;top:50%;width:52px;height:52px;margin-top:-26px;border:3px solid #1b2d4f;border-radius:50%;background:#fff;cursor:pointer;padding:0;font-size:0;box-shadow:0 4px 18px #0007}
+.gl-pfeil::before{content:'';position:absolute;left:50%;top:50%;width:13px;height:13px;border:solid #1b2d4f;border-width:0 4px 4px 0;transform:translate(-30%,-50%) rotate(135deg)}
+.gl-weiter::before{transform:translate(-70%,-50%) rotate(-45deg)}
+.gl-zurueck{left:20px}.gl-weiter{right:20px}
+.gl-pfeil[hidden]{display:none}
+@media(max-width:700px){.gl-buehne{max-width:100vw}.gl-buehne img{max-height:calc(100dvh - 120px);border-radius:0}.gl-pfeil{top:auto;bottom:18px;margin-top:0;width:46px;height:46px}.gl-zurueck{left:calc(50% - 64px)}.gl-weiter{right:calc(50% - 64px)}.gl-zu{right:10px;top:10px}}

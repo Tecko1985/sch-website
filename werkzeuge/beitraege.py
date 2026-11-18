@@ -41,8 +41,11 @@ except ImportError:  # Ohne Pillow fehlen nur width/height an den Startseitenbil
 
 
 # ---------------------------------------------------------------- Text säubern
-ERLAUBT = {"p", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "a", "blockquote"}
-LEER = {"br"}
+ERLAUBT = {"p", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "a", "blockquote",
+           "figure", "figcaption", "img"}
+LEER = {"br", "img"}
+# Bilder im Text: nur aus unserem eigenen Bilderordner (assets/…), sonst wird das Bild weggelassen
+BILD_SRC = re.compile(r"^(?:\.\./)?(assets/[\w./-]+\.(?:webp|jpe?g|png))$", re.I)
 
 
 class Saeuberer(HTMLParser):
@@ -68,6 +71,15 @@ class Saeuberer(HTMLParser):
             extern = href.startswith("http")
             zusatz = ' rel="noopener"' if extern else ""
             self.aus.append(f'<a href="{html.escape(href, quote=True)}"{zusatz}>')
+        elif tag == "img":
+            a = dict(attrs)
+            m = BILD_SRC.match(a.get("src") or "")
+            if not m:
+                return
+            alt = html.escape(a.get("alt") or "", quote=True)
+            self.aus.append(f'<img src="../{m.group(1)}" alt="{alt}" loading="lazy">')
+        elif tag == "figure":
+            self.aus.append('<figure class="sp-textbild">')
         else:
             self.aus.append(f"<{tag}>")
         if tag not in LEER:
@@ -96,7 +108,7 @@ class Saeuberer(HTMLParser):
         t = "".join(self.aus)
         t = re.sub(r"<(p|h2|h3|li|blockquote)>(\s|&nbsp;|<br>)*</\1>", "", t)  # leere Blöcke
         t = re.sub(r"(<br>\s*){3,}", "<br><br>", t)
-        t = re.sub(r"</(p|h2|h3|ul|ol|blockquote)>\s*", r"</\1>\n", t)
+        t = re.sub(r"</(p|h2|h3|ul|ol|blockquote|figure)>\s*", r"</\1>\n", t)
         return t.strip()
 
 
@@ -335,13 +347,17 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     woerter = len(re.sub(r"<[^>]+>", " ", text).split())
     minuten = max(1, round(woerter / 200))
     foto = f'<div class="sp-titelfoto-bild">{bild}{logos}</div>' if logos else bild
+    # Bildnachweis: Fotograf aus der Redaktion (Feld „fotograf“), sonst „SCH“
+    fotograf = (d.get("fotograf") or "").strip() or "SCH"
     held = (f'<header class="sp-kopf2"><span class="sp-rubrik">{e(d.get("rubrik") or "News")}</span>'
             f'<h1>{e(d["titel"])}</h1>' + (f'<p class="sp-unterzeile">{unterzeile}</p>' if unterzeile else "")
             + f'<p class="sp-meta">{datum_de(d["datum"])} | <b>{minuten} Min</b></p></header>'
-            f'<figure class="sp-titelfoto">{foto}<figcaption>Foto: SCH</figcaption></figure>')
+            f'<figure class="sp-titelfoto">{foto}<figcaption>Foto: {e(fotograf)}</figcaption></figure>')
     inhalt = text + zusatz
     if d["galerie"]:
         inhalt += '\n<div class="sp-galerie">' + "".join(f'<img src="../{g}" alt="" loading="lazy">' for g in d["galerie"]) + "</div>"
+    # Großansicht zum Durchblättern (galerie.js): Titelbild, Bilder im Text und Galerie
+    inhalt += f'\n<script src="../galerie.js?v=1" data-fotograf="{e(fotograf)}" defer></script>'
     main = f'<main class="sch-report sp-seite sp-neu">{held}<article class="sp-inhalt">\n{inhalt}\n</article>'
     t = re.sub(r'<main class="sch-report sp-seite">.*?</article>', lambda m: main, t, count=1, flags=re.S)
     if d.get("ab"):
