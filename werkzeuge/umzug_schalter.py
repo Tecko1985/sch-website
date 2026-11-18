@@ -25,6 +25,16 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VORSCHAU = "https://tecko1985.github.io/sch-website/"
 ALT = "https://www.sc1911-heiligenstadt.de/"
 ENTWUERFE = ("neu/", "vorschau/", "admin/", "umzug.html")
+# Art.-13-Hinweis auf newsletter.html: in der Vorschau GitHub Pages, auf der echten Seite Hetzner
+# (Gesamtprüfung 18.11.2026: live stand noch der GitHub-Satz, obwohl Apache bei Hetzner ausliefert).
+NL_GITHUB = ("Diese Seite selbst wird über GitHub Pages ausgeliefert, einen Dienst der GitHub B.V. (Teil von "
+             "Microsoft): Dein Browser schickt dabei technisch notwendige Daten an GitHub, insbesondere deine "
+             "IP-Adresse; GitHub speichert IP-Adressen von Besuchern nach eigenen Angaben zu Sicherheitszwecken, "
+             "eine Übermittlung in Länder außerhalb der EU ist auch hier nicht ausgeschlossen.")
+NL_HETZNER = ("Diese Seite selbst liegt auf einem Webserver der Hetzner Online GmbH, Industriestr. 25, "
+              "91710 Gunzenhausen, in Deutschland, die für uns als Auftragsverarbeiter nach Art. 28 DSGVO arbeitet: "
+              "Dein Browser schickt dabei technisch notwendige Daten an den Server, insbesondere deine IP-Adresse; "
+              "der Server speichert sie für begrenzte Zeit in Protokolldateien.")
 TEXTDATEIEN = (".html", ".js", ".css", ".xml", ".json", ".txt", ".webmanifest")
 
 
@@ -43,6 +53,15 @@ def main():
     if os.path.isfile(neu_ds):
         shutil.copyfile(neu_ds, os.path.join(ziel, "seiten", "datenschutz.html"))
         os.remove(neu_ds)
+
+    nl = os.path.join(ziel, "newsletter.html")
+    if os.path.isfile(nl):
+        text = open(nl, encoding="utf-8").read()
+        if NL_GITHUB in text:
+            open(nl, "w", encoding="utf-8", newline="").write(text.replace(NL_GITHUB, NL_HETZNER))
+        elif NL_HETZNER not in text:
+            sys.exit("newsletter.html: Hinweis zur Auslieferung (GitHub Pages) nicht gefunden – "
+                     "Text geändert? NL_GITHUB in werkzeuge/umzug_schalter.py anpassen.")
 
     zaehler = {"noindex": 0, "adressen": 0, "rechtliches": 0}
     seiten = []
