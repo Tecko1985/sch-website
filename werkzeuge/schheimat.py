@@ -97,23 +97,24 @@ def stempeln(im):
 
 
 def bilder():
-    """Bildpfad -> Titelbild ohne Zeichen gewünscht? (True = auslassen)"""
+    """Bildpfad -> (auslassen, aus_redaktion). auslassen: Titelbild mit „Zeichen ist schon im Bild“."""
     aus = {}
 
-    def dazu(b, auslassen=False):
+    def dazu(b, auslassen=False, redaktion=False):
         b = (b or "").split("?")[0]
         if b.startswith("../"):
             b = b[3:]
-        if b.startswith("assets/"):
-            aus[b] = aus.get(b, False) or auslassen
+        if b.startswith("assets/") and b.lower().endswith((".webp", ".jpg", ".jpeg", ".png")):
+            alt = aus.get(b, (False, False))
+            aus[b] = (alt[0] or auslassen, alt[1] or redaktion)
 
     for f in glob.glob(os.path.join(REPO, "inhalte", "beitraege", "*.json")):
         d = json.load(open(f, encoding="utf-8"))
-        dazu(d.get("bild"), bool(d.get("ohne_marke")))
+        dazu(d.get("bild"), bool(d.get("ohne_marke")), True)
         for g in d.get("galerie") or []:
-            dazu(g if isinstance(g, str) else (g.get("bild") or g.get("src")))
+            dazu(g if isinstance(g, str) else (g.get("bild") or g.get("src")), False, True)
         for src in re.findall(r'src="([^"]+)"', d.get("text") or ""):
-            dazu(src)
+            dazu(src, False, True)
     for f in glob.glob(os.path.join(REPO, "seiten", "beitrag-*.html")) + glob.glob(os.path.join(REPO, "seiten", "wandern-*.html")):
         t = open(f, encoding="utf-8").read()
         m = re.search(r"<main.*?</main>", t, re.S)
@@ -125,37 +126,49 @@ def bilder():
 def main(ziel):
     status = json.load(open(STATUS, encoding="utf-8")) if os.path.exists(STATUS) else {}
     neu_geprueft, gesetzt = 0, 0
-    for b, auslassen in sorted(bilder().items()):
+    fehler = 0
+    for b, (auslassen, redaktion) in sorted(bilder().items()):
         quelle = os.path.join(REPO, b)
         if auslassen or not os.path.exists(quelle):
             continue
-        schluessel = f"{b}|{os.path.getsize(quelle)}"
-        st = status.get(schluessel)
-        if st is None:
+        try:
+            schluessel = f"{b}|{os.path.getsize(quelle)}"
+            st = status.get(schluessel)
+            if st is None:
+                # Neu prüfen nur Bilder aus der Redaktion; unbekannte Bilder alter Seiten (z. B. die Beiträge aus
+                # 2025, die nur beim Live-Bau dazukommen) bleiben, wie sie sind
+                if not redaktion:
+                    continue
+                im = Image.open(quelle)
+                if min(im.size) < MIN_SEITE:
+                    st = "nicht"
+                else:
+                    st = "hat" if vergleichswert(im) >= SCHWELLE else "setzen"
+                status[schluessel] = st
+                neu_geprueft += 1
+            if st != "setzen":
+                continue
             im = Image.open(quelle)
-            if min(im.size) < MIN_SEITE:
-                st = "nicht"
+            fmt = (im.format or "WEBP").upper()
+            out = stempeln(im)
+            pfad = os.path.join(ziel, b)
+            os.makedirs(os.path.dirname(pfad), exist_ok=True)
+            if fmt == "JPEG":
+                out.convert("RGB").save(pfad, "JPEG", quality=90)
+            elif fmt == "PNG":
+                out.save(pfad, "PNG")
             else:
-                st = "hat" if vergleichswert(im) >= SCHWELLE else "setzen"
-            status[schluessel] = st
-            neu_geprueft += 1
-        if st != "setzen":
-            continue
-        im = Image.open(quelle)
-        fmt = (im.format or "WEBP").upper()
-        out = stempeln(im)
-        pfad = os.path.join(ziel, b)
-        os.makedirs(os.path.dirname(pfad), exist_ok=True)
-        if fmt == "JPEG":
-            out.convert("RGB").save(pfad, "JPEG", quality=90)
-        elif fmt == "PNG":
-            out.save(pfad, "PNG")
-        else:
-            out.save(pfad, "WEBP", quality=88, method=6)
-        gesetzt += 1
+                out.save(pfad, "WEBP", quality=88, method=6)
+            gesetzt += 1
+        except Exception as e:  # ein kaputtes Bild darf den Bau nicht abbrechen
+            fehler += 1
+            print(f"  SCHeimat: {b} übersprungen ({e})")
     if neu_geprueft:
-        json.dump(dict(sorted(status.items())), open(STATUS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    print(f"SCHeimat: {gesetzt} Bilder mit Zeichen versehen ({neu_geprueft} neu geprüft).")
+        try:
+            json.dump(dict(sorted(status.items())), open(STATUS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+        except OSError:
+            pass
+    print(f"SCHeimat: {gesetzt} Bilder mit Zeichen versehen ({neu_geprueft} neu geprüft, {fehler} übersprungen).")
 
 
 if __name__ == "__main__":

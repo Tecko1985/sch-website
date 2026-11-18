@@ -643,7 +643,10 @@ def main():
         except ImportError as fehler:
             print(f"SCHeimat: Zeichen nicht gesetzt ({fehler}).")
         else:
-            schheimat.main(ziel)
+            try:
+                schheimat.main(ziel)
+            except Exception as fehler:  # das Zeichen ist Zugabe – der Bau der Seite darf daran nicht scheitern
+                print(f"SCHeimat: abgebrochen ({fehler}) – Seite ohne neue Zeichen gebaut.")
 
 
 if __name__ == "__main__":
