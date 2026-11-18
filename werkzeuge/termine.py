@@ -3,7 +3,7 @@
 Aufruf:  python3 werkzeuge/termine.py
 Holt alle Spiele von heute bis Saisonende (mit Spielort), lässt spielfreie Termine weg,
 nimmt die kommenden Wanderungen aus dem Wanderplan auf seiten/wandern.html und die Dartspiele der Carrot Kings
-aus dem Spielplan auf seiten/dart.html dazu,
+aus dem Spielplan auf seiten/dart.html und die Vereinstermine aus inhalte/vereinstermine.json dazu,
 zeigt verlegte Spiele am neuen Termin und markiert abgesetzte. Die Mannschaftsbezeichnung
 (z. B. „U13 II“) wird von der bisherigen Seite übernommen (über die fussball.de-Mannschaft);
 für neue Mannschaften aus der Altersklasse gebildet.
@@ -194,6 +194,31 @@ def dart_eintrag(s):
             f'<span class="tm-sr"> {e(h)} gegen {e(g)}</span></a></span></li>')
 
 
+VEREINSTERMINE = os.path.join(REPO, "inhalte", "vereinstermine.json")
+
+
+def vereinstermine(heute):
+    """Kommende Vereinstermine (Adventssingen, Kurstadtlauf …) aus inhalte/vereinstermine.json:
+    [{"datum": "JJJJ-MM-TT", "zeit": "HH:MM", "titel": …, "ort": …, "art": …, "link": optional}]"""
+    try:
+        import json
+        liste = json.load(open(VEREINSTERMINE, encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return sorted((v for v in liste if v.get("datum", "") >= heute), key=lambda v: (v["datum"], v.get("zeit", "")))
+
+
+def verein_eintrag(v):
+    e = lambda x: html.escape(x or "", quote=True)
+    ort = f'<small class="tm-platz">{e(v.get("ort"))}</small>' if v.get("ort") else ""
+    link = (f'<a href="{e(v["link"])}" rel="noopener">Mehr erfahren<span class="tm-sr"> {e(v["titel"])}</span></a>'
+            if v.get("link") else "")
+    return (f'<li class="tm-spiel verein"><span class="tm-zeit">{e(v.get("zeit") or "")}</span>'
+            f'<span class="tm-team"><b>Verein</b><small>{e(v.get("art") or "Vereinstermin")}</small></span>'
+            f'<span class="tm-paar"><span class="tm-gegner"><span>{e(v["titel"])}</span></span>{ort}</span>'
+            f'<span class="tm-info"><em class="tm-marke verein">Vereinstermin</em>{link}</span></li>')
+
+
 def tag_kopf(iso):
     d = datetime.date.fromisoformat(iso)
     wt, mo = TAGE[d.weekday()], MONATE[d.month - 1]
@@ -311,7 +336,8 @@ def baue(heute=None):
     wanderungen = wandertermine(heute)
     termine = sorted([(z["datum"], z["zeit"], 0, eintrag(z, z["label"])) for z in spiele]
                      + [(w["datum"], w["zeit"], 1, wander_eintrag(w)) for w in wanderungen]
-                     + [(s["datum"], s["zeit"], 2, dart_eintrag(s)) for s in dartspiele(heute)])
+                     + [(s["datum"], s["zeit"], 2, dart_eintrag(s)) for s in dartspiele(heute)]
+                     + [(v["datum"], v.get("zeit") or "", 3, verein_eintrag(v)) for v in vereinstermine(heute)])
     teile, tag = [], None
     for datum, _, _, li in termine:
         if datum != tag:
@@ -359,7 +385,7 @@ def baue(heute=None):
     open(SEITE, "w", encoding="utf-8").write(neu_seite)
     print(f"{len(spiele)} Spiele an {len({z['datum'] for z in spiele})} Tagen, "
           f"{sum(1 for z in spiele if z.get('verlegt'))} verlegt, {sum(1 for z in spiele if z.get('abgesetzt'))} abgesetzt, "
-          f"{len(wanderungen)} Wanderungen, {len(dartspiele(heute))} Dartspiele.")
+          f"{len(wanderungen)} Wanderungen, {len(dartspiele(heute))} Dartspiele, {len(vereinstermine(heute))} Vereinstermine.")
     # Für den täglichen Abgleich: Kurzbericht als Commit-Text
     if os.environ.get("TERMINE_BERICHT"):
         open(os.environ["TERMINE_BERICHT"], "w", encoding="utf-8").write(

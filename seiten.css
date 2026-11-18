@@ -462,3 +462,6 @@ body{margin:0;background:#fff}
 /* Termine: Dartspiele der Carrot Kings */
 .tm-marke.dart{background:#ee7b2c}
 .tm-spiel.dart .tm-team b{color:#c85f14}
+/* Termine: Vereinstermine (Adventssingen, Kurstadtlauf …) */
+.tm-marke.verein{background:#b8862b}
+.tm-spiel.verein .tm-team b{color:#9a6f1e}
