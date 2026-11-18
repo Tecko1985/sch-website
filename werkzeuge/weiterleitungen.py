@@ -36,7 +36,7 @@ SEITEN_FEST = {
     "impressum-2": "seiten/impressum.html",
     "datenschutz": "seiten/datenschutz.html",
     "news": "seiten/news.html",
-    "anmelden": "https://sc1911.clubdach.de/mitgliedsportal/",  # WordPress-Login -> Mitgliedsportal
+    "anmelden": "seiten/login.html",  # WordPress-Login -> Login-Auswahl (seit 18.11.2026; auf dem Server von Hand: R=302)
     "startseite": "",
     "home": "",
 }
