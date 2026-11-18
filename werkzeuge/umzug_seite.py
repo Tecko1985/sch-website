@@ -21,7 +21,7 @@ def data(pfad, typ):
 def logo_klein():
     # Wappen auf 240 px Hoehe (reicht fuer 104 px Anzeige auch auf Retina-Handys)
     from PIL import Image
-    im = Image.open(os.path.join(REPO, "assets/logo.png"))
+    im = Image.open(os.path.join(REPO, "assets/logo.png")).convert("RGBA")  # Logo ist seit 18.11. eine 256-Farben-PNG
     im = im.resize((round(im.width * 240 / im.height), 240), Image.LANCZOS)
     puffer = io.BytesIO()
     im.save(puffer, "PNG", optimize=True)
