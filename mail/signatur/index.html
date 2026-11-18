@@ -4,6 +4,9 @@
 .sg-form label{display:block;font-weight:600;margin:10px 0 4px}
 .sg-form input{width:100%;box-sizing:border-box;font:inherit;padding:9px 11px;border:2px solid #1b2d4f;border-radius:8px}
 .sg-tipp{font-size:.85em;opacity:.8;margin:2px 0 0}
+.sg-mailzeile{display:flex;align-items:center;border:2px solid #1b2d4f;border-radius:8px;overflow:hidden;background:#fff}
+.sg-form .sg-mailzeile input{flex:1 1 auto;min-width:0;border:0;border-radius:0}
+.sg-mailzeile span{flex:0 0 auto;padding:9px 10px;background:#eef1f6;color:#1b2d4f;font-size:.9em;white-space:nowrap}
 .sg-vorschau{border:1px solid #d6dbe4;border-radius:10px;padding:16px;background:#fff;overflow-x:auto}
 .sg-vorschau-titel{font-size:.85em;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin:0 0 8px}
 .sg-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
@@ -32,7 +35,8 @@
 <input id="sg-tel" type="tel" autocomplete="tel" placeholder="+49 3606 612202">
 <p class="sg-tipp">Leer lassen, dann fällt die Zeile weg.</p>
 <label for="sg-mail">Vereins-Mail-Adresse</label>
-<input id="sg-mail" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="max.mustermann@sc1911-heiligenstadt.de">
+<div class="sg-mailzeile"><input id="sg-mail" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="max.mustermann"><span aria-hidden="true">@sc1911-heiligenstadt.de</span></div>
+<p class="sg-tipp">Baut sich aus deinem Namen. Nur ändern, wenn deine Adresse anders lautet.</p>
 </form>
 
 <div>
@@ -129,10 +133,37 @@
   var vorschau = document.getElementById('sg-vorschau');
   var meldung = document.getElementById('sg-meldung');
 
+  // Adresse = vorname.nachname, klein, Umlaute ausgeschrieben. Mehrere Vornamen mit Bindestrich.
+  function teil(t) {
+    return t.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9-]/g, '');
+  }
+  function ausName(name) {
+    var w = name.trim().split(/\s+/).map(teil).filter(Boolean);
+    if (w.length < 2) return w.join('');
+    return w.slice(0, -1).join('-') + '.' + w[w.length - 1];
+  }
+  function sauber(t) {
+    return t.split('@')[0].toLowerCase().replace(/\s+/g, '');
+  }
+  var mailHand = false;
+
   try {
     var alt = JSON.parse(localStorage.getItem('sch-signatur') || '{}');
     felder.forEach(function (f) { if (typeof alt[f] === 'string') el[f].value = alt[f]; });
+    el.mail.value = sauber(el.mail.value);
+    mailHand = alt.mailHand === true;
   } catch (e) {}
+  if (!mailHand) el.mail.value = ausName(el.name.value);
+
+  el.name.addEventListener('input', function () {
+    if (!mailHand) el.mail.value = ausName(el.name.value);
+  });
+  el.mail.addEventListener('input', function () {
+    var v = sauber(el.mail.value);
+    if (v !== el.mail.value) el.mail.value = v;
+    mailHand = v !== '' && v !== ausName(el.name.value);
+  });
 
   function esc(t) {
     return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -140,7 +171,7 @@
   function werte() {
     var w = {};
     felder.forEach(function (f) { w[f] = el[f].value.trim(); });
-    if (w.mail && w.mail.indexOf('@') < 0) w.mail += '@' + DOMAIN;
+    w.mail = w.mail ? w.mail + '@' + DOMAIN : '';
     return w;
   }
   function telLink(t) {
@@ -190,6 +221,7 @@
     try {
       var s = {};
       felder.forEach(function (f) { s[f] = el[f].value; });
+      s.mailHand = mailHand;
       localStorage.setItem('sch-signatur', JSON.stringify(s));
     } catch (e) {}
   }
