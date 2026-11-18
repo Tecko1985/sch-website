@@ -72,7 +72,7 @@ jobs:
       # Feste Versionen (Abnahme 08.10.2026 AB3-7): Dieser Job hat spaeter IG_TOKEN/SECRETS_PAT in der
       # Umgebung, ein neu veroeffentlichtes Paket soll hier nicht ungeprueft mitlaufen. Bei Bedarf von Hand
       # anheben (nur Versionen, die mindestens zwei Wochen alt sind).
-      - run: pip install --quiet pillow==12.3.0 tzdata==2026.4
+      - run: pip install --quiet pillow==12.3.0 numpy==2.2.6 tzdata==2026.4
 
       # Beitraege aus der Redaktion (/admin/, inhalte/beitraege/*.json) als Seiten einbauen,
       # News-Liste und Startseiten-Karten aktualisieren, danach das neue Design (/neu/) neu erzeugen.
@@ -217,7 +217,7 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
-      - run: pip install --quiet pillow==12.3.0 tzdata==2026.4
+      - run: pip install --quiet pillow==12.3.0 numpy==2.2.6 tzdata==2026.4
       - name: Echte Seite bauen
         run: |
           python werkzeuge/umzug.py live "$RUNNER_TEMP/seite"

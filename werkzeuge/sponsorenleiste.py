@@ -1,6 +1,6 @@
 """Sponsorenleiste aus einem Logo-Bild mit einfarbigem Hintergrund bauen (lokal, braucht Pillow und numpy).
 Aufruf: python3 werkzeuge/sponsorenleiste.py LOGOS.png assets/sponsorenleiste/<mannschaft>.png TAFEL.png
-Die Logos müssen 2 x 2 angeordnet sein wie im Bild der Ersten (Bereiche unten ggf. anpassen)."""
+Die Logos müssen 2 x 2 angeordnet sein wie im Bild der Ersten – sonst die Bereiche als 4. Argument angeben."""
 import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -18,6 +18,9 @@ frei = Image.fromarray(rgba)
 
 # Die vier Logos (2 x 2 im Eingabebild): Bereiche grob, danach eng auf den Inhalt zuschneiden
 bereiche = [(0, 0, 900, 420), (900, 0, 1920, 420), (0, 440, 990, 745), (900, 700, 1920, 1080)]
+# Andere Anordnung: Bereiche als 4. Argument, z. B. "150,110,1220,380;150,540,650,880;930,620,1860,900"
+if len(sys.argv) > 4:
+    bereiche = [tuple(int(z) for z in b.split(",")) for b in sys.argv[4].split(";")]
 logos = []
 for b in bereiche:
     teil = frei.crop(b)

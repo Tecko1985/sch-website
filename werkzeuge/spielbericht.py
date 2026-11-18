@@ -767,6 +767,9 @@ def leiste_erlaubt(d):
 
 
 def sponsoren_bild(team):
+    # Alle Nachwuchsmannschaften haben eine gemeinsame Leiste (assets/sponsorenleiste/jugend.webp)
+    if team in MANNSCHAFTEN and team not in ("m1", "m2"):
+        team = "jugend"
     for endung in ("webp", "png"):
         pfad = f"{SPONSOREN}/{team}.{endung}"
         if team and os.path.exists(os.path.join(REPO, pfad)):

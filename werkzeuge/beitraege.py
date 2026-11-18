@@ -321,8 +321,10 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     # sp-kopfbild: Bild ganz und ungeschnitten, Rubrik/Titel/Datum darunter (seiten.css)
     # Neue Beiträge (ab SPONSOREN_AB oder mit neu hochgeladenem Titelbild): SCHeimat-Zeichen unten rechts bei jeder
     # Rubrik, bei Vorberichten zusätzlich die Sponsorenleiste der Mannschaft unten links. Ältere Grafiken haben beides schon.
-    logos = (spielbericht.sponsoren_html(team if d.get("rubrik") == "Vorbericht" else "", "../", marke=not d.get("ohne_marke"))
-             if spielbericht.leiste_erlaubt(d) else "")
+    # Seit 18.11.2026 setzt werkzeuge/schheimat.py das Zeichen beim Bau ins Bild selbst (auch in Galerien, nur wo es
+    # fehlt); deshalb hier keine Einblendung mehr – sonst stünde es doppelt. Vorberichte: Leiste im festen Kopfbild.
+    logos = (spielbericht.sponsoren_html(team, "../", marke=False)
+             if d.get("rubrik") == "Vorbericht" and spielbericht.leiste_erlaubt(d) else "")
     # Aufbau wie bei Werder Bremen: weißer Kopf mit Rubrik, großer Überschrift, Unterzeile und Datum/Lesezeit,
     # darunter das Titelbild über die ganze Breite (ungeschnitten) mit Bildnachweis, dann der Text
     text = d["text"]
@@ -631,6 +633,17 @@ def main():
     print(f"Termine: {n} Spiele auf die eigene Spielseite verlinkt.")
     open(p, "w", encoding="utf-8").write(spiele.verlinke_berichte(start, sichtbar))
     print(f"{len(beitraege)} Redaktionsbeiträge eingebaut, {len(liste)} Beiträge in der Liste.")
+    # SCHeimat-Zeichen in Galerie- und Beitragsbilder setzen, wo es noch fehlt (nur im Ausgabeordner; nie in ein
+    # Git-Repo, damit die Originale unverändert bleiben). Braucht Pillow und numpy.
+    if os.path.isdir(os.path.join(ziel, ".git")):
+        print("SCHeimat: Ziel ist ein Git-Repo – Zeichen nicht gesetzt.")
+    else:
+        try:
+            import schheimat
+        except ImportError as fehler:
+            print(f"SCHeimat: Zeichen nicht gesetzt ({fehler}).")
+        else:
+            schheimat.main(ziel)
 
 
 if __name__ == "__main__":
