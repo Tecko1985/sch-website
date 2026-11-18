@@ -2,7 +2,8 @@
 
 Aufruf:  python3 werkzeuge/termine.py
 Holt alle Spiele von heute bis Saisonende (mit Spielort), lässt spielfreie Termine weg,
-nimmt die kommenden Wanderungen aus dem Wanderplan auf seiten/wandern.html dazu,
+nimmt die kommenden Wanderungen aus dem Wanderplan auf seiten/wandern.html und die Dartspiele der Carrot Kings
+aus dem Spielplan auf seiten/dart.html dazu,
 zeigt verlegte Spiele am neuen Termin und markiert abgesetzte. Die Mannschaftsbezeichnung
 (z. B. „U13 II“) wird von der bisherigen Seite übernommen (über die fussball.de-Mannschaft);
 für neue Mannschaften aus der Altersklasse gebildet.
@@ -161,6 +162,38 @@ def wander_eintrag(w):
             f'<a href="wandern.html#wanderplan">Zum Wanderplan<span class="tm-sr"> {e(w["titel"])}</span></a></span></li>')
 
 
+DARTSEITE = os.path.join(REPO, "seiten", "dart.html")
+
+
+def dartspiele(heute):
+    """Kommende Spiele der Carrot Kings aus dem Spielplan auf seiten/dart.html (eine Quelle)."""
+    try:
+        s = open(DARTSEITE, encoding="utf-8").read()
+    except OSError:
+        return []
+    aus = []
+    for attr in re.findall(r'<li class="dp-spiel[^"]*"([^>]*)>', s):
+        a = dict(re.findall(r'data-(\w+)="([^"]*)"', attr))
+        if a.get("datum", "") >= heute:
+            aus.append({"datum": a["datum"], "zeit": a.get("zeit") or "14:00", "team": html.unescape(a.get("team", "")),
+                        "heim": a.get("heim") == "1", "gegner": html.unescape(a.get("gegner", ""))})
+    return aus
+
+
+def dart_eintrag(s):
+    e = lambda x: html.escape(x, quote=True)
+    wir = "Carrot Kings Heiligenstadt"
+    h, g = (wir, s["gegner"]) if s["heim"] else (s["gegner"], wir)   # Heimmannschaft zuerst
+    ort = '<small class="tm-platz">Gastwirtschaft „Schwarzer Adler“, Heiligenstadt</small>' if s["heim"] else ""
+    marke = '<em class="tm-marke dart">Heimspiel</em>' if s["heim"] else '<em class="tm-marke aus">Auswärts</em>'
+    return (f'<li class="tm-spiel dart{" heim" if s["heim"] else ""}"><span class="tm-zeit">{s["zeit"]}</span>'
+            f'<span class="tm-team"><b>Dart · {e(s["team"])}</b><small>Carrot Kings</small></span>'
+            f'<span class="tm-paar"><span class="tm-gegner"><span>{e(h)}</span><i aria-hidden="true">:</i>'
+            f'<span>{e(g)}</span></span>{ort}</span>'
+            f'<span class="tm-info">{marke}<a href="dart.html#spielplan">Zum Spielplan'
+            f'<span class="tm-sr"> {e(h)} gegen {e(g)}</span></a></span></li>')
+
+
 def tag_kopf(iso):
     d = datetime.date.fromisoformat(iso)
     wt, mo = TAGE[d.weekday()], MONATE[d.month - 1]
@@ -277,7 +310,8 @@ def baue(heute=None):
 
     wanderungen = wandertermine(heute)
     termine = sorted([(z["datum"], z["zeit"], 0, eintrag(z, z["label"])) for z in spiele]
-                     + [(w["datum"], w["zeit"], 1, wander_eintrag(w)) for w in wanderungen])
+                     + [(w["datum"], w["zeit"], 1, wander_eintrag(w)) for w in wanderungen]
+                     + [(s["datum"], s["zeit"], 2, dart_eintrag(s)) for s in dartspiele(heute)])
     teile, tag = [], None
     for datum, _, _, li in termine:
         if datum != tag:
@@ -325,7 +359,7 @@ def baue(heute=None):
     open(SEITE, "w", encoding="utf-8").write(neu_seite)
     print(f"{len(spiele)} Spiele an {len({z['datum'] for z in spiele})} Tagen, "
           f"{sum(1 for z in spiele if z.get('verlegt'))} verlegt, {sum(1 for z in spiele if z.get('abgesetzt'))} abgesetzt, "
-          f"{len(wanderungen)} Wanderungen.")
+          f"{len(wanderungen)} Wanderungen, {len(dartspiele(heute))} Dartspiele.")
     # Für den täglichen Abgleich: Kurzbericht als Commit-Text
     if os.environ.get("TERMINE_BERICHT"):
         open(os.environ["TERMINE_BERICHT"], "w", encoding="utf-8").write(
