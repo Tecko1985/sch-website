@@ -44,7 +44,7 @@
 <button class="sg-knopf sg-zweit" type="button" id="sg-html">HTML-Code kopieren</button>
 </div>
 <p class="sg-meldung" id="sg-meldung" role="status" aria-live="polite"></p>
-<p class="sg-klein"><b>Signatur kopieren</b> passt für Outlook, Gmail und Apple Mail am Mac. <b>Nur Text</b> nimmst du am Handy. <b>HTML-Code</b> brauchst du nur für Thunderbird.</p>
+<p class="sg-klein"><b>Signatur kopieren</b> passt für Outlook, Gmail und Apple Mail am Mac. <b>Nur Text</b> nimmst du am Handy. <b>HTML-Code</b> brauchst du nur für Thunderbird. Am Handy kommt die Signatur ohne Logo.</p>
 </div>
 </div>
 
@@ -162,7 +162,12 @@
     if (w.tel) k += '<br>Telefon: <a href="tel:' + esc(telLink(w.tel)) + '" style="' + A + '">' + esc(w.tel) + '</a>';
     if (w.mail) k += '<br><a href="mailto:' + esc(w.mail) + '" style="' + A + '">' + esc(w.mail) + '</a>';
     k += '<br><a href="https://www.' + DOMAIN + '" style="' + A + '">www.' + DOMAIN + '</a>';
-    z.push('<tr><td style="' + F + 'padding:10px 0 0 0;border-top:2px solid #1b2d4f">' + k + '</td></tr>');
+    var logo = '<img src="https://www.' + DOMAIN + '/mail/signatur/logo.png" width="70" height="80" alt="1. SC 1911 Heiligenstadt" style="display:block;width:70px;height:80px;border:0">';
+    z.push('<tr><td style="' + F + 'padding:10px 0 0 0;border-top:2px solid #1b2d4f">'
+      + '<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>'
+      + '<td style="padding:2px 14px 0 0;vertical-align:top">' + logo + '</td>'
+      + '<td style="' + F + 'font-size:13px;line-height:1.45;color:#222222;vertical-align:top">' + k + '</td>'
+      + '</tr></table></td></tr>');
     z.push('<tr><td style="' + F + 'padding:10px 0 0 0;font-size:11px;color:#666666">Amtsgericht Heilbad Heiligenstadt, VR 83</td></tr>');
     z.push('</table>');
     return z.join('');
