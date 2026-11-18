@@ -76,3 +76,11 @@ Danach von Hand:
   Systemnutzer-Tokens ohne Ablauf. Findet `.github/instagram.py` die Konto-ID nicht, Repo-Variable `IG_ID` bzw.
   `IG_ID_NACHWUCHS` setzen (Nummer 1784… aus der Meta-App).
 - Auftragsverarbeitungsvertrag mit Hetzner prüfen (in der konsoleH abschließbar).
+
+## Mail-Auto-Einrichtung (18.11.2026)
+
+- Seite für Mitglieder: `https://www.sc1911-heiligenstadt.de/mail/` (nicht im Menü). iPhone/Mac-Profil kommt aus `mail/profil.php`.
+- Thunderbird: `mail/config-v1.1.xml`, Outlook klassisch: `autodiscover/autodiscover.php`.
+- Server-Name immer `dedi1977.your-server.de` – nur der passt zum Zertifikat (`*.your-server.de`).
+- Die `.htaccess` auf dem Server hat dafür vier Regeln **vor** der www-Umleitung (Block „Mail-Auto-Einrichtung“).
+  Wird die `.htaccess` neu geschrieben, diesen Block wieder einsetzen. Sicherung davor: `~/htaccess-vor-mail-20261118`.

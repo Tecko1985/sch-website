@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Auto-Einrichtung für Thunderbird und andere Mail-Programme (Mozilla-Autoconfig).
+     Abgerufen über https://sc1911-heiligenstadt.de/.well-known/autoconfig/mail/config-v1.1.xml
+     (die .htaccess auf dem Server leitet dorthin um). Server: dedi1977.your-server.de –
+     nur dieser Name passt zum Zertifikat, mail.sc1911-heiligenstadt.de gibt eine Warnung. -->
+<clientConfig version="1.1">
+  <emailProvider id="sc1911-heiligenstadt.de">
+    <domain>sc1911-heiligenstadt.de</domain>
+    <displayName>1. SC 1911 Heiligenstadt</displayName>
+    <displayShortName>SC 1911</displayShortName>
+    <incomingServer type="imap">
+      <hostname>dedi1977.your-server.de</hostname>
+      <port>993</port>
+      <socketType>SSL</socketType>
+      <authentication>password-cleartext</authentication>
+      <username>%EMAILADDRESS%</username>
+    </incomingServer>
+    <outgoingServer type="smtp">
+      <hostname>dedi1977.your-server.de</hostname>
+      <port>465</port>
+      <socketType>SSL</socketType>
+      <authentication>password-cleartext</authentication>
+      <username>%EMAILADDRESS%</username>
+    </outgoingServer>
+    <documentation url="https://www.sc1911-heiligenstadt.de/mail/">
+      <descr lang="de">Mail einrichten</descr>
+    </documentation>
+  </emailProvider>
+</clientConfig>
