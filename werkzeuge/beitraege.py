@@ -317,6 +317,16 @@ def lade_beitraege():
 
 
 # ---------------------------------------------------------------- Beitragsseite
+def wochenend_heimspiel(bild):
+    """Heimspiel laut Titelbild (werkzeuge/heimspiel_bild.py)? Ohne Pillow/numpy oder bei Fehlern: nein."""
+    try:
+        import heimspiel_bild
+        return heimspiel_bild.heimspiel_ohne_leiste(os.path.join(REPO, bild))
+    except Exception as e:  # die Erkennung darf den Bau nicht abbrechen
+        print(f"  Heimspiel-Erkennung {bild}: übersprungen ({e})")
+        return False
+
+
 def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     t = vorlage
     e = lambda s: html.escape(s, quote=True)
@@ -337,6 +347,11 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     # fehlt); deshalb hier keine Einblendung mehr – sonst stünde es doppelt. Vorberichte: Leiste im festen Kopfbild.
     logos = (spielbericht.sponsoren_html(team, "../", marke=False)
              if d.get("rubrik") == "Vorbericht" and spielbericht.leiste_erlaubt(d) else "")
+    # „Alle unsere Spiele am Wochenende“: bei einem Heimspiel der 1. Mannschaft (unser Wappen links im Titelbild)
+    # die Sponsorenleiste der 1. Mannschaft unten links ins Titelbild – nur auf der Beitragsseite, die Karten auf
+    # der Startseite zeigen das Bild ohne Leiste
+    if not logos and d["bild"] and "spiele am wochenende" in d["titel"].lower() and wochenend_heimspiel(d["bild"]):
+        logos = spielbericht.sponsoren_html("m1", "../", marke=False)
     # Aufbau wie bei Werder Bremen: weißer Kopf mit Rubrik, großer Überschrift, Unterzeile und Datum/Lesezeit,
     # darunter das Titelbild über die ganze Breite (ungeschnitten), dann der Text
     text = d["text"]
