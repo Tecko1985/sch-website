@@ -34,4 +34,6 @@
 }
 @media(max-width:767px){.sp-nav .sp-links{max-height:calc(100svh - 72px)}}
 @media(max-width:767px){.sp-nav .sp-marke span{display:inline;font-size:17px}.sp-nav .sp-marke img{height:44px;width:36px}}
+/* Schmale Handys (360-399 px): Logo, Name und Menue-Knopf passten nicht in eine Zeile (Knopf 13 px drueber). */
+@media(max-width:399px){.sp-nav{gap:12px}.sp-nav .sp-marke span{font-size:15px}.sp-nav .sp-menueknopf{padding:0 10px}}
 @media(max-width:359px){.sp-nav .sp-marke span{display:none}}

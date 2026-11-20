@@ -1,4 +1,4 @@
-@import url('menue.css?v=1');
+@import url('menue.css?v=2');
 /* Unterseiten im Stil von Startseite und Spielbericht. Gebaut von werkzeug/seiten-bauen.py */
 body{margin:0;background:#fff}
 .sp-nav div a{color:#fff;font:700 14px 'SCH Barlow',Arial,sans-serif;text-decoration:none;padding:6px 0;border-bottom:3px solid transparent}

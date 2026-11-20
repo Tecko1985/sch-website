@@ -102,7 +102,7 @@ def seite(p, titel, beschreibung, aktiv, kopf, inhalt, skripte, stile=()):
 <link rel="apple-touch-icon" href="{p}../apple-touch-icon.png">
 <link rel="preload" href="{p}fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{p}neu.css?v=3">
-<link rel="stylesheet" href="{p}seite.css?v=1">
+<link rel="stylesheet" href="{p}seite.css?v=2">
 {zusatz}</head>
 <body class="unterseite">
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
@@ -265,7 +265,7 @@ def baue_spielbericht_unterseite(name, s):
     main = main.replace('<main class="sb">', '<div class="sb">', 1)
     main = pfade_unterseite(main)
     out = seite("../", titel, meta(s, "description"), aktiv_fuer(name), "", main,
-                ["../../spielbericht.js?v=3"], ["../../spielbericht.css?v=2026111715"])
+                ["../../spielbericht.js?v=3"], ["../../spielbericht.css?v=2026112001"])
     out = mit_vorab(s, out)
     open(f"neu/seiten/{name}", "w", encoding="utf-8").write(out)
 
@@ -294,7 +294,7 @@ def baue_spielbericht():
     main = pfade_oben(main)
     main = re.sub(r'data-gross="assets/', 'data-gross="../assets/', main)
     out = seite("", titel, meta(s, "description"), "seiten/news.html", "", main,
-                ["../spielbericht.js?v=3"], ["../spielbericht.css?v=2026111715"])
+                ["../spielbericht.js?v=3"], ["../spielbericht.css?v=2026112001"])
     open("neu/spielbericht-erfurt.html", "w", encoding="utf-8").write(out)
 
 

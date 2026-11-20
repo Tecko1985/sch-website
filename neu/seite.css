@@ -20,6 +20,7 @@
 .inhalt h3{font-stretch:112%;font-weight:800;font-size:22px;line-height:1.15;margin-top:1.6em}
 .inhalt>h2:first-child,.inhalt>h3:first-child{margin-top:0}
 .inhalt h3 strong{font-weight:inherit}
+.inhalt :is(h2,h3,h4){overflow-wrap:anywhere} /* lange Strich-Zeilen u. ae. laufen sonst am Handy seitlich raus */
 .inhalt a{text-decoration-color:var(--mittel);text-decoration-thickness:2px}
 .inhalt a:hover{text-decoration-color:currentColor}
 .inhalt ul:not([class]),.inhalt ol:not([class]){padding-left:1.2em}
