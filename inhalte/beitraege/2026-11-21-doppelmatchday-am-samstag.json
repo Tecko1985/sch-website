@@ -1,7 +1,7 @@
 {
   "titel": "DOPPELMATCHDAY! AM SAMSTAG",
   "datum": "2026-11-21",
-  "zeit": "07:30",
+  "zeit": "07:20",
   "rubrik": "Vorbericht",
   "teaser": "",
   "bild": "assets/beitraege/mwp4trxe-xmkw6.webp",
@@ -10,7 +10,6 @@
     "assets/beitraege/mwpgg5i4-9qfw9.webp"
   ],
   "entwurf": false,
-  "geplant": "2026-11-21T07:30",
-  "ohne_marke": true,
+  "geplant": "2026-11-21T07:20",
   "spiel_slug": "1-sc-1911-heiligenstadt-m1-sv-09-arnstadt-m1-261121"
 }
