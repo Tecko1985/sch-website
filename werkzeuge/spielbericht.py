@@ -266,7 +266,9 @@ def text_abschnitte(text):
     """Gesäuberten Beitragstext in Abschnitte im Spielbericht-Stil umbauen.
     h2 oder eine kurze Einzelzeile = kleine Rubrik (Kicker), h3 oder die erste Zeile eines Absatzes
     vor einem Zeilenumbruch = Zwischenüberschrift."""
-    bloecke = re.findall(r"<(p|h2|h3|ul|ol|blockquote)>(.*?)</\1>", text or "", re.S)
+    # Bilder im Text (figure aus der Redaktion) bleiben an ihrer Stelle: am Ende des Abschnitts davor
+    text = re.sub(r'<figure class="[\w -]*">', "<figure>", text or "")
+    bloecke = re.findall(r"<(p|h2|h3|ul|ol|blockquote|figure)>(.*?)</\1>", text, re.S)
     abschnitte, kicker, aktuell = [], None, None
 
     def neu(h3=""):
@@ -293,6 +295,11 @@ def text_abschnitte(text):
                 neu(k)
                 aktuell["teile"].append(absaetze(rest))
                 continue
+        if tag == "figure":
+            if aktuell is None:
+                neu()
+            aktuell["teile"].append(f"<figure>{inner}</figure>")
+            continue
         if aktuell is None or kicker:
             neu()
         if tag == "p":

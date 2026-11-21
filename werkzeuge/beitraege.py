@@ -389,7 +389,13 @@ def vorbericht_team(d, sb):
         return (sb.get("spiel") or {}).get("mannschaft") or "m1"
     if (d.get("spiel") or {}).get("mannschaft"):
         return d["spiel"]["mannschaft"]
-    text = (d.get("titel") or "") + " " + (d.get("text") or "")
+    # In der Redaktion zugeordnetes Spiel (FuPa-Slug „1-sc-1911-heiligenstadt-m1-…“) – vor dem Text, damit ein
+    # Doppel-Vorbericht (1. und 2. Mannschaft in einem Beitrag) den Kopf des zugeordneten Spiels bekommt
+    slug = d.get("spiel_slug") or ""
+    for team in sorted(spielbericht.MANNSCHAFTEN, key=len, reverse=True):   # „u17-1“ vor „u17“
+        if f"heiligenstadt-{team}-" in slug:
+            return team
+    text =(d.get("titel") or "") + " " + (d.get("text") or "")
     if re.search(r"(?i)kreisoberliga|reserve|papst-elf|SCH II\b|Heiligenstadt II\b", text):
         return "m2"
     if re.search(r"(?i)thüringenliga|verbandsliga|ludwig-elf", text):
