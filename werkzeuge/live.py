@@ -20,6 +20,7 @@ import fupa_ticker  # noqa: E402
 import spiele  # noqa: E402
 import spielbericht  # noqa: E402
 import spielerbilder  # noqa: E402
+import spielvorschau  # noqa: E402
 
 VORLAUF = datetime.timedelta(minutes=45)      # so lange vor Anpfiff geht es los
 SPIELDAUER = datetime.timedelta(minutes=180)  # danach gilt ein Spiel ohne FuPa-Ende als vorbei
@@ -103,6 +104,20 @@ def wechselkarte(kuerzel, e):
     return {"wk": karte}
 
 
+def ohne_namen(e):
+    """Ereignis ohne Spielernamen (Datenschutz Minderjährige, wie die Ergebnisseiten: Namen erst ab U17).
+    Tor/Wechsel/Karte behalten Minute, Art, Team und Stand; freie FuPa-Texte (können Namen enthalten) fallen weg."""
+    if e["art"] == "text":
+        return None
+    x = dict(e, text="")
+    if e["art"] in ("gelb", "karte"):
+        x["kopf"] = e["kopf"].split(" für ")[0]
+        x["text"] = e["team"] + "." if e.get("team") else ""
+    for k in ("_tor", "_vorlage", "_torart", "_rein", "_raus", "_karte"):
+        x.pop(k, None)
+    return x
+
+
 def lage(slug, kuerzel):
     m = fupa_ticker.spiel(slug)
     if not mit_ticker(m):
@@ -115,7 +130,10 @@ def lage(slug, kuerzel):
     angepfiffen = any(e["art"] == "pfiff" for e in ev) or m.get("section") == "LIVE"
     status = "ende" if abpfiff or m.get("section") == "POST" else "live" if angepfiffen else "vor"
     minute = next((e["min"] for e in ev if e["sort"] > 0), "") if status == "live" else ""
-    auf = fupa_ticker.mit_ereignissen(aufstellung(slug, m), ev)
+    if spielvorschau.namen_erlaubt(kuerzel):
+        auf = fupa_ticker.mit_ereignissen(aufstellung(slug, m), ev)
+    else:  # jüngere Nachwuchsmannschaften: keine Aufstellung, Ereignisse ohne Namen
+        auf, ev = None, [x for x in map(ohne_namen, ev) if x]
     return {
         "slug": slug, "fupa": f"https://www.fupa.net/match/{slug}", "mannschaft": mannschaft(kuerzel),
         "wettbewerb": spiele.wettbewerb((m.get("competition") or {}).get("middleName") or (m.get("competition") or {}).get("name")),
