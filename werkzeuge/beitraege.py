@@ -372,7 +372,7 @@ def baue_seite(ziel, d, vorlage, zusatz="", team=""):
     if d["galerie"]:
         inhalt += '\n<div class="sp-galerie">' + "".join(f'<img src="../{g}" alt="" loading="lazy">' for g in d["galerie"]) + "</div>"
     # Großansicht zum Durchblättern (galerie.js): Titelbild, Bilder im Text und Galerie
-    inhalt += f'\n<script src="../galerie.js?v=1" data-fotograf="{e(fotograf)}" defer></script>'
+    inhalt += f'\n<script src="../galerie.js?v=2" data-fotograf="{e(fotograf)}" defer></script>'
     main = f'<main class="sch-report sp-seite sp-neu">{held}<article class="sp-inhalt">\n{inhalt}\n</article>'
     t = re.sub(r'<main class="sch-report sp-seite">.*?</article>', lambda m: main, t, count=1, flags=re.S)
     if d.get("ab"):

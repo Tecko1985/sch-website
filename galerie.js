@@ -57,6 +57,15 @@
     if (ev.key === 'Escape') zu();
     if (ev.key === 'ArrowLeft') zeige(pos - 1);
     if (ev.key === 'ArrowRight') zeige(pos + 1);
+    // Fokusfalle (Gesamtprüfung 22.11.2026 WS-3): Tab/Umschalt+Tab bleiben bei den Knöpfen der Großansicht
+    if (ev.key === 'Tab') {
+      var knoepfe = [].filter.call(box.querySelectorAll('button'), function (k) { return !k.hidden; });
+      var i = knoepfe.indexOf(document.activeElement);
+      if (ev.shiftKey ? i <= 0 : (i < 0 || i === knoepfe.length - 1)) {
+        ev.preventDefault();
+        knoepfe[ev.shiftKey ? knoepfe.length - 1 : 0].focus();
+      }
+    }
   });
   // Wischen auf dem Handy
   var x0 = null;
