@@ -153,8 +153,12 @@ jobs:
         with:
           path: _site
 
+      # Seit dem Umzug (17.11.) ist Hetzner die echte Seite, Pages nur noch Nebenkopie (Michel 22.11.: bleibt an).
+      # Seit 21.11. ~18:30 findet deploy-pages das eben hochgeladene Artefakt nicht ("Found 0 artifact(s)");
+      # ein Fehlschlag hier darf den Hetzner-Upload nicht mehr blockieren (Gesamtpruefung 22.11.).
       - id: deployment
         if: steps.entscheiden.outputs.veroeffentlichen == '1'
+        continue-on-error: true
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   # Test-Kopie auf dem Webspace bei Hetzner: www.sc1911-heiligenstadt.de/neu-test/ (UMZUG.md).
