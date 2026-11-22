@@ -241,6 +241,31 @@ jobs:
         with:
           name: seite-live
           path: ${{ runner.temp }}/seite
+      # Gesamtpruefung 22.11.2026 WS-1: Hetzner fuehrt in public_html PHP aus. Das Artefakt baut Repo-Code
+      # (live-bauen) -- wer auf main schreiben kann (auch ein Redaktions-Token), koennte sonst eine .php
+      # einschleusen, die als Konto sccnld laeuft (gleiche Reichweite wie der Schluessel). Darum hier, ohne
+      # Repo-Code und VOR dem Schluessel: Dateien, die der Server ausfuehren oder als Einstellung lesen kann,
+      # nur nach Positivliste mit festem SHA-256 (Inhalt wie im Repo, LF). Wer mail/profil.php oder
+      # autodiscover/autodiscover.php aendert, traegt den neuen Hash hier ein (das braucht Workflow-Recht).
+      # Jede andere solche Datei (neue .php, .phtml, .htaccess in Unterordnern, .user.ini ...) bricht ab.
+      - name: Nur erlaubte Server-Dateien
+        run: |
+          cd "$RUNNER_TEMP/seite"
+          fehler=0
+          while IFS= read -r -d '' f; do
+            f=${f#./}
+            case "$f" in
+              mail/profil.php) soll=c34c2f51ef11afdb11da2a3c8c11c7acca0a390b7199f83496e1d5de50392c27 ;;
+              autodiscover/autodiscover.php) soll=46df28d7a74ebee7420bb12e9fb6f013cb16d01724c44806e3fec5652aaf5b6c ;;
+              *) echo "::error::Nicht erlaubt im Webordner: $f"; fehler=1; continue ;;
+            esac
+            ist=$(sha256sum "$f" | cut -d' ' -f1)
+            if [ "$ist" != "$soll" ]; then echo "::error::$f geaendert (sha256 $ist) -- Hash im Job hetzner (seite.yml) pruefen"; fehler=1; fi
+          done < <(find . \( -iname '*.php*' -o -iname '*.phtml*' -o -iname '*.phar*' -o -iname '*.pht' -o -iname '*.phps' \
+            -o -iname '*.cgi' -o -iname '*.pl' -o -iname '*.py' -o -iname '*.sh' -o -iname '*.shtml' -o -iname '*.shtm' -o -iname '*.stm' \
+            -o -iname '.htaccess' -o -iname '.htpasswd' -o -iname '.user.ini' -o -iname 'php.ini' \) -print0)
+          if [ "$fehler" != 0 ]; then echo "::error::Nichts hochgeladen."; exit 1; fi
+          echo "Nur erlaubte Server-Dateien."
       - name: Echte Seite zu Hetzner
         env:
           HETZNER_SSH_KEY: ${{ secrets.HETZNER_SSH_KEY }}
