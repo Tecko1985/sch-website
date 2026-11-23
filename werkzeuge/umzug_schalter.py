@@ -63,7 +63,7 @@ def main():
             sys.exit("newsletter.html: Hinweis zur Auslieferung (GitHub Pages) nicht gefunden – "
                      "Text geändert? NL_GITHUB in werkzeuge/umzug_schalter.py anpassen.")
 
-    zaehler = {"noindex": 0, "adressen": 0, "rechtliches": 0}
+    zaehler = {"noindex": 0, "adressen": 0, "rechtliches": 0, "statistik": 0}
     seiten = []
     for wurzel, ordner, dateien in os.walk(ziel):
         ordner[:] = [o for o in ordner if not o.startswith(".")]
@@ -89,6 +89,13 @@ def main():
                     zaehler["rechtliches"] += n
                 if not entwurf and rel != "404.html":
                     seiten.append(rel)
+                # Besucherzähler (assets/zaehler.js -> statistik/zaehlen.php) nur auf der echten Seite, nicht in
+                # Entwürfen, Redaktion und Webmail; nur einmal je Seite
+                if (not entwurf and basis == "/" and rel != "404.html" and not rel.startswith("mail/")
+                        and "assets/zaehler.js" not in neu and "</body>" in neu):
+                    i = neu.rfind("</body>")
+                    neu = neu[:i] + '<script src="/assets/zaehler.js?v=1" defer></script>' + neu[i:]
+                    zaehler["statistik"] += 1
             if neu != text:
                 open(pfad, "w", encoding="utf-8", errors="surrogateescape", newline="").write(neu)
 
@@ -101,7 +108,8 @@ def main():
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + eintraege + "</urlset>\n")
     print(f"noindex entfernt: {zaehler['noindex']}, Adressen umgestellt: {zaehler['adressen']}, "
-          f"Impressum/Datenschutz-Links: {zaehler['rechtliches']}, Sitemap: {len(seiten)} Seiten")
+          f"Impressum/Datenschutz-Links: {zaehler['rechtliches']}, Sitemap: {len(seiten)} Seiten, "
+          f"Besucherzähler: {zaehler['statistik']} Seiten")
 
 
 if __name__ == "__main__":

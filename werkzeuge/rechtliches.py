@@ -16,7 +16,7 @@ import re
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VORLAGE = "seiten/datenschutz.html"
-STAND = "17.11.2026"
+STAND = "23.11.2026"
 
 IMPRESSUM = """
 <h2>Angaben gemäß § 5 DDG</h2>
@@ -40,14 +40,15 @@ IMPRESSUM = """
 """
 
 DATENSCHUTZ = """
-<p class="fb-lead">Hier steht, welche Daten beim Besuch dieser Seite anfallen, wofür wir sie brauchen und welche Rechte ihr habt. Kurz gesagt: keine Cookies, keine Besucherzählung, nichts von Werbenetzwerken.</p>
+<p class="fb-lead">Hier steht, welche Daten beim Besuch dieser Seite anfallen, wofür wir sie brauchen und welche Rechte ihr habt. Kurz gesagt: keine Cookies, nur eine eigene Besucherzählung ohne IP-Adressen, nichts von Werbenetzwerken.</p>
 <h2>1. Verantwortlich</h2>
 <p>1. SC 1911 Heiligenstadt e.V.<br>Leineberg 2, 37308 Heilbad Heiligenstadt<br>Telefon: +49 3606 612202<br>E-Mail: <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a></p>
 <p>Unseren Datenschutzbeauftragten erreicht ihr über dieselben Kontaktdaten.</p>
 <h2>2. Aufruf der Seite</h2>
 <p>Die Seite liegt auf einem Webserver der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, in Deutschland. Beim Aufruf schickt euer Browser technisch nötige Daten an den Server: IP-Adresse, Datum und Uhrzeit, die aufgerufene Seite, die Seite, von der ihr kommt, sowie Browser und Betriebssystem. Der Server speichert sie für begrenzte Zeit in Protokolldateien. Wir brauchen sie, um die Seite sicher und fehlerfrei auszuliefern und Angriffe zu erkennen (Art. 6 Abs. 1 lit. f DSGVO). Wir führen diese Daten nicht mit anderen zusammen. Hetzner arbeitet für uns als Auftragsverarbeiter nach Art. 28 DSGVO.</p>
-<h2>3. Keine Cookies, keine Statistik</h2>
-<p>Die Seite setzt keine Cookies und zählt keine Besuche. Schriften, Bilder und Skripte liegen auf unserem eigenen Webserver; beim Anschauen werden keine Inhalte von Google, Facebook oder anderen Anbietern nachgeladen. Ausnahmen stehen unten bei Newsletter, FuPa und Live-Ticker.</p>
+<h2>3. Keine Cookies, eigene Besucherzählung</h2>
+<p>Die Seite setzt keine Cookies. Schriften, Bilder und Skripte liegen auf unserem eigenen Webserver; beim Anschauen werden keine Inhalte von Google, Facebook oder anderen Anbietern nachgeladen. Ausnahmen stehen unten bei Newsletter, FuPa und Live-Ticker.</p>
+<p>Um zu sehen, welche Beiträge gelesen werden, zählen wir die Aufrufe mit einem eigenen Zähler auf unserem Webserver bei Hetzner. Beim Aufruf einer Seite schickt euer Browser dazu die Adresse der Seite, ob ihr von einer anderen Seite kommt, den Namen dieser Seite (zum Beispiel google.com, ohne genaue Adresse) und die Art des Geräts (Handy oder Computer) an den Server. Gespeichert werden davon nur Summen je Tag. Eure IP-Adresse, euer Browser oder eine Kennung werden dafür nicht gespeichert; es wird nichts in eurem Browser abgelegt, und die Zahlen lassen sich keiner Person zuordnen. Sie liegen nur bei uns und gehen an niemanden weiter. Rechtsgrundlage ist unser berechtigtes Interesse, unser Angebot an den Interessen unserer Mitglieder und Fans auszurichten (Art. 6 Abs. 1 lit. f DSGVO). Habt ihr im Browser „Do Not Track“ oder „Global Privacy Control“ eingeschaltet, zählen wir euch nicht.</p>
 <p>Auf der Startseite fragt die Seite beim Laden unseren Serverdienst bei Cloudflare (siehe Newsletter), ob gerade ein Hinweis aktiv ist, etwa zu einem Fußballcamp. Dabei wird eure IP-Adresse übertragen, gespeichert wird nichts. Klickt ihr einen Hinweis weg, merkt sich euer Browser das für 7 Tage im lokalen Speicher (kein Cookie, es wird nichts an uns geschickt).</p>
 <h2 id="newsletter">4. Newsletter</h2>
 <p>Meldet ihr euch für unseren Newsletter an, speichern wir eure E-Mail-Adresse, freiwillig euren Vornamen und wann ihr euch angemeldet und bestätigt habt. Rechtsgrundlage ist eure Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Zuerst kommt eine Mail mit einem Bestätigungslink. Erst nach dem Klick seid ihr angemeldet. Klickt ihr nicht, löschen wir die Adresse nach 7 Tagen.</p>
@@ -96,7 +97,7 @@ def main():
     baue(vorlage, "impressum.html", "Impressum", "Unser Verein", IMPRESSUM,
          "Impressum des 1. SC 1911 Heiligenstadt e.V.")
     baue(vorlage, "datenschutz-neu.html", "Datenschutzerklärung", "Unser Verein", DATENSCHUTZ.replace("__STAND__", STAND),
-         "Datenschutzerklärung des 1. SC 1911 Heiligenstadt e.V.: keine Cookies, keine Statistik.")
+         "Datenschutzerklärung des 1. SC 1911 Heiligenstadt e.V.: keine Cookies, eigene Besucherzählung ohne IP-Adressen.")
 
 
 if __name__ == "__main__":

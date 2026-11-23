@@ -168,3 +168,27 @@ input:focus,select:focus,textarea:focus,.text:focus{outline:none;border-color:va
 .adresse-knoepfe .klein-knopf{display:inline-flex;align-items:center;text-decoration:none}
 .adresse-hinweis{margin:0;font-size:13px;color:var(--grau)}
 .adresse-hinweis:empty{display:none}
+
+/* Statistik (statistik/daten.php) */
+.kopf-nav a.aktiv{background:#ffffff26}
+.st-zeitraum{display:flex;gap:6px;flex-wrap:wrap}
+.st-zeitraum .klein-knopf[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.st-kacheln{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:28px}
+.st-kachel{background:#fff;border-radius:12px;padding:16px 18px}
+.st-kachel b{display:block;font-stretch:125%;font-weight:850;font-size:clamp(26px,4vw,38px);line-height:1.05}
+.st-kachel span{color:var(--grau);font-size:14px}
+.st-titel{font-stretch:112%;font-size:19px;margin:0 0 12px}
+.st-verlauf{display:flex;align-items:flex-end;gap:2px;height:180px;padding:14px 12px 0;background:#fff;border-radius:12px;margin-bottom:28px;overflow:hidden}
+.st-balken{flex:1 1 0;min-width:0;background:var(--mittel);border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.st-balken.wochenende{background:var(--navy)}
+.st-balken:hover{background:var(--tief)}
+.st-spalten{display:grid;grid-template-columns:3fr 2fr;gap:24px}
+.st-rang{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.st-rang li{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 14px;background:#fff;border-radius:10px;position:relative;overflow:hidden}
+.st-rang li i{position:absolute;inset:0 auto 0 0;background:#dfe9f8;z-index:0}
+.st-rang li a,.st-rang li span,.st-rang li b{position:relative;z-index:1;min-width:0;overflow-wrap:anywhere}
+.st-rang li a{text-decoration:none;font-weight:600}
+.st-rang li a:hover{text-decoration:underline}
+.st-rang li b{font-variant-numeric:tabular-nums}
+.st-hinweis{color:var(--grau);font-size:14px;margin-top:28px;max-width:70ch}
+@media(max-width:860px){.st-kacheln{grid-template-columns:repeat(2,minmax(0,1fr))}.st-spalten{grid-template-columns:1fr}.st-verlauf{height:140px;gap:1px;padding:10px 8px 0}}

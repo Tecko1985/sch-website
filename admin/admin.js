@@ -122,6 +122,7 @@
   // ---------------------------------------------------------------- Ansichten
   function zeige(name) {
     $$('[data-ansicht]').forEach(function (el) { el.hidden = el.dataset.ansicht !== name; });
+    $$('.kopf-nav [data-ziel]').forEach(function (el) { el.classList.toggle('aktiv', el.dataset.ziel === name); });
     if (name !== 'bearbeiten') editorHash = null;
     window.scrollTo(0, 0);
   }
@@ -152,6 +153,7 @@
       });
       return;
     }
+    if (h === 'statistik') { zeige('statistik'); ladeStatistik(); return; }
     zeige('liste');
     ladeListe();
   }
@@ -1557,4 +1559,159 @@
   });
   $('[data-vorschauzu]').addEventListener('click', function () { vorschauDialog.close(); });
   vorschauDialog.addEventListener('click', function (e) { if (e.target === vorschauDialog) vorschauDialog.close(); });
+
+  // ---------------------------------------------------------------- Statistik
+  // Zahlen aus dem eigenen Besucherzähler (statistik/zaehlen.php, assets/zaehler.js). statistik/daten.php
+  // gibt sie nur gegen einen Redaktions-Schlüssel heraus und nur auf www.sc1911-heiligenstadt.de selbst.
+  var stTage = 30, stDaten = null, stTitel = null;
+  var QUELLEN = { direkt: 'Direkt (Lesezeichen, App, eingetippt)', 'instagram.com': 'Instagram', 'facebook.com': 'Facebook',
+    'fupa.net': 'FuPa', 'fussball.de': 'fussball.de', 'bing.com': 'Bing', 'duckduckgo.com': 'DuckDuckGo', 't.co': 'X (Twitter)',
+    'web.whatsapp.com': 'WhatsApp', 'staige.tv': 'Staige', 'tecko1985.github.io': 'Alte Vorschau (github.io)' };
+  function stZahl(n) { return Number(n || 0).toLocaleString('de-DE'); }
+  function stIso(d) { var z = function (x) { return ('0' + x).slice(-2); }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
+  function stQuelle(q) {
+    q = String(q).replace(/^(www\d?|m|l|lm|mobile)\./, '');
+    if (/(^|\.)google\.[a-z.]+$/.test(q)) return 'Google';
+    if (/(^|\.)yahoo\./.test(q)) return 'Yahoo';
+    return QUELLEN[q] || q;
+  }
+  function stSeitenname(pfad) {
+    if (pfad === '/') return 'Startseite';
+    var t = stTitel && (stTitel[pfad] || stTitel[pfad + 'index.html']);
+    if (t) return t;
+    var name = pfad.replace(/^\/(seiten\/)?/, '').replace(/\.html$/, '').replace(/^beitrag-/, '').replace(/-/g, ' ');
+    try { return decodeURIComponent(name); } catch (e) { return name; }
+  }
+
+  function ladeStatistik() {
+    var m = $('[data-stmeldung]');
+    $$('[data-sttage]').forEach(function (k) { k.setAttribute('aria-pressed', String(Number(k.dataset.sttage) === stTage)); });
+    if (!/(^|\.)sc1911-heiligenstadt\.de$/.test(location.hostname)) {
+      $('[data-stinhalt]').hidden = true;
+      m.className = 'meldung';
+      m.textContent = 'Die Statistik gibt es nur in der Redaktion auf www.sc1911-heiligenstadt.de: ';
+      var a = document.createElement('a');
+      a.href = WEBSEITE + 'admin/#statistik';
+      a.textContent = WEBSEITE.replace('https://', '') + 'admin/';
+      m.appendChild(a);
+      return;
+    }
+    m.className = 'meldung';
+    m.textContent = 'Lädt …';
+    var form = new URLSearchParams();
+    form.set('schluessel', schluessel);
+    form.set('monate', '13');
+    var titel = stTitel ? Promise.resolve(stTitel) : fetch('../suche-index.json', { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; })
+      .then(function (liste) {
+        stTitel = {};
+        (liste || []).forEach(function (e) { if (e && e.u) stTitel['/' + e.u] = e.t; });
+        return stTitel;
+      });
+    var zahlen = fetch('../statistik/daten.php', { method: 'POST', body: form, cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok) throw new Error(j.fehler || ('Server antwortet mit ' + r.status));
+          return j;
+        });
+      });
+    Promise.all([zahlen, titel]).then(function (e) {
+      stDaten = (e[0] && e[0].tage) || {};
+      m.textContent = '';
+      zeichneStatistik();
+    }).catch(function (err) {
+      $('[data-stinhalt]').hidden = true;
+      m.className = 'meldung fehler';
+      m.textContent = 'Statistik nicht abrufbar: ' + err.message;
+    });
+  }
+
+  function zeichneStatistik() {
+    if (!stDaten) return;
+    $$('[data-sttage]').forEach(function (k) { k.setAttribute('aria-pressed', String(Number(k.dataset.sttage) === stTage)); });
+    var heute = new Date(), tage = [];
+    for (var i = stTage - 1; i >= 0; i--) { var d = new Date(heute); d.setDate(heute.getDate() - i); tage.push(d); }
+    var summe = { aufrufe: 0, besuche: 0 }, seiten = {}, quellen = {}, geraete = { handy: 0, computer: 0 };
+    tage.forEach(function (d) {
+      var t = stDaten[stIso(d)];
+      if (!t) return;
+      summe.aufrufe += t.aufrufe || 0;
+      summe.besuche += t.besuche || 0;
+      Object.keys(t.seiten || {}).forEach(function (p) { seiten[p] = (seiten[p] || 0) + t.seiten[p]; });
+      Object.keys(t.quellen || {}).forEach(function (q) { var n = stQuelle(q); quellen[n] = (quellen[n] || 0) + t.quellen[q]; });
+      Object.keys(t.geraete || {}).forEach(function (g) { geraete[g] = (geraete[g] || 0) + t.geraete[g]; });
+    });
+    var h = stDaten[stIso(heute)];
+    $('[data-stbesuche]').textContent = stZahl(summe.besuche);
+    $('[data-staufrufe]').textContent = stZahl(summe.aufrufe);
+    $('[data-stheute]').textContent = stZahl(h ? h.besuche : 0);
+    var g = geraete.handy + geraete.computer;
+    $('[data-sthandy]').textContent = g ? Math.round(100 * geraete.handy / g) + ' %' : '–';
+
+    // Verlauf: bei 12 Monaten je Monat ein Balken, sonst je Tag
+    $('[data-stverlauftitel]').textContent = stTage > 60 ? 'Besuche pro Monat' : 'Besuche pro Tag';
+    var balken = [];
+    if (stTage > 60) {
+      var monate = {};
+      tage.forEach(function (d) {
+        var k = stIso(d).slice(0, 7), t = stDaten[stIso(d)];
+        if (!monate[k]) { monate[k] = { name: d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }), besuche: 0, aufrufe: 0 }; balken.push(monate[k]); }
+        if (t) { monate[k].besuche += t.besuche || 0; monate[k].aufrufe += t.aufrufe || 0; }
+      });
+    } else {
+      tage.forEach(function (d) {
+        var t = stDaten[stIso(d)] || {};
+        balken.push({ name: d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }),
+          besuche: t.besuche || 0, aufrufe: t.aufrufe || 0, wochenende: d.getDay() === 0 || d.getDay() === 6 });
+      });
+    }
+    var max = Math.max.apply(null, balken.map(function (b) { return b.besuche; }).concat([1]));
+    var verlauf = $('[data-stverlauf]');
+    verlauf.innerHTML = '';
+    balken.forEach(function (b) {
+      var el = document.createElement('span');
+      el.className = 'st-balken' + (b.wochenende ? ' wochenende' : '');
+      el.style.height = Math.max(1, Math.round(100 * b.besuche / max)) + '%';
+      el.title = b.name + ': ' + stZahl(b.besuche) + ' Besuche, ' + stZahl(b.aufrufe) + ' Seitenaufrufe';
+      verlauf.appendChild(el);
+    });
+
+    function rangliste(ziel, werte, anzahl, link) {
+      var ol = $(ziel);
+      ol.innerHTML = '';
+      var liste = Object.keys(werte).map(function (k) { return [k, werte[k]]; })
+        .sort(function (a, b) { return b[1] - a[1]; }).slice(0, anzahl);
+      if (!liste.length) { var leer = document.createElement('li'); leer.textContent = 'Noch keine Zahlen in diesem Zeitraum.'; ol.appendChild(leer); return; }
+      var oben = liste[0][1];
+      liste.forEach(function (e) {
+        var li = document.createElement('li');
+        var anteil = document.createElement('i');
+        anteil.style.width = Math.round(100 * e[1] / oben) + '%';
+        li.appendChild(anteil);
+        var name;
+        if (link) {
+          name = document.createElement('a');
+          name.href = WEBSEITE + e[0].slice(1);
+          name.target = '_blank';
+          name.rel = 'noopener';
+          name.textContent = stSeitenname(e[0]);
+        } else {
+          name = document.createElement('span');
+          name.textContent = e[0];
+        }
+        li.appendChild(name);
+        var zahl = document.createElement('b');
+        zahl.textContent = stZahl(e[1]);
+        li.appendChild(zahl);
+        ol.appendChild(li);
+      });
+    }
+    rangliste('[data-stseiten]', seiten, 15, true);
+    rangliste('[data-stquellen]', quellen, 10, false);
+    $('[data-stinhalt]').hidden = false;
+  }
+  $$('[data-sttage]').forEach(function (k) {
+    k.addEventListener('click', function () { stTage = Number(k.dataset.sttage); zeichneStatistik(); });
+  });
 })();
