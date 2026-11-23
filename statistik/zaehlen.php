@@ -13,6 +13,25 @@ header('X-Content-Type-Options: nosniff');
 
 function ende($code) { http_response_code($code); exit; }
 
+// Datenordner ~/statistik-daten im Home-Ordner des Kontos (NICHT relativ zum Webordner: bei Hetzner ist
+// public_html ein Verweis auf /usr/www/users/<konto>, zwei Ebenen darüber liegt kein beschreibbarer Ordner)
+function datenordner() {
+  $kandidaten = array();
+  $home = getenv('HOME');
+  if ($home) $kandidaten[] = rtrim($home, '/');
+  $konto = get_current_user();
+  if ($konto) $kandidaten[] = '/usr/home/' . $konto;
+  $kandidaten[] = dirname(__DIR__, 2);
+  foreach ($kandidaten as $basis) {
+    if (!@is_dir($basis) || strpos($basis, '/usr/www/') === 0) continue;
+    $ordner = $basis . '/statistik-daten';
+    if (@is_dir($ordner) || @mkdir($ordner, 0700, true)) {
+      if (@is_writable($ordner)) return $ordner;
+    }
+  }
+  return '';
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') ende(405);
 
 $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
@@ -34,8 +53,8 @@ if ($quelle === 'sc1911-heiligenstadt.de') $quelle = '';
 if ($quelle === '') $quelle = 'direkt';
 $geraet = preg_match('/Mobile|Android|iPhone|iPad|iPod/i', $ua) ? 'handy' : 'computer';
 
-$ordner = dirname(__DIR__, 2) . '/statistik-daten';
-if (!is_dir($ordner) && !@mkdir($ordner, 0700, true)) ende(500);
+$ordner = datenordner();
+if ($ordner === '') ende(500);
 
 $jetzt = new DateTime('now', new DateTimeZone('Europe/Berlin'));
 $tag = $jetzt->format('Y-m-d');

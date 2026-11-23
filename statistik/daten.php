@@ -12,13 +12,32 @@ header('X-Content-Type-Options: nosniff');
 
 function antwort($code, $daten) { http_response_code($code); echo json_encode($daten, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); exit; }
 
+// Datenordner ~/statistik-daten im Home-Ordner des Kontos (NICHT relativ zum Webordner: bei Hetzner ist
+// public_html ein Verweis auf /usr/www/users/<konto>, zwei Ebenen darüber liegt kein beschreibbarer Ordner)
+function datenordner() {
+  $kandidaten = array();
+  $home = getenv('HOME');
+  if ($home) $kandidaten[] = rtrim($home, '/');
+  $konto = get_current_user();
+  if ($konto) $kandidaten[] = '/usr/home/' . $konto;
+  $kandidaten[] = dirname(__DIR__, 2);
+  foreach ($kandidaten as $basis) {
+    if (!@is_dir($basis) || strpos($basis, '/usr/www/') === 0) continue;
+    $ordner = $basis . '/statistik-daten';
+    if (@is_dir($ordner) || @mkdir($ordner, 0700, true)) {
+      if (@is_writable($ordner)) return $ordner;
+    }
+  }
+  return '';
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') antwort(405, array('fehler' => 'Nur POST'));
 
 $schluessel = (string)($_POST['schluessel'] ?? '');
 if (!preg_match('/^(gh[pousr]_|github_pat_)[A-Za-z0-9_]{20,255}$/', $schluessel)) antwort(401, array('fehler' => 'Kein gültiger Schlüssel'));
 
-$ordner = dirname(__DIR__, 2) . '/statistik-daten';
-if (!is_dir($ordner)) @mkdir($ordner, 0700, true);
+$ordner = datenordner();
+if ($ordner === '') antwort(500, array('fehler' => 'Kein beschreibbarer Datenordner auf dem Server'));
 
 // ---------------------------------------------------------------- Schlüssel prüfen
 $zugang = $ordner . '/zugang.json';

@@ -262,8 +262,8 @@ jobs:
               mail/profil.php) soll=c34c2f51ef11afdb11da2a3c8c11c7acca0a390b7199f83496e1d5de50392c27 ;;
               autodiscover/autodiscover.php) soll=46df28d7a74ebee7420bb12e9fb6f013cb16d01724c44806e3fec5652aaf5b6c ;;
               # Besucherstatistik (23.11.2026): Zähler und Abfrage für die Redaktion, Daten in ~/statistik-daten
-              statistik/zaehlen.php) soll=b8e058c4d93bb3f6f6e66d64ebd210b40209bf42831313cc351dac4d5045c45b ;;
-              statistik/daten.php) soll=c6a8129db579decabdd372b6e74ff286f29557a3f1166ffc33bc7cefb490da74 ;;
+              statistik/zaehlen.php) soll=6e3b2b3718e058ae7a7f9d3b479b06a46ed31ab18b1ecdb12da1f79338d5b669 ;;
+              statistik/daten.php) soll=84dfb6e81e7fd11da58768a83bc79312d63a2465026cb1945b2c9c868851619c ;;
               *) echo "::error::Nicht erlaubt im Webordner: $f"; fehler=1; continue ;;
             esac
             ist=$(sha256sum "$f" | cut -d' ' -f1)
