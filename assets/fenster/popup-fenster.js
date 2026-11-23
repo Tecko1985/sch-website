@@ -95,6 +95,8 @@
       'max-height:calc(100vh - 32px);overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative}',
       '#pu-popup-wurzel .pu-pop-kopf{background:#1b2d4f;color:#fff;padding:18px 58px 18px 22px;border-radius:14px 14px 0 0}',
       '#pu-popup-wurzel .pu-pop-kopf h2{font-size:19px;margin:0;color:#fff;font-weight:600}',
+      // Die Überschrift bekommt beim Öffnen den Fokus (für Bildschirmleser); ohne sichtbaren Rahmen
+      '#pu-popup-wurzel .pu-pop-kopf h2:focus{outline:none}',
       '#pu-popup-wurzel .pu-pop-body{padding:18px 22px 22px}',
       '#pu-popup-wurzel .pu-pop-eintrag{border-bottom:1px solid #dde1e8;padding-bottom:16px;margin-bottom:16px}',
       '#pu-popup-wurzel .pu-pop-eintrag:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}',
