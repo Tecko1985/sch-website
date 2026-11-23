@@ -8,6 +8,12 @@
   var ORDNER = 'inhalte/beitraege/';
   var BILDER = 'assets/beitraege/';
   var SEITE = 'https://tecko1985.github.io/sch-website/';
+  // Echte Internetseite (Hetzner, seit 17.11.2026): alle Links „Ansehen“ / „Beitrag ansehen“ / Adresse zeigen dorthin.
+  // Die Online-Prüfung (pruefeOnline) liest weiter SEITE: www.sc1911-heiligenstadt.de erlaubt keinen Abruf von
+  // github.io aus (CORS). Läuft die Redaktion selbst auf www, prüft sie dort.
+  var WEBSEITE = 'https://www.sc1911-heiligenstadt.de/';
+  var PRUEFSEITE = /(^|\.)sc1911-heiligenstadt\.de$/.test(location.hostname) ? location.origin + '/' : SEITE;
+  function beitragsAdresse(slug) { return WEBSEITE + 'seiten/beitrag-' + slug + '.html'; }
   var SPEICHER = 'sch-redaktion-schluessel';
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -185,7 +191,7 @@
       var bild = d.bild ? '<img src="' + rohUrl(d.bild) + '" alt="" loading="lazy">' : '<span class="ohnebild"></span>';
       li.innerHTML = bild + '<div><b></b><small></small></div><div class="liste-aktionen">' +
         '<a class="klein-knopf" href="#bearbeiten/' + b.slug + '" style="display:inline-flex;align-items:center;text-decoration:none">Bearbeiten</a>' +
-        (d.entwurf || istGeplant(d) ? '' : '<a class="klein-knopf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none" href="' + SEITE + 'seiten/beitrag-' + b.slug + '.html">Ansehen</a>') +
+        (d.entwurf || istGeplant(d) ? '' : '<a class="klein-knopf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none" href="' + beitragsAdresse(b.slug) + '">Ansehen</a>') +
         '</div>';
       $('b', li).textContent = d.titel || 'Ohne Titel';
       $('small', li).textContent = datumDe(d.datum) + ' · ' + (d.rubrik || 'News');
@@ -224,7 +230,7 @@
       var b = beitraege.filter(function (x) { return x.slug === li.dataset.pruefen; })[0];
       if (!b) return Promise.resolve(true);
       // Anhang ?pruefung=…: am Zwischenspeicher von GitHub Pages vorbei (sonst bis zu 10 Minuten alter Stand)
-      return fetch(SEITE + 'seiten/beitrag-' + b.slug + '.html?pruefung=' + Date.now(), { cache: 'no-store' }).then(function (r) {
+      return fetch(PRUEFSEITE + 'seiten/beitrag-' + b.slug + '.html?pruefung=' + Date.now(), { cache: 'no-store' }).then(function (r) {
         if (r.status === 404) return null;
         if (!r.ok) throw new Error(r.status);
         return r.text();
@@ -293,6 +299,7 @@
     $('[data-vorlagewahl]').value = '';
     zeichneVorlagen();
     $('[data-loeschen]').hidden = !b;
+    zeigeAdresse();
     zeigeSpieldaten();
     zeigeSpielwahl();
     zeichneVorberichte();
@@ -1288,6 +1295,7 @@
       gesichert = standBeimSpeichern;
       editorHash = 'bearbeiten/' + slug;
       $('[data-loeschen]').hidden = false;
+      zeigeAdresse();
       meldung(daten.entwurf ? 'Entwurf gespeichert.'
         : daten.geplant ? 'Geplant. Der Beitrag erscheint automatisch am ' + planText(daten.geplant) + ' (höchstens etwa 15 bis 20 Minuten später).'
         : 'Gespeichert. Der Beitrag ist in etwa 2 Minuten auf der Seite.', 'ok');
@@ -1314,13 +1322,32 @@
     }).catch(function (err) { meldung('Löschen fehlgeschlagen: ' + err.message, 'fehler'); });
   });
 
+  // Adresse des Beitrags auf www.sc1911-heiligenstadt.de (zum Kopieren und Teilen)
+  function zeigeAdresse() {
+    var box = $('[data-adresse]');
+    if (!aktuell) { box.hidden = true; return; }
+    var d = aktuell.daten || {};
+    var url = beitragsAdresse(aktuell.slug);
+    box.hidden = false;
+    $('[data-adressefeld]').value = url;
+    $('[data-adresseoeffnen]').href = url;
+    $('[data-adressehinweis]').textContent = d.entwurf ? 'Entwurf: Unter dieser Adresse erscheint der Beitrag, sobald er veröffentlicht ist.'
+      : istGeplant(d) ? 'Geplant: Diese Adresse gilt ab ' + planText(d.geplant) + '.' : '';
+  }
+  $('[data-adressekopieren]').addEventListener('click', function () {
+    var feld = $('[data-adressefeld]'), knopf = this;
+    function fertig() { knopf.textContent = 'Kopiert ✓'; setTimeout(function () { knopf.textContent = 'Kopieren'; }, 1800); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(feld.value).then(fertig, function () { feld.select(); document.execCommand('copy'); fertig(); });
+    else { feld.select(); document.execCommand('copy'); fertig(); }
+  });
+
   function zeigeLiveHinweis(slug, titel) {
     var h = $('[data-livehinweis]');
     h.hidden = false;
     h.innerHTML = '';
     h.appendChild(document.createTextNode('„' + titel + '“ wird gerade veröffentlicht. In etwa 2 Minuten: '));
     var a = document.createElement('a');
-    a.href = SEITE + 'seiten/beitrag-' + slug + '.html';
+    a.href = beitragsAdresse(slug);
     a.target = '_blank'; a.rel = 'noopener';
     a.textContent = 'Beitrag ansehen';
     h.appendChild(a);
@@ -1367,6 +1394,9 @@
   var seitenCache = {};
   var BEITRAG_VORLAGE = 'seiten/beitrag-serie-haelt-weiter.html';
   var SB_VORLAGE = 'spielbericht-erfurt.html';
+  // wie werkzeuge/spielbericht.py KOPFBILDER / KOPFBILD_JUGEND (bei Änderungen dort hier mitziehen)
+  var KOPFBILDER = { m1: 'assets/hero-mannschaft-1600.webp', m2: 'assets/zweite-titel.webp' };
+  var KOPFBILD_JUGEND = 'assets/nachwuchs-instagram.webp';
   var WOCHENTAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
@@ -1457,17 +1487,33 @@
       var teile = vorschauText(d.text).split(/(?=<h[23]>)/).map(function (t) {
         return t.replace(/<h[23]>/, '<h3 class="stitel">').replace(/<\/h[23]>/, '</h3>');
       });
-      var bilder = d.galerie.slice(), artikel = '';
-      teile.forEach(function (t, k) {
+      // Bilder wie im Seitenbau: Bild 1 (Titelbild) unter der Überschrift, Bild 2-4 gleichmäßig im Text,
+      // alle weiteren nur in der Galerie (spielbericht.baue / verteile)
+      var alle = (d.bild ? [d.bild] : []).concat(d.galerie.filter(function (g) { return g !== d.bild; }));
+      var imText = alle.slice(1, 4), n = teile.length, k = imText.length, artikel = '';
+      var nach = imText.map(function (_, i) { return Math.max(1, Math.min(n, Math.round((i + 1) * n / (k + 1)))); });
+      function fig(b) { return '<figure><img src="' + eh(rohUrl(b)) + '" alt=""></figure>'; }
+      teile.forEach(function (t, j) {
         artikel += '<section class="sb-weiter">' + t + '</section>';
-        if (k % 2 === 1 && bilder.length) artikel += '<figure><img src="' + eh(rohUrl(bilder.shift())) + '" alt=""></figure>';
+        imText.forEach(function (b, i) { if (nach[i] === j + 1) artikel += fig(b); });
       });
-      bilder.forEach(function (b) { artikel += '<figure><img src="' + eh(rohUrl(b)) + '" alt=""></figure>'; });
-      var main = '<main class="sb"><header class="sb-held sb-held-ganz"><img class="sb-held-bild" src="' + eh(bildFuer(d.bild)) + '" alt="">' +
-        '<h1 class="stitel">Spielbericht</h1></header>' + tafel +
+      if (!n) imText.forEach(function (b) { artikel += fig(b); });
+      var oben = alle.length ? fig(alle[0]) : '';
+      // Anreißer als Vorspann, außer er ist nur der Textanfang oder hat noch [Platzhalter] (wie spielbericht.baue)
+      var tz = (d.teaser || '').trim(), textStart = textfeld.textContent.replace(/\s+/g, ' ').trim();
+      var vorspann = tz && !/\[[^\]]{1,80}\]/.test(tz) && textStart.indexOf(tz.replace(/[ …]+$/, '').slice(0, 80)) !== 0
+        ? '<p class="sb-vorspann">' + eh(tz) + '</p>' : '';
+      var kicker = (form.sp_kurztitel && form.sp_kurztitel.value.trim()) ? '<span class="sb-kicker">' + eh(form.sp_kurztitel.value.trim()) + '</span>' : '';
+      // Kopf wie auf der Internetseite: festes Bild der Mannschaft, Sponsorenleiste, SCHeimat (spielbericht.kopfbild/sponsoren_html)
+      var kopf = KOPFBILDER[team] || KOPFBILD_JUGEND;
+      var leiste = 'assets/sponsorenleiste/' + (team === 'm1' || team === 'm2' ? team : 'jugend') + '.webp';
+      var logos = '<img class="sb-sponsoren" src="' + leiste + '" alt="" onerror="this.remove()">' +
+        '<span class="sb-ecke" aria-hidden="true"></span><img class="sb-marke" src="assets/sponsorenleiste/schheimat.webp" alt="">';
+      var main = '<main class="sb"><header class="sb-held sb-held-ganz sb-held-voll mit-sponsoren"><img class="sb-held-bild" src="' + kopf + '" alt="">' +
+        logos + '<h1 class="stitel">Spielbericht</h1></header>' + tafel +
         '<div class="sb-reiter-band"><div class="sb-reiter" role="tablist"><button type="button" role="tab" aria-selected="true">Spielbericht</button></div></div>' +
-        '<section class="sb-bereich"><article class="sb-artikel"><h2 class="stitel">' + eh(d.titel) + '</h2><p class="sb-autor">' +
-        eh(datumLang(d.datum)) + '</p>' + artikel + '</article></section></main>';
+        '<section class="sb-bereich"><article class="sb-artikel">' + kicker + '<h2 class="stitel">' + eh(d.titel) + '</h2><p class="sb-autor">' +
+        eh(datumLang(d.datum)) + (sp.autor ? ' · ' + eh(sp.autor) : '') + '</p>' + oben + vorspann + artikel + '</article></section></main>';
       return seiteMit(vorlage, '../', main);
     });
   }
