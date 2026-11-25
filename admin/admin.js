@@ -367,6 +367,8 @@
   function aktualisiereKnopf() {
     $('[data-speichern]').textContent = form.entwurf.checked ? 'Entwurf speichern'
       : form.planen.checked ? 'Planen' : (aktuell ? 'Änderungen veröffentlichen' : 'Veröffentlichen');
+
+    if (!aktuell) zeigeAdresse();   // Titel/Datum können automatisch gesetzt worden sein (Spielbericht einfügen)
   }
   form.entwurf.addEventListener('change', aktualisiereKnopf);
 
@@ -1076,6 +1078,7 @@
     form.teaser.value = v.teaser || '';
     textfeld.innerHTML = v.text || '';
     unberuehrt = stand();
+    if (!aktuell) zeigeAdresse();
     vorlageWahl.value = v.id;
     zeichneVorlagen();
     meldung('Vorlage „' + v.name + '“ eingesetzt. Jetzt die [Platzhalter] ausfüllen.', 'ok');
@@ -1099,6 +1102,7 @@
     if (!aktuell && unberuehrt !== null && stand() === unberuehrt) {
       form.titel.value = ''; form.teaser.value = ''; textfeld.innerHTML = '';
       unberuehrt = null; vorlageWahl.value = '';
+      zeigeAdresse();
     }
     if (v && !aktuell && istUnberuehrt()) { setzeVorlage(v); return; }
     zeichneVorlagen();
@@ -1325,17 +1329,31 @@
   });
 
   // Adresse des Beitrags auf www.sc1911-heiligenstadt.de (zum Kopieren und Teilen)
+  // Bei jeder Rubrik. Neuer, noch nicht gespeicherter Beitrag: die Adresse ergibt sich aus Datum und Titel
+  // (slugAus wie beim Speichern) und wird beim Tippen mitgeführt; „Öffnen“ gibt es erst nach dem Speichern.
   function zeigeAdresse() {
     var box = $('[data-adresse]');
-    if (!aktuell) { box.hidden = true; return; }
+    var oeffnen = $('[data-adresseoeffnen]');
+    if (!aktuell) {
+      var titel = form.titel.value.trim();
+      if (!titel || !form.datum.value) { box.hidden = true; return; }
+      box.hidden = false;
+      $('[data-adressefeld]').value = beitragsAdresse(slugAus(titel, form.datum.value));
+      oeffnen.hidden = true;
+      $('[data-adressehinweis]').textContent = 'Noch nicht gespeichert: Unter dieser Adresse erscheint der Beitrag nach dem Veröffentlichen. Ändern sich Titel oder Datum, ändert sich auch der Link.';
+      return;
+    }
     var d = aktuell.daten || {};
     var url = beitragsAdresse(aktuell.slug);
     box.hidden = false;
+    oeffnen.hidden = false;
     $('[data-adressefeld]').value = url;
-    $('[data-adresseoeffnen]').href = url;
+    oeffnen.href = url;
     $('[data-adressehinweis]').textContent = d.entwurf ? 'Entwurf: Unter dieser Adresse erscheint der Beitrag, sobald er veröffentlicht ist.'
       : istGeplant(d) ? 'Geplant: Diese Adresse gilt ab ' + planText(d.geplant) + '.' : '';
   }
+  form.titel.addEventListener('input', function () { if (!aktuell) zeigeAdresse(); });
+  form.datum.addEventListener('change', function () { if (!aktuell) zeigeAdresse(); });
   $('[data-adressekopieren]').addEventListener('click', function () {
     var feld = $('[data-adressefeld]'), knopf = this;
     function fertig() { knopf.textContent = 'Kopiert ✓'; setTimeout(function () { knopf.textContent = 'Kopieren'; }, 1800); }
