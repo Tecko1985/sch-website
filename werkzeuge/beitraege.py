@@ -271,6 +271,20 @@ def markiere(karten_html, ab, bis):
     return re.sub(r'(<a class="(?:sch-post|sch-morecard|sp-karte)"|<li)(?=[ >])', lambda m: m.group(1) + zusatz, karten_html)
 
 
+def doppel_bild(d):
+    """Doppel-Vorbericht („Doppelmatchday“): Bild 2 steht zwischen den beiden Teilen – nach dem Liveticker-Link
+    der 1. Mannschaft, vor dem Vorbericht der 2. Mannschaft – statt in der Galerie. Steht schon ein Bild im
+    Text (von Hand eingefügt), bleibt alles, wie es ist."""
+    if not spielbericht.ist_doppel(d) or not d["galerie"] or re.search(r"<(?:img|figure)\b", d["text"]):
+        return
+    for m in re.finditer(r"<p\b[^>]*>(?:(?!</p>).)*?liveticker(?:(?!</p>).)*?</p>", d["text"], re.I | re.S):
+        if re.sub(r"<[^>]+>|\s|&nbsp;", "", d["text"][m.end():]):   # danach folgt noch der zweite Teil
+            bild = f'<figure class="sp-textbild"><img src="../{d["galerie"][0]}" alt=""></figure>'
+            d["text"] = d["text"][:m.end()] + bild + d["text"][m.end():]
+            d["galerie"] = d["galerie"][1:]
+            return
+
+
 def lade_beitraege():
     beitraege = []
     for pfad in sorted(glob.glob(os.path.join(REPO, "inhalte/beitraege/*.json"))):
@@ -307,6 +321,7 @@ def lade_beitraege():
             d["bild"] = ""
         if not isinstance(d.get("spiel"), dict):
             d["spiel"] = {}
+        doppel_bild(d)
         if d.get("rubrik") == "Spielbericht":
             spieldaten_aus_text(d)
         # Spielbericht ohne eigenes Titelbild: das erste Galeriebild ist Bild 1 (auch für die News-Karte)
@@ -629,13 +644,23 @@ def main():
             if d.get("ab"):
                 seite = vorab_sperre(seite, d["ab"], d["geplant"])
             open(os.path.join(ziel, "seiten", d["seite"]), "w", encoding="utf-8").write(seite)
-            if vb and vb["slug"] not in zum_bericht and not d.get("ab"):
-                zum_bericht[vb["slug"]] = d
+            if vb and not d.get("ab"):
+                zum_bericht.setdefault(vb["slug"], []).append(d)
     for d in beitraege:
         if d.get("rubrik") == "Spielbericht":
             continue
-        sb = zum_bericht.get(d["slug"])
-        zusatz = f'\n<p><strong><a href="{sb["seite"]}#spielbericht">Zum Spielbericht</a></strong></p>' if sb else ""
+        # Doppel-Vorbericht: Links zu beiden Spielberichten (1. Mannschaft zuerst), sonst nur zum ersten
+        berichte = sorted(zum_bericht.get(d["slug"]) or [], key=lambda b: (b.get("spiel") or {}).get("mannschaft") or "m1")
+        if not spielbericht.ist_doppel(d):
+            berichte = berichte[:1]
+        sb = berichte[0] if berichte else None
+        if len(berichte) > 1:
+            namen = {"m1": "der 1. Mannschaft", "m2": "der 2. Mannschaft"}
+            zusatz = "".join(f'\n<p><strong><a href="{b["seite"]}#spielbericht">Zum Spielbericht '
+                             f'{namen.get((b.get("spiel") or {}).get("mannschaft") or "m1", "")}</a></strong></p>'
+                             for b in berichte)
+        else:
+            zusatz = f'\n<p><strong><a href="{sb["seite"]}#spielbericht">Zum Spielbericht</a></strong></p>' if sb else ""
         if d.get("rubrik") == "Vorbericht":
             # Vorbericht im Aufbau der Spielberichte (Kopfbild der Mannschaft, Tafel, Bild unter der Überschrift)
             seite = spielbericht.vorbericht_seite(d, sb_vorlage, ADRESSE, vorbericht_team(d, sb),

@@ -586,6 +586,7 @@
   spielWahl.addEventListener('change', function () { spielWahl.dataset.wert = spielWahl.value; aktualisiereKnopf(); });
   form.rubrik.addEventListener('change', zeigeSpielwahl);
 
+  function istDoppel(d) { return /doppel[\s-]*match[\s-]*day/i.test((d.titel || '') + ' ' + (d.text || '')); }
   // Vorbericht-Auswahl: „automatisch“ nimmt den neuesten Vorbericht bis 10 Tage vor dem Spiel
   function autoVorbericht() {
     var tag = form.sp_spieldatum.value || form.datum.value;
@@ -596,18 +597,21 @@
     var team = (form.sp_mannschaft && form.sp_mannschaft.value) || 'm1';
     var gegnerText = form.sp_gegner.value.trim();
     var gegner = worte(gegnerText);
-    // Einem Spiel zugeordnete Vorberichte („Zu welchem Spiel?“) gelten nur für dieses Spiel
+    // Einem Spiel zugeordnete Vorberichte („Zu welchem Spiel?“) gelten nur für dieses Spiel; ein Doppel-Vorbericht
+    // („Doppelmatchday“) gilt für die 1. und die 2. Mannschaft an seinem Spieltag (spielbericht.py gilt_doppel)
     var zugeordnet = beitraege.filter(function (b) {
       var m = (b.daten.spiel_slug || '').match(/-(\d{2})(\d{2})(\d{2})$/);
-      return b.daten.rubrik === 'Vorbericht' && !b.daten.entwurf && m && '20' + m[1] + '-' + m[2] + '-' + m[3] === tag &&
-        b.daten.spiel_slug.indexOf('heiligenstadt-' + team + '-') >= 0;
+      var slugTag = m ? '20' + m[1] + '-' + m[2] + '-' + m[3] : '';
+      if (b.daten.rubrik !== 'Vorbericht' || b.daten.entwurf) return false;
+      if (istDoppel(b.daten) && (team === 'm1' || team === 'm2') && (slugTag || b.daten.datum) === tag) return true;
+      return slugTag === tag && b.daten.spiel_slug.indexOf('heiligenstadt-' + team + '-') >= 0;
     });
     if (zugeordnet.length) return zugeordnet.sort(function (a, b) {
       return (b.daten.datum + (b.daten.zeit || '')).localeCompare(a.daten.datum + (a.daten.zeit || ''));
     })[0];
     var passend = beitraege.filter(function (b) {
       var d = b.daten, tage = (bis - new Date(d.datum + 'T12:00:00')) / 864e5;
-      return d.rubrik === 'Vorbericht' && !d.entwurf && !d.spiel_slug && tage >= 0 && tage <= 10;
+      return d.rubrik === 'Vorbericht' && !d.entwurf && !d.spiel_slug && !istDoppel(d) && tage >= 0 && tage <= 10;
     });
     var mitName = passend.filter(function (b) {
       var t = ((b.daten.titel || '') + ' ' + (b.daten.text || '')).toLowerCase();

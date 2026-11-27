@@ -125,12 +125,15 @@ def vorbericht(slug, spieldatum, gegner, beitraege):
     """Vorbericht aus der Redaktion: in der Redaktion diesem Spiel zugeordnet (Feld spiel_slug), sonst
     automatisch bis 10 Tage vor dem Spiel mit dem Gegner im Titel oder Text (nur nicht zugeordnete)."""
     vbs = [x for x in beitraege if x.get("rubrik") == "Vorbericht"]
-    gewaehlt = sorted((x for x in vbs if x.get("spiel_slug") == slug), key=lambda x: (x["datum"], x.get("zeit") or ""))
+    # Doppel-Vorbericht („Doppelmatchday“): gilt für das Spiel der 1. und der 2. Mannschaft an diesem Tag
+    team = "m2" if "heiligenstadt-m2-" in slug else "m1" if "heiligenstadt-m1-" in slug else ""
+    gewaehlt = sorted((x for x in vbs if x.get("spiel_slug") == slug or sb.gilt_doppel(x, team, spieldatum)),
+                      key=lambda x: (x["datum"], x.get("zeit") or ""))
     if gewaehlt:
         return gewaehlt[-1]
     tag = datetime.date.fromisoformat(spieldatum)
     worte = sb.gegner_worte(gegner)
-    passend = [x for x in vbs if not x.get("spiel_slug")
+    passend = [x for x in vbs if not x.get("spiel_slug") and not sb.ist_doppel(x)
                and 0 <= (tag - datetime.date.fromisoformat(x["datum"])).days <= 10
                and any(w in (x["titel"] + " " + x["text"]).lower() for w in worte)]
     passend.sort(key=lambda x: (x["datum"], x.get("zeit") or ""), reverse=True)

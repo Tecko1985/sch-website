@@ -630,6 +630,24 @@ def slug_datum(slug):
     return f"20{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else ""
 
 
+DOPPEL = re.compile(r"doppel[\s-]*match[\s-]*day", re.I)
+
+
+def ist_doppel(vb):
+    """Doppel-Vorbericht („Doppelmatchday“): ein Beitrag für die 1. und 2. Mannschaft am selben Tag."""
+    return vb.get("rubrik") == "Vorbericht" and bool(DOPPEL.search((vb.get("titel") or "") + " " + (vb.get("text") or "")))
+
+
+def doppel_tag(vb):
+    """Spieltag eines Doppel-Vorberichts: aus dem zugeordneten Spiel, sonst das Datum des Beitrags."""
+    return slug_datum(vb.get("spiel_slug")) or vb.get("datum") or ""
+
+
+def gilt_doppel(vb, team, spieltag):
+    """Doppel-Vorbericht gilt für die Spiele der 1. und 2. Mannschaft an seinem Spieltag."""
+    return team in ("m1", "m2") and ist_doppel(vb) and doppel_tag(vb) == spieltag
+
+
 def finde_vorbericht(d, alle):
     """Gewählter Vorbericht; ohne Wahl der neueste Vorbericht bis 10 Tage vor dem Spiel."""
     wahl = ((d.get("spiel") or {}).get("vorbericht") or "").strip()
@@ -642,11 +660,13 @@ def finde_vorbericht(d, alle):
     spieltag = (d.get("spiel") or {}).get("spieldatum") or d["datum"]
     # In der Redaktion einem Spiel zugeordnet („Zu welchem Spiel?“): gilt für den Spielbericht vom selben Spieltag
     team = (d.get("spiel") or {}).get("mannschaft") or "m1"
-    zugeordnet = [x for x in vbs if slug_datum(x.get("spiel_slug")) == spieltag
-                  and f"heiligenstadt-{team}-" in (x.get("spiel_slug") or "")]
+    # Doppel-Vorbericht („Doppelmatchday“): gilt für die 1. und die 2. Mannschaft an diesem Tag
+    zugeordnet = [x for x in vbs if (slug_datum(x.get("spiel_slug")) == spieltag
+                                     and f"heiligenstadt-{team}-" in (x.get("spiel_slug") or ""))
+                  or gilt_doppel(x, team, spieltag)]
     if zugeordnet:
         return max(zugeordnet, key=lambda x: (x["datum"], x.get("zeit") or ""))
-    vbs = [x for x in vbs if not x.get("spiel_slug")]
+    vbs = [x for x in vbs if not x.get("spiel_slug") and not ist_doppel(x)]
     bis = datetime.date.fromisoformat(spieltag)
     passend = [x for x in vbs if 0 <= (bis - datetime.date.fromisoformat(x["datum"])).days <= 10]
     gegner = ((d.get("spiel") or {}).get("gegner") or "").strip().lower()
