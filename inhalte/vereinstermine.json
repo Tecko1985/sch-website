@@ -1,4 +1,7 @@
 [
  {"datum": "2026-11-29", "zeit": "15:00", "titel": "Weihnachtsmarkt mit traditionellem Adventssingen", "ort": "Barockgarten, Heilbad Heiligenstadt", "art": "Adventssingen"},
+ {"datum": "2026-12-12", "zeit": "09:30", "titel": "Lärz & Weiß U19 Hallencup – U10-Turnier", "ort": "Lorenz-Kellner-Sporthalle, Heilbad Heiligenstadt", "art": "Hallenturnier"},
+ {"datum": "2026-12-12", "zeit": "13:30", "titel": "Lärz & Weiß U19 Hallencup – U19-Vorrunde", "ort": "Lorenz-Kellner-Sporthalle, Heilbad Heiligenstadt", "art": "Hallenturnier"},
+ {"datum": "2026-12-13", "zeit": "09:30", "titel": "Lärz & Weiß U19 Hallencup – U19-Hauptturnier", "ort": "Lorenz-Kellner-Sporthalle, Heilbad Heiligenstadt", "art": "Hallenturnier"},
  {"datum": "2027-09-04", "zeit": "10:00", "titel": "28. VR-Bank Mitte Kurstadtlauf", "ort": "Start/Ziel: Vitalpark, In der Leineaue 1, Heilbad Heiligenstadt", "art": "Kurstadtlauf", "link": "https://vrbankmitte-kurstadtlauf.de/"}
 ]
