@@ -282,7 +282,7 @@ def baue_reiter(spiele, reiter_id, regel, bekannt, links, heute, berichte=()):
             "tore": (m["homeGoal"], m["awayGoal"]) if gespielt else None,
             "href": eigener or f"https://www.fupa.net/match/{m['slug']}", "bericht": bool(eigener),
             "gegner_team": gegner_team, "slug": m["slug"]})
-    karten_daten.sort(key=lambda k: k["kickoff"])
+    karten_daten.sort(key=lambda k: (k["kickoff"], k["slug"]))  # feste Reihenfolge bei gleicher Anstoßzeit
     fertig = [k for k in karten_daten if k["tore"]][-regel["zurueck"]:]
     kommend = [k for k in karten_daten if not k["tore"]][:regel["vor"]]
     for k in fertig + kommend:  # Wappen nur für Karten, die auch angezeigt werden
@@ -299,6 +299,10 @@ def aktualisiere_startseite(pfad=None):
     bekannt, links = bekannte_kuerzel(block), bekannte_links(block)
     spiele = spiele_von_fupa()
     heute = datetime.date.today().isoformat()
+    # FuPa-Störung (z. B. Abfragegrenze): ohne ein einziges kommendes Spiel lieber nichts ändern, als die
+    # angekündigten Spiele von der Startseite zu nehmen (der regelmäßige Abgleich versucht es später erneut)
+    if not any(m["kickoff"][:10] >= heute and m.get("homeGoal") is None for m in spiele):
+        sys.exit("FuPa lieferte keine kommenden Spiele – Spielkarten bleiben, wie sie sind.")
     # Wappen aller Gegner der Saison sammeln (auch für Spielberichte, deren Spiel nicht mehr auf einer Karte steht)
     if os.path.exists(WAPPEN_NAMEN):
         NAMEN.update(json.load(open(WAPPEN_NAMEN, encoding="utf-8")))

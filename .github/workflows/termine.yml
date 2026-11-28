@@ -1,15 +1,18 @@
-# Taeglicher Abgleich der Termine-Seite (seiten/termine.html) mit dem Vereinsspielplan auf fussball.de.
-# werkzeuge/termine.py holt alle Spiele bis Saisonende, nimmt neue auf, streicht weggefallene und
-# vorbeie, uebernimmt Zeit-/Ortsaenderungen, Verlegungen und Absetzungen.
-# Nur wenn sich etwas geaendert hat: Commit auf main (Commit-Text = Liste der Aenderungen) und danach
-# "Seite bauen" anstossen (ein Push mit dem GITHUB_TOKEN startet keinen anderen Ablauf von selbst).
-# Liefert fussball.de auffaellig wenige Spiele (Stoerung), bricht termine.py ab und es bleibt alles, wie es ist.
-# Keine Secrets, keine Zusatzpakete (nur Python-Standardbibliothek).
+# Abgleich der Spieltermine und Anstosszeiten (Bugjagd 28.11.2026: Startseite zeigte verlegte Spiele mit alter Zeit).
+# 1. werkzeuge/termine.py: Termine-Seite (seiten/termine.html) und naechste Spiele der Mannschaftsseiten mit dem
+#    Vereinsspielplan auf fussball.de (neue, weggefallene, verlegte Spiele, Zeit-/Ortsaenderungen, Absetzungen).
+# 2. werkzeuge/spiele.py: Spielkarten "Aktuelle Spiele" der Startseite (index.html) mit FuPa (Anstosszeiten, Ergebnisse).
+# Gestartet vom Zeitplan-Waechter (werkzeuge/zeitplan.py) alle 2 Stunden von 6 bis 22 Uhr; der cron ist nur
+# Rueckfallebene, weil GitHub ihn oft stundenlang verschiebt.
+# Nur wenn sich etwas geaendert hat: Commit auf main und danach "Seite bauen" anstossen (ein Push mit dem
+# GITHUB_TOKEN startet keinen anderen Ablauf von selbst).
+# Stoerung bei fussball.de (auffaellig wenige Spiele) oder FuPa (keine kommenden Spiele): der jeweilige Teil bleibt,
+# wie er ist. Keine Secrets, keine Zusatzpakete (nur Python-Standardbibliothek).
 name: Termine abgleichen
 
 on:
   schedule:
-    - cron: '23 4 * * *'   # taeglich 05:23 (Winter) bzw. 06:23 (Sommer) deutscher Zeit
+    - cron: '23 4 * * *'   # Rueckfallebene; regelmaessig startet ihn der Zeitplan-Waechter
   workflow_dispatch:
 
 permissions:
@@ -33,24 +36,41 @@ jobs:
           python-version: '3.12'
 
       - name: Termine mit fussball.de abgleichen
+        id: termine
+        continue-on-error: true   # Stoerung bei fussball.de: Spielkarten trotzdem abgleichen
         env:
           TZ: Europe/Berlin
           TERMINE_BERICHT: ${{ runner.temp }}/bericht.txt
         run: python werkzeuge/termine.py
 
+      - name: Spielkarten der Startseite mit FuPa abgleichen
+        id: spiele
+        continue-on-error: true
+        env:
+          TZ: Europe/Berlin
+        run: python werkzeuge/spiele.py
+
       - name: Aenderungen speichern und Seite neu bauen
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- seiten/termine.html seiten/erste-mannschaft.html seiten/zweite-mannschaft.html; then
-            echo "Keine Aenderungen an den Terminen."
+          TERMINE="seiten/termine.html seiten/erste-mannschaft.html seiten/zweite-mannschaft.html"
+          KARTEN="index.html assets/wappen"
+          # Abgebrochene Teile nicht halb uebernehmen
+          if [ "${{ steps.termine.outcome }}" != "success" ]; then git checkout -- $TERMINE; rm -f "$RUNNER_TEMP/bericht.txt"; fi
+          if [ "${{ steps.spiele.outcome }}" != "success" ]; then git checkout -- $KARTEN; git clean -fdq -- assets/wappen; fi
+          git add $TERMINE $KARTEN
+          if git diff --cached --quiet; then
+            echo "Keine Aenderungen an Terminen und Spielkarten."
             exit 0
           fi
+          BERICHT="$RUNNER_TEMP/bericht.txt"
+          if [ ! -s "$BERICHT" ]; then echo "Spielkarten der Startseite abgeglichen" > "$BERICHT"
+          elif ! git diff --cached --quiet -- $KARTEN; then printf '\nSpielkarten der Startseite abgeglichen\n' >> "$BERICHT"; fi
           git config user.name "Termine-Abgleich"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add seiten/termine.html seiten/erste-mannschaft.html seiten/zweite-mannschaft.html
-          git commit -q -F "$RUNNER_TEMP/bericht.txt"
+          git commit -q -F "$BERICHT"
           git pull -q --rebase origin main
           git push -q origin HEAD:main
           gh workflow run seite.yml --ref main
-          cat "$RUNNER_TEMP/bericht.txt" >> "$GITHUB_STEP_SUMMARY"
+          cat "$BERICHT" >> "$GITHUB_STEP_SUMMARY"

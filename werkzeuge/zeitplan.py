@@ -5,6 +5,8 @@ Wächter selbst bis zum nächsten Termin und stößt dann den passenden Ablauf a
 - 25 Minuten vor einem geplanten Redaktionsbeitrag -> "Seite bauen" (Vorab-Bau; der Beitrag schaltet sich
   zur Sekunde selbst frei) und zum Termin noch einmal -> "Seite bauen"
 - SCH-Spiel beginnt in 45 Minuten (alle Mannschaften) -> "Live-Ticker" (wartet selbst auf den FuPa-Ticker)
+- alle 2 Stunden von 6 bis 22 Uhr -> "Termine abgleichen" (Termine-Seite mit fussball.de, Spielkarten der
+  Startseite mit FuPa, damit verlegte Anstoßzeiten schnell überall stimmen)
 
 Der Wächter startet bei jedem Push auf main neu (der neue ersetzt den alten, siehe concurrency) und
 startet sich vor Ablauf der GitHub-Höchstlaufzeit selbst neu. Ein stündlicher cron ist nur Rückfallebene.
@@ -32,6 +34,7 @@ except Exception:  # pragma: no cover
 VORLAUF = datetime.timedelta(minutes=45)       # Live-Ticker so lange vor Anpfiff starten
 VORAB = datetime.timedelta(minutes=25)         # geplante Beiträge so lange vorher schon (versteckt) bauen
 SPIELFENSTER = datetime.timedelta(minutes=180)  # bis so lange nach Anpfiff gilt ein Spiel als laufend
+ABGLEICH = [(h, 5) for h in range(6, 23, 2)]     # „Termine abgleichen“ um 06:05, 08:05 … 22:05 Uhr
 LAUFZEIT = datetime.timedelta(hours=5, minutes=30)  # danach neu starten (GitHub: höchstens 6 Stunden je Job)
 
 
@@ -85,6 +88,15 @@ def geplante_termine():
     return aus
 
 
+def abgleich_termine(ab, bis):
+    """Zeitpunkte für „Termine abgleichen“ zwischen ab und bis (deutsche Zeit)."""
+    aus, tag = [], ab.date()
+    while tag <= bis.date():
+        aus += [datetime.datetime(tag.year, tag.month, tag.day, h, m, tzinfo=BERLIN) for h, m in ABGLEICH]
+        tag += datetime.timedelta(days=1)
+    return [x for x in aus if ab < x <= bis]
+
+
 def anstoesse():
     try:
         return sorted({datetime.datetime.fromisoformat(m["kickoff"]) for m in spiele.spiele_von_fupa()
@@ -108,6 +120,7 @@ def main():
         # Vorab-Bau 25 Min. vorher (Beitrag schaltet sich zur Sekunde selbst frei), Hauptbau zum Termin
         termine = [(x, "seite.yml") for g in geplante_termine() for x in (g - VORAB, g) if x > t]
         termine += [(a - VORLAUF, "live.yml") for a in spiel_zeiten if a - VORLAUF > t]
+        termine += [(x, "termine.yml") for x in abgleich_termine(t, start + LAUFZEIT + datetime.timedelta(days=1))]
         termine = sorted(x for x in termine if x not in erledigt)
         ende = start + LAUFZEIT
         if not termine or termine[0][0] > ende:
@@ -121,8 +134,8 @@ def main():
         zeit, ablauf = termine[0]
         print(f"{t:%d.%m. %H:%M}  warte bis {zeit:%d.%m. %H:%M} ({ablauf})")
         time.sleep(max(0, (zeit - jetzt()).total_seconds()) + 20)
-        if ablauf == "live.yml" and laeuft("live.yml"):
-            print("Live-Ticker läuft schon.")
+        if ablauf in ("live.yml", "termine.yml") and laeuft(ablauf):
+            print(f"{ablauf} läuft schon.")
         else:
             starte(ablauf)
         erledigt.add((zeit, ablauf))
